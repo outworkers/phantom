@@ -29,7 +29,7 @@ class OptionalIndexesTest extends PhantomSuite {
   }
 
   it should "store a record and then retrieve it using an optional index" in {
-    val sample = gen[OptionalSecondaryRecord]
+    val sample = gen[OptionalSecondaryRecord].copy(secondary = Some(gen[Int]))
 
     val chain = for {
       store <- database.optionalIndexesTable.store(sample).future()
@@ -47,7 +47,7 @@ class OptionalIndexesTest extends PhantomSuite {
   }
 
   it should "not be able to delete records by their secondary index" in {
-    val sample = gen[OptionalSecondaryRecord]
+    val sample = gen[OptionalSecondaryRecord].copy(secondary = Some(gen[Int]))
 
     val chain = for {
       store <- database.optionalIndexesTable.store(sample).future()

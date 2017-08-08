@@ -31,6 +31,10 @@ import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import scala.collection.JavaConverters._
 import scala.collection.generic.CanBuildFrom
 
+/**
+  * A more extensive ScalaCheck based parity check of binary serialization in between
+  * Phantom primitives and the underlying Java driver.
+  */
 class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPropertyChecks {
 
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration = {

@@ -18,6 +18,7 @@ package com.outworkers.phantom.builder.primitives
 
 import java.nio.ByteBuffer
 
+import com.datastax.driver.core.ProtocolVersion
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import org.joda.time.{DateTime, DateTimeZone}
@@ -28,6 +29,10 @@ import org.scalatest.prop.GeneratorDrivenPropertyChecks
 
 import scala.collection.generic.CanBuildFrom
 
+/**
+  * Test suite to check for some special edge cases in primitive generation and serialization.
+  *
+  */
 class PrimitivesTest extends FlatSpec with Matchers with GeneratorDrivenPropertyChecks {
 
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration = {
@@ -91,6 +96,12 @@ class PrimitivesTest extends FlatSpec with Matchers with GeneratorDrivenProperty
       val samples = genList[Int]() map (i => gen[String] -> i)
       val strSamples = genList[String]()
     """ should compile
+  }
+
+  it should "deserialize an empty string to a Some(empty) with optional primitives" in {
+    val primitve = Primitive[Option[String]]
+    primitve.serialize(None, ProtocolVersion.V5)
+    primitve.deserialize(Primitive.nullValue, ProtocolVersion.V5) shouldEqual None
   }
 
   it should "autogenerate set primitives for Map types" in {

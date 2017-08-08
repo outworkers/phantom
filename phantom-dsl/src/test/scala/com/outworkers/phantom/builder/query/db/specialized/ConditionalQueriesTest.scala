@@ -110,7 +110,7 @@ class ConditionalQueriesTest extends PhantomSuite {
       second shouldBe defined
 
       info("And it shouldn't have updated the value")
-      second.value.description shouldNot equal(updated)
+      second.value.description shouldEqual recipe.description
     }
   }
 
@@ -140,7 +140,7 @@ class ConditionalQueriesTest extends PhantomSuite {
       second shouldBe defined
 
       info("And it should contain the updated value of the uid")
-      second.value.description shouldNot equal(updated)
+      second.value.description shouldEqual recipe.description
     }
   }
 

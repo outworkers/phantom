@@ -24,6 +24,11 @@ import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatest.{FlatSpec, Matchers, _}
 
+/**
+  * A test suite to check that serialization is bijective for all primitives,
+  * meaning serializing and de-serialising the same input should produce the same result back
+  * when retrieving it from Cassandra.
+  */
 class PrimitiveRoundtripTests extends FlatSpec
   with Matchers
   with GeneratorDrivenPropertyChecks {
@@ -58,48 +63,96 @@ class PrimitiveRoundtripTests extends FlatSpec
     roundtrip[String]
   }
 
+  it should "serialize and deserialize an Option[String] primitive" in {
+    roundtrip(Gen.option(Gen.alphaNumStr))
+  }
+
   it should "serialize and deserialize a Int primitive" in {
     roundtrip[Int]
+  }
+
+  it should "serialize and deserialize an Option[Int] primitive" in {
+    roundtrip[Option[Int]]
   }
 
   it should "serialize and deserialize a Double primitive" in {
     roundtrip[Double]
   }
 
+  it should "serialize and deserialize an Option[Double] primitive" in {
+    roundtrip[Option[Double]]
+  }
+
   it should "serialize and deserialize a Float primitive" in {
     roundtrip[Float]
+  }
+
+  it should "serialize and deserialize an Option[Float] primitive" in {
+    roundtrip[Option[Float]]
   }
 
   it should "serialize and deserialize a Long primitive" in {
     roundtrip[Long]
   }
 
+  it should "serialize and deserialize an Option[Long] primitive" in {
+    roundtrip[Option[Long]]
+  }
+
   it should "serialize and deserialize a DateTime primitive" in {
     roundtrip(dateTimeGen)
+  }
+
+  it should "serialize and deserialize an Option[DateTime] primitive" in {
+    roundtrip(Gen.option(dateTimeGen))
   }
 
   it should "serialize and deserialize a java.util.Date primitive" in {
     roundtrip(javaDateGen)
   }
 
+  it should "serialize and deserialize an Option[java.util.Date] primitive" in {
+    roundtrip(Gen.option(javaDateGen))
+  }
+
   it should "serialize and deserialize a boolean primitive" in {
     roundtrip[Boolean]
+  }
+
+  it should "serialize and deserialize an Option[Boolean] primitive" in {
+    roundtrip[Option[Boolean]]
   }
 
   it should "serialize and deserialize a UUID primitive" in {
     roundtrip(Gen.uuid)
   }
 
+  it should "serialize and deserialize an Option[UUID] primitive" in {
+    roundtrip(Gen.option(Gen.uuid))
+  }
+
   it should "serialize and deserialize a java.net.InetAddress primitive" in {
     roundtrip(inetAddressGen)
+  }
+
+  it should "serialize and deserialize an Option[java.net.InetAddress] primitive" in {
+    roundtrip(Gen.option(inetAddressGen))
   }
 
   it should "serialize and deserialize a BigDecimal primitive" in {
     roundtrip[BigDecimal]
   }
 
+  it should "serialize and deserialize an Option[BigDecimal] primitive" in {
+    roundtrip[Option[BigDecimal]]
+  }
+
   it should "serialize and deserialize a BigInt primitive" in {
     roundtrip[BigInt]
+  }
+
+  it should "serialize and deserialize an Option[BigInt] primitive" in {
+    roundtrip[Option[BigInt]]
   }
 
   it should "serialize and deserialize a List[Int] primitive" in {
@@ -251,4 +304,9 @@ class PrimitiveRoundtripTests extends FlatSpec
   it should "serialize and deserialize a derived Primitive with a type" in {
     sroundtrip[Username[Serialized]]
   }
+
+  it should "serialize and deserialize an Option wrapped derived Primitive with a type" in {
+    //sroundtrip[Option[Username[Serialized]]]
+  }
+
 }

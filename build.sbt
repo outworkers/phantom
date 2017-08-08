@@ -19,7 +19,7 @@ import com.twitter.sbt._
 
 lazy val Versions = new {
   val logback = "1.2.3"
-  val util = "0.36.0"
+  val util = "0.37.0"
   val json4s = "3.5.1"
   val datastax = "3.3.0"
   val scalatest = "3.0.1"
@@ -43,7 +43,7 @@ lazy val Versions = new {
 
   val scala210 = "2.10.6"
   val scala211 = "2.11.11"
-  val scala212 = "2.12.2"
+  val scala212 = "2.12.3"
   val scalaAll = Seq(scala210, scala211, scala212)
 
   val typesafeConfig: String = if (Publishing.isJdk8) {
@@ -89,7 +89,7 @@ lazy val Versions = new {
   }
 }
 
-val defaultConcurrency = 4
+val defaultConcurrency = 8
 
 scalacOptions in ThisBuild ++= Seq(
   "-language:experimental.macros",
