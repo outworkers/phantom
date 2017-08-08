@@ -24,6 +24,11 @@ import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatest.{FlatSpec, Matchers, _}
 
+/**
+  * A test suite to check that serialization is bijective for all primitives,
+  * meaning serializing and de-serialising the same input should produce the same result back
+  * when retrieving it from Cassandra.
+  */
 class PrimitiveRoundtripTests extends FlatSpec
   with Matchers
   with GeneratorDrivenPropertyChecks {
@@ -59,7 +64,6 @@ class PrimitiveRoundtripTests extends FlatSpec
   }
 
   it should "serialize and deserialize an Option[String] primitive" in {
-    Console.println(Primitive[Option[String]].asCql(None))
     roundtrip(Gen.option(Gen.alphaNumStr))
   }
 

@@ -29,6 +29,10 @@ import org.scalatest.prop.GeneratorDrivenPropertyChecks
 
 import scala.collection.generic.CanBuildFrom
 
+/**
+  * Test suite to check for some special edge cases in primitive generation and serialization.
+  *
+  */
 class PrimitivesTest extends FlatSpec with Matchers with GeneratorDrivenPropertyChecks {
 
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration = {
