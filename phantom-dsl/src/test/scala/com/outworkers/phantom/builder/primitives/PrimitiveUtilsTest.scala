@@ -15,16 +15,16 @@
  */
 package com.outworkers.phantom.builder.primitives
 
-import org.scalatest._
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
-import org.scalatest.{FlatSpec, Matchers}
-import com.outworkers.util.samplers._
-import org.joda.time.{DateTime, DateTimeZone}
 import java.net.InetAddress
-import java.util.{Date, UUID}
 import java.nio.ByteBuffer
+import java.util.{Date, UUID}
+
+import com.datastax.driver.core.{CodecUtils, LocalDate, ProtocolVersion}
+import org.joda.time.DateTime
 import org.scalacheck.{Arbitrary, Gen}
-import com.datastax.driver.core.{ CodecUtils, LocalDate, ProtocolVersion }
+import org.scalatest.prop.GeneratorDrivenPropertyChecks
+import org.scalatest.{FlatSpec, Matchers, _}
+
 import scala.collection.generic.CanBuildFrom
 
 class PrimitiveUtilsTest extends FlatSpec

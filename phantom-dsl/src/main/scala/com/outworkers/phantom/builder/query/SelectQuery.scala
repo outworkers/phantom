@@ -16,22 +16,22 @@
 package com.outworkers.phantom.builder.query
 
 import cats.Monad
+import cats.syntax.functor._
 import com.datastax.driver.core.{ConsistencyLevel, Session}
-import com.outworkers.phantom.{CassandraTable, Row}
-import com.outworkers.phantom.builder.{ConsistencyBound, LimitBound, OrderBound, WhereBound, _}
 import com.outworkers.phantom.builder.clauses._
 import com.outworkers.phantom.builder.primitives.Primitives.{LongPrimitive, StringPrimitive}
 import com.outworkers.phantom.builder.query.engine.CQLQuery
+import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, GuavaAdapter, PromiseInterface}
 import com.outworkers.phantom.builder.query.prepared.{PrepareMark, PreparedFlattener, PreparedSelectBlock}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
+import com.outworkers.phantom.builder.{ConsistencyBound, LimitBound, OrderBound, WhereBound, _}
 import com.outworkers.phantom.connectors.KeySpace
+import com.outworkers.phantom.{CassandraTable, Row}
 import shapeless.ops.hlist.{Prepend, Reverse}
 import shapeless.{::, =:!=, HList, HNil}
 
 import scala.annotation.implicitNotFound
 import scala.concurrent.{ExecutionContextExecutor, Future => ScalaFuture}
-import cats.syntax.functor._
-import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, GuavaAdapter, PromiseInterface}
 
 case class SelectQuery[
   Table <: CassandraTable[Table, _],
@@ -212,20 +212,18 @@ private[phantom] class RootSelectBlock[
   @implicitNotFound("You haven't provided a KeySpace in scope. Use a Connector to automatically inject one.")
   def all()(implicit keySpace: KeySpace): SelectQuery.Default[T, R] = {
     clause match {
-      case Some(opt) => {
+      case Some(opt) =>
         new SelectQuery(
           table,
           rowFunc,
           QueryBuilder.Select.select(table.tableName, keySpace.name, opt)
         )
-      }
-      case None => {
+      case None =>
         new SelectQuery(
           table,
           rowFunc,
           QueryBuilder.Select.select(table.tableName, keySpace.name, columns: _*)
         )
-      }
     }
   }
 

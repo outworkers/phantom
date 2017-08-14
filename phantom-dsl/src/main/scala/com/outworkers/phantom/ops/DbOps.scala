@@ -22,6 +22,7 @@ import com.outworkers.phantom.database.Database
 
 import scala.collection.generic.CanBuildFrom
 import scala.concurrent.ExecutionContextExecutor
+import scala.collection.immutable.Seq
 
 abstract class DbOps[
   F[_] : Monad,

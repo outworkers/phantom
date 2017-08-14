@@ -16,16 +16,10 @@
 package com.outworkers.phantom.tables
 
 import com.outworkers.phantom.PhantomSuite
-import com.outworkers.phantom.builder.primitives.Primitive
-import org.joda.time.DateTime
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.macros.TableHelper
-import com.outworkers.phantom.tables.Article
-import com.outworkers.phantom.tables.sasi.SASIIndexedArticles
+import org.joda.time.DateTime
 import org.scalamock.scalatest.MockFactory
-import com.outworkers.util.samplers._
-
-import scala.collection.JavaConverters._
 
 case class Ev2(
   id: UUID,

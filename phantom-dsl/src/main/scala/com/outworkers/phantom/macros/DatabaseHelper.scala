@@ -22,6 +22,7 @@ import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.macros.toolbelt.WhiteboxToolbelt
 
 import scala.reflect.macros.whitebox
+import scala.collection.immutable.Seq
 
 trait DatabaseHelper[T <: Database[T]] {
   def tables(db: T): Seq[CassandraTable[_ ,_]]
@@ -54,17 +55,14 @@ class DatabaseHelperMacro(override val c: whitebox.Context) extends WhiteboxTool
   def deriveHelper(tpe: Type): Tree = {
     val accessors = filterMembers[CassandraTable[_, _]](tpe, Some(_))
 
-    val prefix = q"_root_.com.outworkers.phantom.database"
-    val execution = q"_root_.com.outworkers.phantom.query.execution"
+    val execution = q"_root_.com.outworkers.phantom.builder.query.execution"
 
     val tableList = accessors.map { sym =>
       val name = sym.asTerm.name.toTermName
       q"db.$name"
     }
 
-    val queryList = tableList.map(tb => q"$tb.autocreate(space)")
-
-    val listType = tq"$execution.QueryCollection[_root_.scala.collection.immutable.Seq]"
+    val queryList = tableList.map(tb => q"$tb.autocreate(space).executableQuery")
 
     val tree = q"""
        new $macroPkg.DatabaseHelper[$tpe] {
@@ -72,8 +70,10 @@ class DatabaseHelperMacro(override val c: whitebox.Context) extends WhiteboxTool
            $seqCmp.apply[$tableSymbol](..$tableList)
          }
 
-         def createQueries(db: $tpe)(implicit space: $keyspaceType): $listType = {
-            new $prefix.QueryCollection[_root_.scala.collection.immutable.Seq]($seqCmp.apply(..$queryList))
+         def createQueries(db: $tpe)(
+           implicit space: $keyspaceType
+         ): $execution.QueryCollection[_root_.scala.collection.immutable.Seq] = {
+            new $execution.QueryCollection($seqCmp.apply(..$queryList))
          }
        }
      """

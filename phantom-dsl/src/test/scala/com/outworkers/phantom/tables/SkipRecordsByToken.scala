@@ -17,10 +17,7 @@ package com.outworkers.phantom.tables
 
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.tables.{Article, TestDatabase}
 import com.outworkers.util.samplers._
-
-import scala.concurrent.{Future, blocking}
 
 class SkipRecordsByToken extends PhantomSuite {
 

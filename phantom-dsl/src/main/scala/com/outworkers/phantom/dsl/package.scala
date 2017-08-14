@@ -424,6 +424,13 @@ package object dsl extends ScalaQueryContext with ImplicitMechanism with CreateI
       implicit val fMonad: Monad[Future] = catsStdInstancesForFuture(ctx)
       new ExecutableStatements[Future, M](qc)
     }
+
+    def future()(implicit session: Session,
+      //ctx: ExecutionContextExecutor,
+      cbf: CanBuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]],
+      fbf: CanBuildFrom[M[Future[ResultSet]], Future[ResultSet], M[Future[ResultSet]]],
+      ebf: CanBuildFrom[M[Future[ResultSet]], ResultSet, M[ResultSet]]
+    ): Future[M[ResultSet]] = executable().future()
   }
 
   implicit def dbToOps[DB <: Database[DB]](db: Database[DB]): DbOps[Future, DB, Duration] = {

@@ -15,7 +15,6 @@
  */
 package com.outworkers.phantom.builder.query
 
-import com.datastax.driver.core.{ConsistencyLevel, Session}
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.clauses.QueryCondition
 import com.outworkers.phantom.builder.query.engine.CQLQuery
@@ -25,15 +24,13 @@ import com.outworkers.phantom.{CassandraTable, Row}
 import shapeless.HList
 import shapeless.ops.hlist.Prepend
 
-import scala.annotation.implicitNotFound
-
 abstract class RootQuery[
   Table <: CassandraTable[Table, _],
   Record,
   Status <: ConsistencyBound
 ] extends SessionAugmenterImplicits {
 
-  def queryString: String = executableQuery.qb.queryString
+  def queryString: String = executableQuery.qb.terminate.queryString
 
   def executableQuery: ExecutableCqlQuery
 }

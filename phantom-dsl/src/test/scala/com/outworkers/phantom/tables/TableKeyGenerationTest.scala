@@ -15,7 +15,6 @@
  */
 package com.outworkers.phantom.tables
 
-import com.outworkers.phantom.tables._
 import org.scalatest.{FlatSpec, Matchers, ParallelTestExecution}
 
 class TableKeyGenerationTest extends FlatSpec with Matchers with ParallelTestExecution {

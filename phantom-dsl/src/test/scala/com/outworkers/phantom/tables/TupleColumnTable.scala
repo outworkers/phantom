@@ -17,7 +17,6 @@ package com.outworkers.phantom.tables
 
 import java.util.UUID
 
-import com.outworkers.phantom.builder.query.InsertQuery
 import com.outworkers.phantom.dsl._
 
 import scala.concurrent.Future

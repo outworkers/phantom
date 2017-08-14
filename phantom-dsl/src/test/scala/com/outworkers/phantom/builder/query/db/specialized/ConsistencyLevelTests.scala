@@ -118,7 +118,7 @@ class ConsistencyLevelTests extends PhantomSuite {
     }
   }
 
-  it should "set a custom consistency level of QUORUM in a CREATE query" in {
+  ignore should "set a custom consistency level of QUORUM in a CREATE query" in {
     val st = database.primitives
       .create
       .ifNotExists()

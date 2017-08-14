@@ -22,6 +22,7 @@ import com.outworkers.phantom.connectors.{CassandraConnection, KeySpace}
 import com.outworkers.phantom.macros.DatabaseHelper
 
 import scala.concurrent.blocking
+import scala.collection.immutable.Seq
 
 abstract class Database[
   DB <: Database[DB]

@@ -68,8 +68,8 @@ abstract class QueryContext[P[_], F[_], Timeout](
   implicit class RootSelectBlockOps[
     Table <: CassandraTable[Table, Record],
     Record
-  ](block: RootSelectBlock[Table, Record])(implicit keySpace: KeySpace) extends ResultQueryInterface[F, Table, Record, Unlimited] {
-    override def fromRow(r: Row): Record = block.fromRow(r)
+  ](val block: RootSelectBlock[Table, Record])(implicit keySpace: KeySpace) extends ResultQueryInterface[F, Table, Record, Unlimited] {
+    override def fromRow(r: Row): Record = block.rowFunc(r)
 
     /**
       * Returns the first row from the select ignoring everything else
@@ -85,7 +85,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
       ec: ExecutionContextExecutor
     ): F[Option[Record]] = block.all().one()
 
-    override def executableQuery: ExecutableCqlQuery = block.executableQuery
+    override def executableQuery: ExecutableCqlQuery = block.all().executableQuery
   }
 
   implicit class SelectOps[
@@ -164,7 +164,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
     R,
     Limit <: LimitBound
   ](query: ExecutablePreparedSelectQuery[Table, R, Limit]) extends ResultQueryInterface[F, Table, R, Limit] {
-    override def fromRow(r: Row): R = query.fromRow(r)
+    override def fromRow(r: Row): R = query.fn(r)
 
     /**
       * Default asynchronous query execution method. This will convert the underlying

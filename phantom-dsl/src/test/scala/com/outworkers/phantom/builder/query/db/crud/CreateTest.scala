@@ -16,7 +16,6 @@
 package com.outworkers.phantom.builder.query.db.crud
 
 import com.outworkers.phantom.PhantomFreeSuite
-import com.outworkers.phantom.tables.TestDatabase
 import com.outworkers.phantom.dsl._
 
 class CreateTest extends PhantomFreeSuite {
