@@ -23,7 +23,6 @@ import java.util.{Date, UUID}
 import com.datastax.driver.core.utils.UUIDs
 import org.scalacheck.{Arbitrary, Gen}
 import com.datastax.driver.core.{LocalDate, ProtocolVersion}
-import com.google.common.base.Charsets
 import com.outworkers.util.samplers._
 
 package object primitives {

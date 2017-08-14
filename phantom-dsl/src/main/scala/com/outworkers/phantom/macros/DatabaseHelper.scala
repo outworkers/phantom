@@ -39,13 +39,13 @@ object DatabaseHelper {
 class DatabaseHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbelt with RootMacro {
   import c.universe._
 
-  private[this] val seqTpe: Tree => Tree = { tpe =>
+  private[this] val seqTpe: Type => Tree = { tpe =>
     tq"_root_.scala.collection.immutable.Seq[$tpe]"
   }
 
-  private[this] val tableSymbol = tq"_root_.com.outworkers.phantom.CassandraTable[_, _]"
+  private[this] val tableSymbol = typeOf[com.outworkers.phantom.CassandraTable[_, _]]
 
-  private[this] val seqCmp = q"_root_.scala.collection.Seq"
+  private[this] val seqCmp = q"_root_.scala.collection.immutable.Seq"
 
   def materialize[T <: Database[T] : WeakTypeTag]: Tree = {
     memoize[Type, Tree](WhiteboxToolbelt.ddHelperCache)(weakTypeOf[T], deriveHelper)
@@ -55,6 +55,7 @@ class DatabaseHelperMacro(override val c: whitebox.Context) extends WhiteboxTool
     val accessors = filterMembers[CassandraTable[_, _]](tpe, Some(_))
 
     val prefix = q"_root_.com.outworkers.phantom.database"
+    val execution = q"_root_.com.outworkers.phantom.query.execution"
 
     val tableList = accessors.map { sym =>
       val name = sym.asTerm.name.toTermName
@@ -63,18 +64,24 @@ class DatabaseHelperMacro(override val c: whitebox.Context) extends WhiteboxTool
 
     val queryList = tableList.map(tb => q"$tb.autocreate(space)")
 
-    val listType = tq"$prefix.QueryCollection[_root_.scala.collection.Seq]"
+    val listType = tq"$execution.QueryCollection[_root_.scala.collection.immutable.Seq]"
 
-    q"""
+    val tree = q"""
        new $macroPkg.DatabaseHelper[$tpe] {
          def tables(db: $tpe): ${seqTpe(tableSymbol)} = {
            $seqCmp.apply[$tableSymbol](..$tableList)
          }
 
          def createQueries(db: $tpe)(implicit space: $keyspaceType): $listType = {
-            new $prefix.QueryCollection[_root_.scala.collection.Seq]($seqCmp.apply(..$queryList))
+            new $prefix.QueryCollection[_root_.scala.collection.immutable.Seq]($seqCmp.apply(..$queryList))
          }
        }
      """
+    if (showTrees) {
+      echo(s"Generating type tree for ${showCode(q"$macroPkg.DatabaseHelper[$tpe]")}")
+    }
+
+    Console.println(showCode(tree))
+    tree
   }
 }

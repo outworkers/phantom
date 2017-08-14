@@ -16,20 +16,20 @@
 package com.outworkers.phantom.builder.query
 
 import cats.Monad
+import cats.syntax.functor._
 import com.datastax.driver.core.{ConsistencyLevel, Session}
-import com.outworkers.phantom.{CassandraTable, Row}
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.clauses._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, GuavaAdapter, PromiseInterface}
 import com.outworkers.phantom.builder.query.prepared.{PrepareMark, PreparedBlock, PreparedFlattener}
-import com.outworkers.phantom.connectors.{KeySpace, SessionAugmenterImplicits}
+import com.outworkers.phantom.connectors.KeySpace
+import com.outworkers.phantom.{CassandraTable, Row}
 import org.joda.time.DateTime
 import shapeless.ops.hlist.{Prepend, Reverse}
 import shapeless.{::, =:!=, HList, HNil}
-import cats.syntax.functor._
 
-import scala.concurrent.{ExecutionContextExecutor, Future}
+import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.duration.{FiniteDuration => ScalaDuration}
 
 case class UpdateQuery[
@@ -180,6 +180,18 @@ case class UpdateQuery[
       casPart append QueryBuilder.Update.onlyIf(clause(table).qb),
       options
     )
+  }
+
+
+  def consistencyLevel_=(level: ConsistencyLevel)(
+    implicit ev: Status =:= Unspecified,
+    session: Session
+  ): UpdateQuery[Table, Record, Limit, Order, Specified, Chain, PS] = {
+    if (session.protocolConsistency) {
+      copy(options = options.consistencyLevel_=(level))
+    } else {
+      copy(usingPart = usingPart append QueryBuilder.consistencyLevel(level.toString))
+    }
   }
 
   override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options)

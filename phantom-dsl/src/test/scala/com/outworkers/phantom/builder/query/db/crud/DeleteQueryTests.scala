@@ -20,9 +20,6 @@ import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
 import com.outworkers.util.samplers._
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
-
 class DeleteQueryTests extends PhantomSuite {
 
   override def beforeAll(): Unit = {

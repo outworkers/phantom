@@ -34,7 +34,7 @@ class DatabaseTest extends PhantomSuite {
 
   it should "respect any auto-creation options specified for the particular table" in {
     val space = KeySpace("phantom_test")
-    val queries = basicDb.autocreate().queries(space).map(_.qb)
+    val queries = basicDb.autocreate().queries.map(_.qb)
 
     val target = basicDb.recipes.autocreate(space).qb
 

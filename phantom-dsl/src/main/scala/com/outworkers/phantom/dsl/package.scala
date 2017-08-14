@@ -22,8 +22,8 @@ import cats.instances.FutureInstances
 import com.datastax.driver.core.utils.UUIDs
 import com.datastax.driver.core.{VersionNumber, ConsistencyLevel => CLevel}
 import com.outworkers.phantom
-import com.outworkers.phantom.builder.batch.Batcher
 import com.outworkers.phantom.builder.QueryBuilder
+import com.outworkers.phantom.builder.batch.Batcher
 import com.outworkers.phantom.builder.clauses.{UpdateClause, UsingClauseOperations, WhereClause}
 import com.outworkers.phantom.builder.ops._
 import com.outworkers.phantom.builder.query._
@@ -36,12 +36,13 @@ import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column._
 import com.outworkers.phantom.connectors.DefaultVersions
 import com.outworkers.phantom.keys.Indexed
-import com.outworkers.phantom.macros.{==:==, SingleGeneric, TableHelper}
+import com.outworkers.phantom.ops.DbOps
 import org.joda.time.DateTimeZone
-import shapeless.{::, Generic, HList, HNil}
+import shapeless.{::, HNil}
 
 import scala.collection.generic.CanBuildFrom
-import scala.concurrent.{ExecutionContextExecutor, Future}
+import scala.concurrent.duration._
+import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 
 package object dsl extends ScalaQueryContext with ImplicitMechanism with CreateImplicits
   with SelectImplicits
@@ -422,6 +423,19 @@ package object dsl extends ScalaQueryContext with ImplicitMechanism with CreateI
     ): ExecutableStatements[Future, M] = {
       implicit val fMonad: Monad[Future] = catsStdInstancesForFuture(ctx)
       new ExecutableStatements[Future, M](qc)
+    }
+  }
+
+  implicit def dbToOps[DB <: Database[DB]](db: Database[DB]): DbOps[Future, DB, Duration] = {
+    new DbOps[Future, DB, Duration](db) {
+
+      override def execute[M[X] <: TraversableOnce[X]](col: QueryCollection[M])(
+        implicit cbf: CanBuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]]
+      ): ExecutableStatements[Future, M] = new ExecutableStatements[Future, M](col)
+
+      override def defaultTimeout: Duration = 10.seconds
+
+      override def await[T](f: Future[T], timeout: Duration): T = Await.result(f, timeout)
     }
   }
 

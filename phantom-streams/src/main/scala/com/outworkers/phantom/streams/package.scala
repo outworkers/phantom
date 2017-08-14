@@ -18,15 +18,15 @@ package com.outworkers.phantom
 import akka.actor.ActorSystem
 import com.datastax.driver.core.{Session, Statement}
 import com.outworkers.phantom.builder.batch.BatchType
-import com.outworkers.phantom.builder.LimitBound
-import com.outworkers.phantom.builder.query.execution.ExecutableStatement
-import com.outworkers.phantom.builder.query.{ExecutableQuery, RootSelectBlock}
+import com.outworkers.phantom.builder.{ConsistencyBound, LimitBound, OrderBound, WhereBound}
+import com.outworkers.phantom.builder.query.{RootSelectBlock, SelectQuery}
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.dsl.{context => _}
 import com.outworkers.phantom.streams.iteratee.{Enumerator, Iteratee => PhantomIteratee}
 import com.outworkers.phantom.streams.lib.EnumeratorPublisher
 import org.reactivestreams.Publisher
 import play.api.libs.iteratee.{Enumeratee, Enumerator => PlayEnumerator}
+import shapeless.HList
 
 import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.duration.FiniteDuration
@@ -202,10 +202,14 @@ package object streams {
   }
 
   implicit class ExecutableQueryStreamsAugmenter[
-    T <: CassandraTable[T, _],
-    R,
-    Limit <: LimitBound
-  ](val query: ExecutableQuery[T, R, Limit]) extends AnyVal {
+    Table <: CassandraTable[Table, _],
+    Record,
+    Limit <: LimitBound,
+    Order <: OrderBound,
+    Status <: ConsistencyBound,
+    Chain <: WhereBound,
+    PS <: HList
+  ](val query: SelectQuery[Table, Record, Limit, Order, Status, Chain, PS]) extends AnyVal {
 
     /**
       * Produces an Enumerator for [R]ows
@@ -220,7 +224,7 @@ package object streams {
       implicit session: Session,
       keySpace: KeySpace,
       ctx: ExecutionContextExecutor
-    ): PlayEnumerator[R] = {
+    ): PlayEnumerator[Record] = {
       PlayEnumerator.flatten {
         query.future() map { res =>
           Enumerator.enumerator(res) through Enumeratee.map(query.fromRow)
@@ -241,7 +245,7 @@ package object streams {
       implicit session: Session,
       keySpace: KeySpace,
       ctx: ExecutionContextExecutor
-    ): PlayEnumerator[R] = {
+    ): PlayEnumerator[Record] = {
       PlayEnumerator.flatten {
         query.future(mod) map { res =>
           Enumerator.enumerator(res) through Enumeratee.map(query.fromRow)

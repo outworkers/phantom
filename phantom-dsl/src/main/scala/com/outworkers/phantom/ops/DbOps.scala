@@ -27,7 +27,7 @@ abstract class DbOps[
   F[_] : Monad,
   DB <: Database[DB],
   Timeout
-](val db: DB) {
+](val db: Database[DB]) {
 
   import db._
 

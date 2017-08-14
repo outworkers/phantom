@@ -83,16 +83,19 @@ class ExecutableStatements[
   def parallel[A](in: M[F[A]])(
     implicit cbf: CanBuildFrom[M[F[A]], A, M[A]]
   ): F[M[A]] = {
-    in.foldLeft(fMonad.pure(cbf(in))) { (fr, fa) => fr.zipWith(fa)(_ += _) }.map(_.result())
+    (fMonad.pure(cbf(in)) /: in) { (fr, fa) => fr.zipWith(fa)(_ += _) }.map(_.result())
   }
 
   /**
+    * Method that will execute the queries in the underlying collection in parallel.
+    * The queries will be constructed sequentally by the results asynchronous queries to be executed
+    * will be executed in parallel by default using this method.
     *
-    * @param session
-    * @param ec
-    * @param fbf
-    * @param ebf
-    * @return
+    * @param session The cassandra session to execute the query collection against.
+    * @param ec The execution context in which to execute the queries.
+    * @param fbf A builder object to allow convert the queries into DB operations.
+    * @param ebf A builder object to allow dealing with A List double higher kinded restricted collections.
+    * @return A future of type F wrapping a collection of type M.
     */
   def future()(
     implicit session: Session,
