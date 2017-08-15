@@ -27,7 +27,7 @@ trait PromiseInterface[P[_], F[_]] {
 
   def future[T](source: P[T]): F[T]
 
-  def failed[T](exception: Exception): P[T]
+  def failed[T](exception: Exception): F[T]
 }
 
 class ExactlyOncePromise[P[_], F[_], T](
