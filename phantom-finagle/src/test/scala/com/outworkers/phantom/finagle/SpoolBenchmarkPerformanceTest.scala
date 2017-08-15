@@ -15,16 +15,13 @@
  */
 package com.outworkers.phantom.finagle
 
-import com.twitter.util.{Await => TwitterAwait}
-import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.{JodaRow, TestDatabase}
 import com.outworkers.util.samplers._
+import com.twitter.util.{ Await, Future }
 import org.joda.time.{DateTime, DateTimeZone}
 import org.scalameter.api.{Gen => MeterGen, gen => _, _}
-import org.scalatest.time.SpanSugar._
-
-import scala.collection.immutable.IndexedSeq
-import scala.concurrent.{Await, Future}
+import com.outworkers.phantom.finagle._
+import com.twitter.conversions.time._
 
 class SpoolBenchmarkPerformanceTest extends Bench.LocalTime with TestDatabase.connector.Connector {
 
@@ -38,15 +35,15 @@ class SpoolBenchmarkPerformanceTest extends Bench.LocalTime with TestDatabase.co
   val sampleSize = 30000
   Iterator.fill(sampleSize)(gen[JodaRow]).grouped(256).foreach { rs =>
     val chain = rs.map(r => TestDatabase.primitivesJoda.store(r).future.map(_ => ()))
-    Await.ready(Future.sequence(chain), 1.minutes)
+    Await.ready(Future.collect(chain), 1.minutes)
   }
 
   val sizes: MeterGen[Int] = MeterGen.range("size")(10000, 30000, 10000)
 
   performance of "ResultSpool" in {
     measure method "fetchSpool" in {
-      using(sizes) in {
-        size => TwitterAwait.ready {
+      using(sizes) in { size =>
+        Await.ready {
           TestDatabase.primitivesJoda.select.limit(size).fetchSpool().flatMap(_.force)
         }
       }

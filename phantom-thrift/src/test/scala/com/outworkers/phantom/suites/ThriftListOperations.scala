@@ -15,14 +15,13 @@
  */
 package com.outworkers.phantom.suites
 
-import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.finagle._
 import com.outworkers.phantom.tables.{ThriftDatabase, ThriftRecord}
 import com.outworkers.util.samplers._
 import com.outworkers.util.testing.twitter._
 import org.scalatest.FlatSpec
 
-class ThriftListOperations extends FlatSpec with ThriftTestSuite {
+class ThriftListOperations extends FlatSpec with ThriftTestSuite with TwitterFutures {
 
   it should "prepend an item to a thrift list column" in {
     val sample = gen[ThriftRecord]
@@ -48,12 +47,12 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
     val sample2 = gen[ThriftTest]
 
     val operation = for {
-      insertDone <- thriftDb.thriftColumnTable.store(sample).execute()
+      insertDone <- thriftDb.thriftColumnTable.store(sample).future()
       update <- thriftDb.thriftColumnTable
         .update.where(_.id eqs sample.id)
         .modify(_.thriftList prepend sample2)
-        .execute()
-      select <- thriftDb.thriftColumnTable.select(_.thriftList).where(_.id eqs sample.id).get
+        .future()
+      select <- thriftDb.thriftColumnTable.select(_.thriftList).where(_.id eqs sample.id).one()
     } yield select
 
     whenReady(operation.asScala) { items =>
@@ -92,12 +91,12 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
     val prependedValues = if (cassandraVersion.value < Version.`2.0.13`) appendable.reverse else appendable
 
     val operation = for {
-      insertDone <- thriftDb.thriftColumnTable.store(sample).execute()
+      insertDone <- thriftDb.thriftColumnTable.store(sample).future()
       update <- thriftDb.thriftColumnTable.update
         .where(_.id eqs sample.id)
         .modify(_.thriftList prepend appendable)
-        .execute()
-      select <- thriftDb.thriftColumnTable.select(_.thriftList).where(_.id eqs sample.id).get
+        .future()
+      select <- thriftDb.thriftColumnTable.select(_.thriftList).where(_.id eqs sample.id).one()
     } yield select
 
     whenReady(operation.asScala) { items =>
@@ -130,12 +129,12 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
     val sample2 = gen[ThriftTest]
 
     val operation = for {
-      insertDone <- thriftDb.thriftColumnTable.store(sample).execute()
+      insertDone <- thriftDb.thriftColumnTable.store(sample).future()
       update <- thriftDb.thriftColumnTable.update
         .where(_.id eqs sample.id)
         .modify(_.thriftList append sample2)
-        .execute()
-      select <- thriftDb.thriftColumnTable.select(_.thriftList).where(_.id eqs sample.id).get
+        .future()
+      select <- thriftDb.thriftColumnTable.select(_.thriftList).where(_.id eqs sample.id).one()
     } yield select
 
     whenReady(operation.asScala) { items =>
@@ -168,12 +167,12 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
     val sample2 = genList[ThriftTest]()
 
     val operation = for {
-      insertDone <- thriftDb.thriftColumnTable.store(sample).execute()
+      insertDone <- thriftDb.thriftColumnTable.store(sample).future()
       update <- thriftDb.thriftColumnTable.update
         .where(_.id eqs sample.id)
         .modify(_.thriftList append sample2)
-        .execute()
-      select <- thriftDb.thriftColumnTable.select(_.thriftList).where(_.id eqs sample.id).get
+        .future()
+      select <- thriftDb.thriftColumnTable.select(_.thriftList).where(_.id eqs sample.id).one()
     } yield select
 
     whenReady(operation.asScala) { items =>
@@ -211,15 +210,15 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
     val sample2 = gen[ThriftTest]
 
     val operation = for {
-      _ <- thriftDb.thriftColumnTable.store(sample).execute
+      _ <- thriftDb.thriftColumnTable.store(sample).future()
       update <- thriftDb.thriftColumnTable
         .update.where(_.id eqs sample.id)
         .modify(_.thriftList discard sample2)
-        .execute()
+        .future()
       select <- thriftDb.thriftColumnTable
         .select(_.thriftList)
         .where(_.id eqs sample.id)
-        .get
+        .one()
     } yield select
 
     whenReady(operation.asScala) { items =>
@@ -253,11 +252,11 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
     val removables = genList[ThriftTest]()
 
     val operation = for {
-      insertDone <- thriftDb.thriftColumnTable.store(sample).execute()
+      insertDone <- thriftDb.thriftColumnTable.store(sample).future()
       update <- thriftDb.thriftColumnTable.update.where(_.id eqs sample.id)
         .modify(_.thriftList discard removables)
-        .execute()
-      select <- thriftDb.thriftColumnTable.select(_.thriftList).where(_.id eqs sample.id).get
+        .future()
+      select <- thriftDb.thriftColumnTable.select(_.thriftList).where(_.id eqs sample.id).one()
     } yield select
 
     whenReady(operation.asScala) { items =>
@@ -293,12 +292,12 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
     val sample2 = gen[ThriftTest]
 
     val operation = for {
-      insertDone <- thriftDb.thriftColumnTable.store(sample).execute
+      insertDone <- thriftDb.thriftColumnTable.store(sample).future()
       update <- thriftDb.thriftColumnTable.update
         .where(_.id eqs sample.id)
         .modify(_.thriftList setIdx(0, sample2))
-        .execute()
-      select <- thriftDb.thriftColumnTable.select(_.thriftList).where(_.id eqs sample.id).get
+        .future()
+      select <- thriftDb.thriftColumnTable.select(_.thriftList).where(_.id eqs sample.id).one()
     } yield select
 
     whenReady(operation.asScala) { items =>
@@ -330,9 +329,9 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite {
     val sample2 = gen[ThriftTest]
 
     val operation = for {
-      insertDone <- thriftDb.thriftColumnTable.store(sample).execute()
-      update <- thriftDb.thriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftList setIdx(2, sample2)).execute()
-      select <- thriftDb.thriftColumnTable.select(_.thriftList).where(_.id eqs sample.id).get
+      insertDone <- thriftDb.thriftColumnTable.store(sample).future()
+      update <- thriftDb.thriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftList setIdx(2, sample2)).future()
+      select <- thriftDb.thriftColumnTable.select(_.thriftList).where(_.id eqs sample.id).one()
     } yield select
 
     whenReady(operation.asScala) { items =>

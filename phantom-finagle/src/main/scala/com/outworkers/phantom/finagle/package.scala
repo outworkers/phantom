@@ -20,7 +20,7 @@ import com.datastax.driver.core.Statement
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.query._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
-import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, ExecutableStatements, QueryCollection, QueryInterface}
+import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, ExecutableStatements, GuavaAdapter, QueryCollection, QueryInterface, ResultQueryInterface}
 import com.outworkers.phantom.builder.query.options.{CompressionStrategy, GcGraceSecondsBuilder, TablePropertyClause, TimeToLiveBuilder}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.finagle.execution.{TwitterFutureImplicits, TwitterQueryContext}
@@ -37,6 +37,53 @@ import scala.concurrent.ExecutionContextExecutor
 package object finagle extends TwitterQueryContext with DefaultImports {
 
   implicit val twitterFutureMonad: Monad[Future] = TwitterFutureImplicits.monadInstance
+
+  implicit class SpoolSelectQueryOps[
+    P[_],
+    F[_],
+    Table <: CassandraTable[Table, _],
+    Record,
+    Limit <: LimitBound,
+    Order <: OrderBound,
+    Status <: ConsistencyBound,
+    Chain <: WhereBound,
+    PS <: HList
+  ](
+    val query: SelectQuery[Table, Record, Limit, Order, Status, Chain, PS]
+  ) extends AnyVal {
+    /**
+      * Produces a Twitter Spool of [R]ows
+      * This enumerator can be consumed afterwards with an Iteratee
+      *
+      * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+      * @return
+      */
+    def fetchSpool(modifier: Statement => Statement)(
+      implicit session: Session,
+      keySpace: KeySpace
+    ): Future[Spool[Seq[Record]]] = {
+      query.future(modifier) flatMap { rs =>
+        ResultSpool.spool(rs).map(spool => spool.map(_.map(query.fromRow)))
+      }
+    }
+
+    /**
+      * Produces a Twitter Spool of [R]ows
+      * This enumerator can be consumed afterwards with an Iteratee
+      *
+      * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+      * @return
+      */
+    def fetchSpool()(
+      implicit session: Session,
+      keySpace: KeySpace
+    ): Future[Spool[Seq[Record]]] = {
+      query.future() flatMap { rs =>
+        ResultSpool.spool(rs).map(spool => spool.map(_.map(query.fromRow)))
+      }
+    }
+
+  }
 
   implicit class RootSelectBlockSpool[
     T <: CassandraTable[T, _],
@@ -77,10 +124,11 @@ package object finagle extends TwitterQueryContext with DefaultImports {
   }
 
   implicit class InsertQueryAugmenter[
-    Table <: CassandraTable[Table, _],
+    Table <: CassandraTable[Table, Record],
     Record,
     Status <: ConsistencyBound,
     PS <: HList
+
   ](val query: InsertQuery[Table, Record, Status, PS]) extends AnyVal {
     def ttl(duration: com.twitter.util.Duration): InsertQuery[Table, Record, Status, PS] = {
       query.ttl(duration.inSeconds)

@@ -105,7 +105,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
 
 
   implicit class DatabaseOperation[DB <: Database[DB]](
-    override val db: DB
+    override val db: Database[DB]
   ) extends DbOps[F, DB, Timeout](db) {
     override def execute[M[X] <: TraversableOnce[X]](col: QueryCollection[M])(
       implicit cbf: CanBuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]]

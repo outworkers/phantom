@@ -15,15 +15,21 @@
  */
 package com.outworkers.phantom.finagle
 
-import com.outworkers.phantom.PhantomSuite
-import com.outworkers.util.testing.twitter._
+import com.twitter.util.{Future, Return, Throw}
+import org.scalatest.concurrent.{ScalaFutures, Waiters}
 
-class CreateQueryFinagleTests extends PhantomSuite with TwitterFutures {
+trait TwitterFutures extends Waiters with ScalaFutures {
 
-  it should "execute a simple query with secondary indexes with Twitter futures" in {
-    whenReady(database.secondaryIndexTable.create.ifNotExists().future()) { res =>
-      info("The creation query of secondary indexes should execute successfully")
-      res.forall(_.wasApplied() == true) shouldEqual true
+  implicit def twitterFutureToConcept[T](f: Future[T]): FutureConcept[T] = new FutureConcept[T] {
+    override def eitherValue: Option[Either[Throwable, T]] = f.poll match {
+      case Some(Return(ret)) => Some(Right(ret))
+      case Some(Throw(err)) => Some(Left(err))
+      case None => None
     }
+
+    override def isExpired: Boolean = false
+
+    override def isCanceled: Boolean = false
   }
+
 }

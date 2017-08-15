@@ -81,7 +81,6 @@ class DatabaseHelperMacro(override val c: whitebox.Context) extends WhiteboxTool
       echo(s"Generating type tree for ${showCode(q"$macroPkg.DatabaseHelper[$tpe]")}")
     }
 
-    Console.println(showCode(tree))
     tree
   }
 }

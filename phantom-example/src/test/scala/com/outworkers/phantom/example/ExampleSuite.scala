@@ -16,7 +16,7 @@
 package com.outworkers.phantom.example
 
 import com.outworkers.phantom.PhantomBaseSuite
-import com.outworkers.phantom.dsl.{DatabaseProvider, context}
+import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.example.advanced.RecipesDatabase
 import org.scalatest.FlatSpec
 

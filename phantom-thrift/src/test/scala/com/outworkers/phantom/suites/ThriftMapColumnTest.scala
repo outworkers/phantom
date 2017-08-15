@@ -16,13 +16,11 @@
 package com.outworkers.phantom.suites
 
 import com.outworkers.phantom.tables.ThriftRecord
-import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.finagle._
 import com.outworkers.util.samplers._
-import com.outworkers.util.testing.twitter._
 import org.scalatest.FlatSpec
 
-class ThriftMapColumnTest extends FlatSpec with ThriftTestSuite {
+class ThriftMapColumnTest extends FlatSpec with ThriftTestSuite with TwitterFutures {
 
   it should "put an item to a thrift map column" in {
     val sample = gen[ThriftRecord]
@@ -49,12 +47,12 @@ class ThriftMapColumnTest extends FlatSpec with ThriftTestSuite {
     val toAdd = gen[(String, ThriftTest)]
 
     val operation = for {
-      insertDone <- thriftDb.thriftColumnTable.store(sample).execute
-      update <- thriftDb.thriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftMap put toAdd).execute()
-      select <- thriftDb.thriftColumnTable.select(_.thriftMap).where(_.id eqs sample.id).get
+      insertDone <- thriftDb.thriftColumnTable.store(sample).future
+      update <- thriftDb.thriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftMap put toAdd).future()
+      select <- thriftDb.thriftColumnTable.select(_.thriftMap).where(_.id eqs sample.id).one()
     } yield select
 
-    whenReady(operation.asScala) { items =>
+    whenReady(operation) { items =>
       items shouldBe defined
       items.value shouldEqual (sample.thriftMap + toAdd)
     }
@@ -92,12 +90,12 @@ class ThriftMapColumnTest extends FlatSpec with ThriftTestSuite {
     val expected = sample.thriftMap ++ toAdd
 
     val operation = for {
-      insertDone <- thriftDb.thriftColumnTable.store(sample).execute()
-      update <- thriftDb.thriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftMap putAll toAdd).execute()
-      select <- thriftDb.thriftColumnTable.select(_.thriftMap).where(_.id eqs sample.id).get
+      insertDone <- thriftDb.thriftColumnTable.store(sample).future()
+      update <- thriftDb.thriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftMap putAll toAdd).future()
+      select <- thriftDb.thriftColumnTable.select(_.thriftMap).where(_.id eqs sample.id).one
     } yield select
 
-    whenReady(operation.asScala) { items =>
+    whenReady(operation) { items =>
       items shouldBe defined
       items.value.size shouldEqual expected.size
       items.value shouldEqual expected

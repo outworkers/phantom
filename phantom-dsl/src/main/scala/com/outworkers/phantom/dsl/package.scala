@@ -20,11 +20,9 @@ import cats.instances.FutureInstances
 import com.outworkers.phantom.builder.query._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.execution._
-import com.outworkers.phantom.ops.DbOps
 
 import scala.collection.generic.CanBuildFrom
-import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContextExecutor, Future}
+import scala.concurrent.{ExecutionContextExecutor, Future}
 
 package object dsl extends ScalaQueryContext with DefaultImports with FutureInstances {
 
@@ -49,18 +47,5 @@ package object dsl extends ScalaQueryContext with DefaultImports with FutureInst
       fbf: CanBuildFrom[M[Future[ResultSet]], Future[ResultSet], M[Future[ResultSet]]],
       ebf: CanBuildFrom[M[Future[ResultSet]], ResultSet, M[ResultSet]]
     ): Future[M[ResultSet]] = executable().future()
-  }
-
-  implicit def dbToOps[DB <: Database[DB]](db: Database[DB]): DbOps[Future, DB, Duration] = {
-    new DbOps[Future, DB, Duration](db) {
-
-      override def execute[M[X] <: TraversableOnce[X]](col: QueryCollection[M])(
-        implicit cbf: CanBuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]]
-      ): ExecutableStatements[Future, M] = new ExecutableStatements[Future, M](col)
-
-      override def defaultTimeout: Duration = 10.seconds
-
-      override def await[T](f: Future[T], timeout: Duration): T = Await.result(f, timeout)
-    }
   }
 }
