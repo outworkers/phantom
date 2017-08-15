@@ -42,11 +42,13 @@ object PrepareMark {
 }
 
 class ExecutablePreparedQuery(
-  val statement: Statement,
+  val st: Statement,
   val options: QueryOptions
 ) extends Batchable {
 
-  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery.empty
+  override def executableQuery: ExecutableCqlQuery = new ExecutableCqlQuery(CQLQuery.empty, options) {
+    override def statement()(implicit session: Session): Statement = st
+  }
 }
 
 class ExecutablePreparedSelectQuery[
@@ -56,8 +58,7 @@ class ExecutablePreparedSelectQuery[
 ](val st: Statement, val fn: Row => R, val options: QueryOptions)
 
 class PreparedFlattener(qb: CQLQuery)(
-  implicit session: Session,
-  keySpace: KeySpace
+  implicit session: Session
 ) extends SessionAugmenterImplicits {
 
   val protocolVersion: ProtocolVersion = session.protocolVersion
@@ -82,7 +83,7 @@ class PreparedBlock[PS <: HList](
   query: PreparedStatement,
   protocolVersion: ProtocolVersion,
   val options: QueryOptions
-)(implicit session: Session, keySpace: KeySpace) {
+)(implicit keySpace: KeySpace) {
 
   /**
     * Method used to bind a set of arguments to a prepared query in a typesafe manner.

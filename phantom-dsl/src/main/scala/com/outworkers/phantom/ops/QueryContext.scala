@@ -138,7 +138,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
       implicit session: Session,
       ec: ExecutionContextExecutor
     ): F[ResultSet] = {
-      adapter.fromGuava(query.options(query.statement))
+      adapter.fromGuava(query.options(query.st))
     }
 
     /**
@@ -157,7 +157,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
     override def future(modifyStatement: Statement => Statement)(
       implicit session: Session,
       executor: ExecutionContextExecutor
-    ): F[ResultSet] = adapter.fromGuava(modifyStatement(query.options(query.statement)))
+    ): F[ResultSet] = adapter.fromGuava(modifyStatement(query.options(query.st)))
   }
 
   implicit class ExecutablePreparedSelect[

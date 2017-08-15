@@ -54,6 +54,7 @@ class BatchablePreparedInsertQueryTest extends PhantomSuite {
     val exec1 = bind(sample1)
     val exec2 = bind(sample2)
 
+
     val chain = for {
       truncate <- database.recipes.truncate.future()
       store <- Batch.unlogged.add(exec1, exec2).future()

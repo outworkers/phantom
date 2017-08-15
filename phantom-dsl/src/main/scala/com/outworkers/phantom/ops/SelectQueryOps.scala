@@ -19,10 +19,9 @@ import cats.Monad
 import cats.syntax.functor._
 import com.datastax.driver.core.Session
 import com.outworkers.phantom.builder._
-import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, GuavaAdapter, PromiseInterface, ResultQueryInterface}
 import com.outworkers.phantom.builder.query.prepared.{PreparedFlattener, PreparedSelectBlock}
-import com.outworkers.phantom.builder.query.{LimitedPart, QueryOptions, SelectQuery}
+import com.outworkers.phantom.builder.query.{LimitedPart, SelectQuery}
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.{CassandraTable, Row}
 import shapeless.ops.hlist.Reverse
