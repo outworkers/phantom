@@ -562,7 +562,7 @@ object Primitives {
       }
 
       def deserialize(source: ByteBuffer, protocol: ProtocolVersion): Option[T] = {
-        if (source == Primitive.nullValue || source.remaining() == 0) {
+        if (source == Primitive.nullValue) {
           None
         } else {
           Some(ev.deserialize(source, protocol))

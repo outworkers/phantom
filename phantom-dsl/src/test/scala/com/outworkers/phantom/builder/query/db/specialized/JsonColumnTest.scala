@@ -73,7 +73,6 @@ class JsonColumnTest extends PhantomSuite {
 
     whenReady(chain) { case (initial, afterUpdate) =>
       initial.value.optionalJson shouldBe empty
-      afterUpdate.value.optionalJson shouldBe defined
       afterUpdate.value.optionalJson shouldEqual updated
     }
   }
