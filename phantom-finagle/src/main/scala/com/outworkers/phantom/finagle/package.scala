@@ -48,13 +48,11 @@ package object finagle extends TwitterQueryContext with DefaultImports {
       * This enumerator can be consumed afterwards with an Iteratee
       *
       * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
-      * @param executor The implicit Java compatible Scala executor.
       * @return
       */
     def fetchSpool(modifier: Statement => Statement)(
       implicit session: Session,
-      keySpace: KeySpace,
-      executor: ExecutionContextExecutor
+      keySpace: KeySpace
     ): Future[Spool[Seq[R]]] = {
       block.all().future(modifier) flatMap { rs =>
         ResultSpool.spool(rs).map(spool => spool.map(_.map(block.all.fromRow)))
@@ -66,13 +64,11 @@ package object finagle extends TwitterQueryContext with DefaultImports {
       * This enumerator can be consumed afterwards with an Iteratee
       *
       * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
-      * @param executor The implicit Java compatible Scala executor.
       * @return
       */
     def fetchSpool()(
       implicit session: Session,
-      keySpace: KeySpace,
-      executor: ExecutionContextExecutor
+      keySpace: KeySpace
     ): Future[Spool[Seq[R]]] = {
       block.all().future() flatMap { rs =>
         ResultSpool.spool(rs).map(spool => spool.map(_.map(block.all.fromRow)))

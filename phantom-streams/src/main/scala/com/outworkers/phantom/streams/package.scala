@@ -21,7 +21,7 @@ import com.outworkers.phantom.builder.batch.BatchType
 import com.outworkers.phantom.builder.{ConsistencyBound, LimitBound, OrderBound, WhereBound}
 import com.outworkers.phantom.builder.query.{RootSelectBlock, SelectQuery}
 import com.outworkers.phantom.connectors.KeySpace
-import com.outworkers.phantom.dsl.{context => _}
+import com.outworkers.phantom.dsl.{context => _, _ }
 import com.outworkers.phantom.streams.iteratee.{Enumerator, Iteratee => PhantomIteratee}
 import com.outworkers.phantom.streams.lib.EnumeratorPublisher
 import org.reactivestreams.Publisher
@@ -202,14 +202,14 @@ package object streams {
   }
 
   implicit class ExecutableQueryStreamsAugmenter[
-    Table <: CassandraTable[Table, _],
-    Record,
+    T <: CassandraTable[T, R],
+    R,
     Limit <: LimitBound,
     Order <: OrderBound,
     Status <: ConsistencyBound,
     Chain <: WhereBound,
     PS <: HList
-  ](val query: SelectQuery[Table, Record, Limit, Order, Status, Chain, PS]) extends AnyVal {
+  ](val query: SelectQuery[T, R, Limit, Order, Status, Chain, PS]) extends AnyVal {
 
     /**
       * Produces an Enumerator for [R]ows
@@ -224,7 +224,7 @@ package object streams {
       implicit session: Session,
       keySpace: KeySpace,
       ctx: ExecutionContextExecutor
-    ): PlayEnumerator[Record] = {
+    ): PlayEnumerator[R] = {
       PlayEnumerator.flatten {
         query.future() map { res =>
           Enumerator.enumerator(res) through Enumeratee.map(query.fromRow)
@@ -245,7 +245,7 @@ package object streams {
       implicit session: Session,
       keySpace: KeySpace,
       ctx: ExecutionContextExecutor
-    ): PlayEnumerator[Record] = {
+    ): PlayEnumerator[R] = {
       PlayEnumerator.flatten {
         query.future(mod) map { res =>
           Enumerator.enumerator(res) through Enumeratee.map(query.fromRow)

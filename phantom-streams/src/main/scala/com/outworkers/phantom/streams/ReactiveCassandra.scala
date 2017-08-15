@@ -18,6 +18,7 @@ package com.outworkers.phantom.streams
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import com.datastax.driver.core.ResultSet
 import com.outworkers.phantom.CassandraTable
+import com.outworkers.phantom.builder.Unspecified
 import com.outworkers.phantom.builder.batch.{BatchQuery, BatchType}
 import com.outworkers.phantom.builder.query.{Batchable, QueryOptions, UsingPart}
 import com.outworkers.phantom.dsl._
@@ -174,13 +175,13 @@ class BatchActor[CT <: CassandraTable[CT, T], T](
   }
 
   private[this] def executeStatements(): Unit = {
-    val query = BatchQuery(
+    val query = BatchQuery[Unspecified](
       buffer.map(builder.request(table, _)).iterator,
       batchType,
       UsingPart.empty,
       QueryOptions.empty
     )
-    query.executableQuery.onComplete {
+    query.future().onComplete {
       case Failure(e) => self ! ErrorWrapper(e)
       case Success(resp) => self ! resp
     }

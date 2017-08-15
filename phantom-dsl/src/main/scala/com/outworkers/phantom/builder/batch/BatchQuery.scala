@@ -63,9 +63,6 @@ sealed case class BatchQuery[Status <: ConsistencyBound](
     }
 
     val strings = builder.result()
-    Console.println("basasfasf")
-    Console.println(strings.mkString("\n"))
-
     BatchWithQuery(batch, strings.mkString("\n"), batchType)
   }
 
