@@ -32,6 +32,7 @@ trait GuavaAdapter[F[_]] {
     implicit session: Session,
     ctx: ExecutionContextExecutor
   ): F[ResultSet] = {
+    Manager.queryLogger.debug(s"Executing BATCH query ${batch.debugString}")
     fromGuava(batch.statement)
   }
 

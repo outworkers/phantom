@@ -47,7 +47,7 @@ sealed case class BatchQuery[Status <: ConsistencyBound](
 ) extends SessionAugmenterImplicits {
 
   def initBatch(): BatchStatement = batchType match {
-    case BatchType.Logged => new BatchStatement()
+    case BatchType.Logged => new BatchStatement(BatchStatement.Type.LOGGED)
     case BatchType.Unlogged => new BatchStatement(BatchStatement.Type.UNLOGGED)
     case BatchType.Counter => new BatchStatement(BatchStatement.Type.COUNTER)
   }
@@ -63,7 +63,10 @@ sealed case class BatchQuery[Status <: ConsistencyBound](
     }
 
     val strings = builder.result()
-    BatchWithQuery(options(batch), strings.mkString("\n"), batchType)
+    Console.println("basasfasf")
+    Console.println(strings.mkString("\n"))
+
+    BatchWithQuery(batch, strings.mkString("\n"), batchType)
   }
 
   def queryString()(implicit session: Session): String = makeBatch().debugString
