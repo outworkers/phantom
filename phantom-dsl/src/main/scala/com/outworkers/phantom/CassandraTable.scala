@@ -17,7 +17,6 @@ package com.outworkers.phantom
 
 import cats.Monad
 import com.datastax.driver.core.Session
-import com.outworkers.phantom
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.DeleteClause
 import com.outworkers.phantom.builder.primitives.Primitive
@@ -35,7 +34,6 @@ import scala.concurrent.ExecutionContextExecutor
 
 /**
  * Main representation of a Cassandra table.
- * @tparam F The future type returned by this table.
  * @tparam T Type of this table.
  * @tparam R Type of record.
  */
