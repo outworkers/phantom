@@ -23,8 +23,12 @@ class QueryCollection[M[X] <: TraversableOnce[X]](val queries: M[ExecutableCqlQu
 
   def isEmpty: Boolean = queries.isEmpty
 
+  def size: Int = queries.size
+
   def appendAll(appendable: M[ExecutableCqlQuery]): QueryCollection[M] = {
     val builder = cbf(queries)
+
+    for (q <- queries) builder += q
     for (q <- appendable) builder += q
     new QueryCollection(builder.result())
   }

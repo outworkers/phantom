@@ -19,7 +19,7 @@ import cats.Monad
 import cats.implicits._
 import com.datastax.driver.core.{Session, SimpleStatement, Statement}
 import com.google.common.util.concurrent.ListenableFuture
-import com.outworkers.phantom.ResultSet
+import com.outworkers.phantom.{Manager, ResultSet}
 import com.outworkers.phantom.builder.batch.BatchWithQuery
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 
@@ -106,7 +106,10 @@ class ExecutableStatements[
 
     val builder = fbf()
 
-    for (q <- queryCol.queries) builder += adapter.fromGuava(q)
+    for (q <- queryCol.queries) {
+      Manager.queryLogger.debug(s"Executing query: ${q.qb.queryString}")
+      builder += adapter.fromGuava(q)
+    }
 
     parallel(builder.result())(ebf)
   }
@@ -116,6 +119,9 @@ class ExecutableStatements[
     ec: ExecutionContextExecutor,
     cbf: CanBuildFrom[M[ExecutableCqlQuery], ResultSet, M[ResultSet]]
   ): F[M[ResultSet]] = {
-    sequencedTraverse(queryCol.queries)(adapter.fromGuava)
+    sequencedTraverse(queryCol.queries) { query =>
+      Manager.queryLogger.debug(s"Executing query: ${query.qb.queryString}")
+      adapter.fromGuava(query)
+    }
   }
 }

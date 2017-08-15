@@ -115,8 +115,8 @@ package object dsl extends ScalaQueryContext with ImplicitMechanism with CreateI
     val SERIAL = CLevel.SERIAL
   }
 
-  def cql(str: CQLQuery): QueryInterface[Future] = new QueryInterface[Future]() {
-    override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(str, QueryOptions.empty)
+  def cql(str: CQLQuery, options: QueryOptions = QueryOptions.empty): QueryInterface[Future] = new QueryInterface[Future]() {
+    override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(str, options)
   }
 
   def cql(str: String): QueryInterface[Future] = cql(CQLQuery(str))
@@ -423,7 +423,6 @@ package object dsl extends ScalaQueryContext with ImplicitMechanism with CreateI
     }
 
     def future()(implicit session: Session,
-      //ctx: ExecutionContextExecutor,
       cbf: CanBuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]],
       fbf: CanBuildFrom[M[Future[ResultSet]], Future[ResultSet], M[Future[ResultSet]]],
       ebf: CanBuildFrom[M[Future[ResultSet]], ResultSet, M[ResultSet]]

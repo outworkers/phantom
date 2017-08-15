@@ -244,12 +244,20 @@ abstract class QueryContext[P[_], F[_], Timeout](
 
   implicit class CassandraTableStoreMethods[T <: CassandraTable[T, R], R](val table: CassandraTable[T, R]) {
 
-    def createSchema()(
+    def createSchemaAsync()(
       implicit session: Session,
       keySpace: KeySpace,
       ec: ExecutionContextExecutor
     ): F[Seq[ResultSet]] = {
       new ExecutableStatements[F, Seq](table.autocreate(keySpace).queries).sequence()
+    }
+
+    def createSchema(timeout: Timeout = defaultTimeout)(
+      implicit session: Session,
+      keySpace: KeySpace,
+      ec: ExecutionContextExecutor
+    ): Seq[ResultSet] = {
+      await(new ExecutableStatements[F, Seq](table.autocreate(keySpace).queries).sequence(), timeout)
     }
 
     def storeRecord[V1, Repr <: HList, HL <: HList, Out <: HList](input: V1)(
