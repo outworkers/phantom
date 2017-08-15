@@ -54,8 +54,7 @@ package object dsl extends ScalaQueryContext with ImplicitMechanism with CreateI
   with DefaultSASIOps {
 
   type CassandraTable[Owner <: CassandraTable[Owner, Record], Record] = phantom.CassandraTable[Owner, Record]
-
-  trait Table[T <: Table[T, R], R] extends phantom.CassandraTable[T, R] with TableAliases[T, R] with RootConnector
+  type Table[Owner <: Table[Owner, Record], Record] = phantom.Table[Owner, Record]
 
   type ClusteringOrder = com.outworkers.phantom.keys.ClusteringOrder
   type Ascending = com.outworkers.phantom.keys.Ascending
@@ -417,9 +416,7 @@ package object dsl extends ScalaQueryContext with ImplicitMechanism with CreateI
 
   implicit class ExecuteQueries[M[X] <: TraversableOnce[X]](val qc: QueryCollection[M]) extends AnyVal {
     def executable()(
-      implicit session: Session,
-      ctx: ExecutionContextExecutor,
-      cbf: CanBuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]]
+      implicit ctx: ExecutionContextExecutor
     ): ExecutableStatements[Future, M] = {
       implicit val fMonad: Monad[Future] = catsStdInstancesForFuture(ctx)
       new ExecutableStatements[Future, M](qc)

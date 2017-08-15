@@ -33,7 +33,7 @@ class CreateTest extends PhantomFreeSuite {
         } yield create
 
         whenReady(chain) { res =>
-          res.wasApplied() shouldEqual true
+          res.forall(_.wasApplied()) shouldEqual true
         }
       }
     }
@@ -51,8 +51,8 @@ class CreateTest extends PhantomFreeSuite {
           create <- query.future()
         } yield create
 
-        whenReady(chain) {
-          res => res.wasApplied() shouldEqual true
+        whenReady(chain) { res =>
+          res.forall(_.wasApplied())
         }
       }
 
@@ -68,8 +68,8 @@ class CreateTest extends PhantomFreeSuite {
           create <- query.future()
         } yield create
 
-        whenReady(chain) {
-          res => res.wasApplied() shouldEqual true
+        whenReady(chain) { res =>
+          res.forall(_.wasApplied())
         }
       }
 
@@ -85,8 +85,8 @@ class CreateTest extends PhantomFreeSuite {
           create <- query.future()
         } yield create
 
-        whenReady(chain) {
-          res => res.wasApplied() shouldEqual true
+        whenReady(chain) { res =>
+          res.forall(_.wasApplied())
         }
       }
 
@@ -100,7 +100,7 @@ class CreateTest extends PhantomFreeSuite {
         } yield create
 
         whenReady(chain) { res =>
-          res.wasApplied() shouldEqual true
+          res.forall(_.wasApplied()) shouldEqual true
         }
       }
     }

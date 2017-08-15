@@ -17,6 +17,7 @@ package com.outworkers.phantom.ops
 
 import cats.Monad
 import cats.syntax.functor._
+import cats.syntax.flatMap._
 import com.datastax.driver.core.{Session, Statement}
 import com.outworkers.phantom.builder.batch.BatchQuery
 import com.outworkers.phantom.builder._
@@ -42,7 +43,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
 
   def executeStatements[M[X] <: TraversableOnce[X]](
     col: QueryCollection[M]
-  )(implicit cbf: CanBuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]]): ExecutableStatements[F, M] = {
+  ): ExecutableStatements[F, M] = {
     new ExecutableStatements[F, M](col)
   }
 
@@ -207,7 +208,9 @@ abstract class QueryContext[P[_], F[_], Timeout](
     Table <: CassandraTable[Table, Record],
     Record,
     Consistency <: ConsistencyBound
-  ](val query: CreateQuery[Table, Record, Consistency]) extends QueryInterface[F] {
+  ](val query: CreateQuery[Table, Record, Consistency])(
+    implicit keySpace: KeySpace
+  ) extends MultiQueryInterface[Seq, F] {
 
     /**
       * This will convert the underlying call to Cassandra done with Google Guava ListenableFuture to a consumable
@@ -217,24 +220,26 @@ abstract class QueryContext[P[_], F[_], Timeout](
       * The execution context of the transformation is provided by phantom via
       * based on the execution engine used.
       *
-      * @param modifyStatement The function allowing to modify underlying [[Statement]]
+      * @param modifier The function allowing to modify underlying [[Statement]].
       * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
       * @param executor The implicit Scala executor.
       * @return An asynchronous Scala future wrapping the Datastax result set.
       */
-    override def future(modifyStatement: Statement => Statement)(
+    override def future(modifier: Statement => Statement)(
       implicit session: Session,
       executor: ExecutionContextExecutor
-    ): F[ResultSet] = promiseInterface.future(
-      promiseInterface.failed[ResultSet](new RuntimeException("Cannot use modifiers on create queries"))
-    )
+    ): F[Seq[ResultSet]] = {
+      for {
+        tableCreationQuery <- adapter.fromGuava(modifier(ExecutableCqlQuery(query.qb, query.options).statement()))
+        secondaryIndexes <- new ExecutableStatements(query.indexList).future()
+        sasiIndexes <- new ExecutableStatements(query.table.sasiQueries()).future()
+      } yield Seq(tableCreationQuery) ++ secondaryIndexes ++ sasiIndexes
+    }
 
     override def future()(
       implicit session: Session,
       ctx: ExecutionContextExecutor
-    ): F[ResultSet] = new ExecutableStatements[F, Seq](query.queries).sequence() map (_.head)
-
-    override def executableQuery: ExecutableCqlQuery = query.executableQuery
+    ): F[Seq[ResultSet]] = new ExecutableStatements[F, Seq](query.queries).sequence()
   }
 
   implicit class CassandraTableStoreMethods[T <: CassandraTable[T, R], R](val table: CassandraTable[T, R]) {
@@ -276,7 +281,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
         builder += table.store(el).executableQuery
       }
 
-      executeStatements[M](new QueryCollection[M](builder.result()))(cbfB).future()(session, ctx, fbf, fbf2)
+      executeStatements[M](new QueryCollection[M](builder.result())).future()(session, ctx, fbf, fbf2)
     }
   }
 }

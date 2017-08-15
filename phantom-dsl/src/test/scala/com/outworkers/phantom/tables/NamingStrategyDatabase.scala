@@ -16,9 +16,7 @@
 package com.outworkers.phantom.tables
 
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.tables._
 import com.outworkers.phantom.macros.tables.NamedArticlesByAuthor
-
 
 class NamingStrategyDatabase(
   override val connector: CassandraConnection

@@ -15,12 +15,37 @@
  */
 package com.outworkers.phantom.builder.query.execution
 
-import com.datastax.driver.core.{Session, SimpleStatement, Statement}
+import com.datastax.driver.core.{Session, Statement}
 import com.outworkers.phantom.ResultSet
-import com.outworkers.phantom.builder.query.QueryOptions
-import com.outworkers.phantom.builder.query.engine.CQLQuery
 
 import scala.concurrent.ExecutionContextExecutor
+
+trait MultiQueryInterface[M[X] <: TraversableOnce[X], F[_]] {
+
+  def future()(
+    implicit session: Session,
+    ctx: ExecutionContextExecutor
+  ): F[M[ResultSet]]
+
+  /**
+    * This will convert the underlying call to Cassandra done with Google Guava ListenableFuture to a consumable
+    * Scala Future that will be completed once the operation is completed on the
+    * database end.
+    *
+    * The execution context of the transformation is provided by phantom via
+    * based on the execution engine used.
+    *
+    * @param modifyStatement The function allowing to modify underlying [[Statement]]
+    * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+    * @param executor The implicit Scala executor.
+    * @return An asynchronous Scala future wrapping the Datastax result set.
+    */
+  def future(modifyStatement: Statement => Statement)(
+    implicit session: Session,
+    executor: ExecutionContextExecutor
+  ): F[M[ResultSet]]
+}
+
 
 abstract class QueryInterface[M[_]]()(implicit adapter: GuavaAdapter[M]) {
 

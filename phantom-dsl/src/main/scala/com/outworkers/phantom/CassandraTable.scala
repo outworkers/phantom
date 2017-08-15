@@ -17,6 +17,7 @@ package com.outworkers.phantom
 
 import cats.Monad
 import com.datastax.driver.core.Session
+import com.outworkers.phantom
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.DeleteClause
 import com.outworkers.phantom.builder.primitives.Primitive
@@ -24,7 +25,7 @@ import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, Execu
 import com.outworkers.phantom.builder.query.sasi.Mode
 import com.outworkers.phantom.builder.query.{RootCreateQuery, _}
 import com.outworkers.phantom.column.AbstractColumn
-import com.outworkers.phantom.connectors.KeySpace
+import com.outworkers.phantom.connectors.{KeySpace, RootConnector}
 import com.outworkers.phantom.keys.SASIIndex
 import com.outworkers.phantom.macros.{==:==, SingleGeneric, TableHelper}
 import org.slf4j.{Logger, LoggerFactory}
@@ -145,3 +146,6 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
     implicit keySpace: KeySpace
   ): TruncateQuery.Default[T, R] = TruncateQuery[T, R](instance)
 }
+
+
+trait Table[T <: Table[T, R], R] extends CassandraTable[T, R] with TableAliases[T, R] with RootConnector

@@ -19,8 +19,6 @@ import java.net.InetAddress
 import java.util.Date
 
 import com.datastax.driver.core.utils.UUIDs
-import com.outworkers.phantom.builder.query.InsertQuery
-import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.dsl._
 import com.outworkers.util.samplers._
 

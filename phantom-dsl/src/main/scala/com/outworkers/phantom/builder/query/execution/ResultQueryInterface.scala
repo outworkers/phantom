@@ -49,19 +49,18 @@ abstract class ResultQueryInterface[
 
   protected[this] def greedyEval(
     f: F[ResultSet]
-  )(implicit ex: ExecutionContextExecutor): F[ListResult[R]] = {
+  ): F[ListResult[R]] = {
     f map { r => ListResult(directMapper(r.iterate()), r) }
   }
 
   protected[this] def lazyEval(
     f: F[ResultSet]
-  )(implicit ex: ExecutionContextExecutor): F[IteratorResult[R]] = {
+  ): F[IteratorResult[R]] = {
     f map { r => IteratorResult(r.iterate().map(fromRow), r) }
   }
 
   private[phantom] def optionalFetch[Inner](source: F[ResultSet])(
-    implicit session: Session,
-    ec: ExecutionContextExecutor,
+    implicit ec: ExecutionContextExecutor,
     ev: R <:< Option[Inner]
   ): F[Option[Inner]] = {
     source map { res => flattenedOption(res.value()) }
