@@ -46,6 +46,10 @@ lazy val Versions = new {
   val scala212 = "2.12.3"
   val scalaAll = Seq(scala210, scala211, scala212)
 
+  val scala = new {
+    val all = Seq(scala210, scala211, scala212)
+  }
+
   val typesafeConfig: String = if (Publishing.isJdk8) {
     "1.3.1"
   } else {
