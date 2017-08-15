@@ -43,6 +43,20 @@ class QueryCollectionsTest extends FlatSpec with Matchers {
 
     colFinal.size shouldEqual (source.size + appendable.size)
     colFinal.queries.map(_.qb) should contain theSameElementsAs (source ++ appendable)
+  }
 
+  it should "append another collection to an existing QueryCollection" in {
+    val source = genSet[String]().map(CQLQuery.apply)
+    val appendable = genSet[String]().map(CQLQuery.apply)
+    val col = new QueryCollection[Set](source.map(ExecutableCqlQuery.apply(_, QueryOptions.empty)))
+    val colAppendable = appendable.map(ExecutableCqlQuery.apply(_, QueryOptions.empty))
+
+    col.size shouldEqual source.size
+    col.queries.map(_.qb) should contain theSameElementsAs source
+
+    val colFinal = col appendAll colAppendable
+
+    colFinal.size shouldEqual (source.size + appendable.size)
+    colFinal.queries.map(_.qb) should contain theSameElementsAs (source ++ appendable)
   }
 }
