@@ -15,11 +15,14 @@
  */
 package com.outworkers.phantom
 
-import com.datastax.driver.core.{ConsistencyLevel => CLevel}
+import java.util.Random
+
+import com.datastax.driver.core.utils.UUIDs
+import com.datastax.driver.core.{VersionNumber, ConsistencyLevel => CLevel}
 import com.outworkers.phantom
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.batch.Batcher
-import com.outworkers.phantom.builder.clauses.{UsingClauseOperations, WhereClause}
+import com.outworkers.phantom.builder.clauses.{UpdateClause, UsingClauseOperations, WhereClause}
 import com.outworkers.phantom.builder.ops._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.prepared.PrepareMark
@@ -27,9 +30,13 @@ import com.outworkers.phantom.builder.query.sasi.{DefaultSASIOps, Mode}
 import com.outworkers.phantom.builder.query.{CreateImplicits, DeleteImplicits, SelectImplicits}
 import com.outworkers.phantom.builder.serializers.{KeySpaceConstruction, RootSerializer}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
-import com.outworkers.phantom.column.{AbstractColumn, Column, OptionalColumn}
+import com.outworkers.phantom.column._
 import com.outworkers.phantom.connectors.DefaultVersions
+import com.outworkers.phantom.keys.Indexed
+import org.joda.time.DateTimeZone
 import shapeless.{::, HNil}
+
+import scala.concurrent.ExecutionContextExecutor
 
 trait DefaultImports extends ImplicitMechanism
   with CreateImplicits
@@ -191,4 +198,211 @@ trait DefaultImports extends ImplicitMechanism
     }
   }
 
+  /**
+    * Used when creating a [[ContactPoint]] to allow users to provide
+    * a single [[KeySpace]] derived query. When users want to provide
+    * a single argument to the [[ContactPoint#keySpace]] method, they can use
+    * the following syntax to generate a full keyspace initialisation query.
+    *
+    * {{{
+    *   KeySpace("test").builder.ifNotExists
+    * }}}
+    */
+  implicit class KeySpaceAugmenter(val k: KeySpace) {
+    def builder: RootSerializer = new RootSerializer(k)
+  }
+
+  implicit class CounterOperations[
+    Owner <: CassandraTable[Owner, Record],
+    Record
+  ](val col: CounterColumn[Owner, Record]) {
+    final def +=[T : Numeric](value: T): UpdateClause.Default = {
+      new UpdateClause.Condition(QueryBuilder.Update.increment(col.name, value.toString))
+    }
+
+    final def increment[T : Numeric](value: T): UpdateClause.Default = +=(value)
+
+    final def -=[T : Numeric](value: T): UpdateClause.Default = {
+      new UpdateClause.Condition(QueryBuilder.Update.decrement(col.name, value.toString))
+    }
+
+    final def decrement[T : Numeric](value: T): UpdateClause.Default = -=(value)
+  }
+
+  /**
+    * Augments Cassandra VersionNumber descriptors to support simple comparison of versions.
+    * This allows for operations that can differ based on the Cassandra version used by the session.
+    *
+    * @param version The Cassandra version number.
+    */
+  implicit class VersionAugmenter(val version: VersionNumber) {
+    def <(other: VersionNumber): Boolean = version.compareTo(other) == -1
+    def ===(other: VersionNumber): Boolean = version.compareTo(other) == 0
+    def > (other: VersionNumber): Boolean = version.compareTo(other) == 1
+
+    def >= (other: VersionNumber): Boolean = {
+      version.compareTo(other) >= 0
+    }
+  }
+
+  implicit class DateTimeAugmenter(val date: DateTime) {
+    def timeuuid(): UUID = {
+      val random = new Random()
+      new UUID(UUIDs.startOf(date.getMillis).getMostSignificantBits, random.nextLong())
+    }
+  }
+
+  implicit class UUIDAugmenter(val uid: UUID) {
+    def datetime: DateTime = new DateTime(UUIDs.unixTimestamp(uid), DateTimeZone.UTC)
+  }
+
+  implicit class ListLikeModifyColumn[
+    Owner <: CassandraTable[Owner, Record],
+    Record,
+    RR
+  ](val col: AbstractColColumn[Owner, Record, List, RR]) {
+
+    def prepend(value: RR): UpdateClause.Default = {
+      new UpdateClause.Condition(QueryBuilder.Collections.prepend(col.name, col.asCql(value :: Nil)))
+    }
+
+    def prepend(values: List[RR]): UpdateClause.Default = {
+      new UpdateClause.Condition(QueryBuilder.Collections.prepend(col.name, col.asCql(values)))
+    }
+
+    def append(value: RR): UpdateClause.Default = {
+      new UpdateClause.Condition(QueryBuilder.Collections.append(col.name, col.asCql(value :: Nil)))
+    }
+
+    def append(values: List[RR]): UpdateClause.Default = {
+      new UpdateClause.Condition(QueryBuilder.Collections.append(col.name, col.asCql(values)))
+    }
+
+    def discard(value: RR): UpdateClause.Default = {
+      new UpdateClause.Condition(QueryBuilder.Collections.discard(col.name, col.asCql(value :: Nil)))
+    }
+
+    def discard(values: List[RR]): UpdateClause.Default = {
+      new UpdateClause.Condition(QueryBuilder.Collections.discard(col.name, col.asCql(values)))
+    }
+
+    def setIdx(i: Int, value: RR): UpdateClause.Default = {
+      new UpdateClause.Condition(QueryBuilder.Collections.setIdX(col.name, i.toString, col.valueAsCql(value)))
+    }
+  }
+
+  implicit class SetLikeModifyColumn[
+    Owner <: CassandraTable[Owner, Record],
+    Record,
+    RR
+  ](val col: AbstractColColumn[Owner, Record, Set, RR]) {
+
+    def add(value: RR): UpdateClause.Default = {
+      new UpdateClause.Condition(QueryBuilder.Collections.add(col.name, Set(col.valueAsCql(value))))
+    }
+
+    def addAll(values: Set[RR]): UpdateClause.Default = {
+      new UpdateClause.Condition(QueryBuilder.Collections.add(col.name, values.map(col.valueAsCql)))
+    }
+
+    def remove(value: RR): UpdateClause.Default = {
+      new UpdateClause.Condition(QueryBuilder.Collections.remove(col.name, Set(col.valueAsCql(value))))
+    }
+
+    def removeAll(values: Set[RR]): UpdateClause.Default = {
+      new UpdateClause.Condition(QueryBuilder.Collections.remove(col.name, values.map(col.valueAsCql)))
+    }
+  }
+
+  implicit class MapLikeModifyColumn[
+    Owner <: CassandraTable[Owner, Record],
+    Record,
+    A,
+    B
+  ](val col: AbstractMapColumn[Owner, Record, A, B]) {
+
+    def set(key: A, value: B): UpdateClause.Default = {
+      new UpdateClause.Condition(
+        QueryBuilder.Collections.mapSet(
+          col.name,
+          col.keyAsCql(key).toString,
+          col.valueAsCql(value)
+        )
+      )
+    }
+
+    def put(value: (A, B)): UpdateClause.Default = {
+      val (k, v) = value
+
+      new UpdateClause.Condition(QueryBuilder.Collections.put(
+        col.name,
+        col.keyAsCql(k).toString -> col.valueAsCql(v)
+      )
+      )
+    }
+
+    def putAll[L](values: L)(implicit ev1: L => Traversable[(A, B)]): UpdateClause.Default = {
+      new UpdateClause.Condition(
+        QueryBuilder.Collections.put(col.name, values.map { case (key, value) =>
+          col.keyAsCql(key) -> col.valueAsCql(value)
+        }.toSeq : _*)
+      )
+    }
+  }
+
+  implicit class SetConditionals[
+    T <: CassandraTable[T, R],
+    R,
+    RR
+  ](val col: AbstractColColumn[T, R, Set, RR]) {
+
+    /**
+      * Generates a Set CONTAINS clause that can be used inside a CQL Where condition.
+      * @param elem The element to check for in the contains clause.
+      * @return A Where clause.
+      */
+    final def contains(elem: RR): WhereClause.Condition = {
+      new WhereClause.Condition(
+        QueryBuilder.Where.contains(col.name, col.valueAsCql(elem))
+      )
+    }
+  }
+
+  /**
+    * Definition used to cast an index map column with keys indexed to a query-able definition.
+    * This will allow users to use "CONTAINS KEY" clauses to search for matches based on map keys.
+    *
+    * @param col The map column to cast to a Map column secondary index query.
+    * @tparam T The Cassandra table inner type.
+    * @tparam R The record type of the table.
+    * @tparam K The type of the key held in the map.
+    * @tparam V The type of the value held in the map.
+    * @return A MapConditionals class with CONTAINS KEY support.
+    */
+  implicit class MapKeyConditionals[
+    T <: CassandraTable[T, R],
+    R,
+    K,
+    V
+  ](val col: AbstractMapColumn[T, R, K, V] with Indexed with Keys) {
+
+    /**
+      * Generates a Map CONTAINS KEY clause that can be used inside a CQL Where condition.
+      * This allows users to lookup records by a KEY inside a map column of a table.
+      *
+      * Key support is not yet enabled in phantom because index generation has to be done differently.
+      * Otherwise, there is no support for simultaneous indexing on both KEYS and VALUES of a MAP column.
+      * This limitation will be lifted in the future.
+      *
+      * @param elem The element to check for in the contains clause.
+      * @return A Where clause.
+      */
+    final def containsKey(elem: K): WhereClause.Condition = {
+      new WhereClause.Condition(
+        QueryBuilder.Where.containsKey(col.name, col.keyAsCql(elem))
+      )
+    }
+  }
+
+  implicit val context: ExecutionContextExecutor = Manager.scalaExecutor
 }

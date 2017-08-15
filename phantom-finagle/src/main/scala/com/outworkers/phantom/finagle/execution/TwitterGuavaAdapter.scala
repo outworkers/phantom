@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.finagle
+package com.outworkers.phantom.finagle.execution
 
 import com.datastax.driver.core.{Session, Statement, ResultSet => DatastaxResultSet}
 import com.google.common.util.concurrent.{FutureCallback, Futures, ListenableFuture}
-import com.outworkers.phantom.{Manager, ResultSet}
 import com.outworkers.phantom.builder.batch.BatchWithQuery
 import com.outworkers.phantom.builder.query.execution.GuavaAdapter
 import com.outworkers.phantom.connectors.SessionAugmenterImplicits
+import com.outworkers.phantom.{Manager, ResultSet}
 import com.twitter.util.{Future, Promise}
 
 import scala.concurrent.ExecutionContextExecutor

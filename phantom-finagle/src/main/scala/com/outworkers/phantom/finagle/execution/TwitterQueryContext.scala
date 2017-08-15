@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.finagle
+package com.outworkers.phantom.finagle.execution
 
 import cats.Monad
 import com.outworkers.phantom.builder.query.execution.PromiseInterface
