@@ -22,9 +22,9 @@ import com.outworkers.phantom.builder.batch.Batcher
 import com.outworkers.phantom.builder.clauses.{UsingClauseOperations, WhereClause}
 import com.outworkers.phantom.builder.ops._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
-import com.outworkers.phantom.builder.query.{CreateImplicits, DeleteImplicits, SelectImplicits}
 import com.outworkers.phantom.builder.query.prepared.PrepareMark
 import com.outworkers.phantom.builder.query.sasi.{DefaultSASIOps, Mode}
+import com.outworkers.phantom.builder.query.{CreateImplicits, DeleteImplicits, SelectImplicits}
 import com.outworkers.phantom.builder.serializers.{KeySpaceConstruction, RootSerializer}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column.{AbstractColumn, Column, OptionalColumn}
@@ -124,8 +124,6 @@ trait DefaultImports extends ImplicitMechanism
     */
   implicit def keyspaceToKeyspaceQuery(k: KeySpace): RootSerializer = new RootSerializer(k)
 
-
-
   implicit class SelectColumnRequired[
     Owner <: CassandraTable[Owner, Record],
     Record, T
@@ -138,6 +136,59 @@ trait DefaultImports extends ImplicitMechanism
     Record, T
   ](col: OptionalColumn[Owner, Record, T]) extends SelectColumn[Option[T]](col) {
     def apply(r: Row): Option[T] = col(r)
+  }
+
+  implicit class RichNumber(val percent: Int) {
+    def percentile: CQLQuery = CQLQuery(percent.toString)
+      .pad.append(CQLSyntax.CreateOptions.percentile)
+  }
+
+  implicit class PartitionTokenHelper[T](val col: AbstractColumn[T] with PartitionKey) {
+
+    def ltToken(value: T): WhereClause.Condition = {
+      new WhereClause.Condition(
+        QueryBuilder.Where.lt(
+          QueryBuilder.Where.token(col.name).queryString,
+          QueryBuilder.Where.fcall(CQLSyntax.token, col.asCql(value)).queryString
+        )
+      )
+    }
+
+    def lteToken(value: T): WhereClause.Condition = {
+      new WhereClause.Condition(
+        QueryBuilder.Where.lte(
+          QueryBuilder.Where.token(col.name).queryString,
+          QueryBuilder.Where.fcall(CQLSyntax.token, col.asCql(value)).queryString
+        )
+      )
+    }
+
+    def gtToken(value: T): WhereClause.Condition = {
+      new WhereClause.Condition(
+        QueryBuilder.Where.gt(
+          QueryBuilder.Where.token(col.name).queryString,
+          QueryBuilder.Where.fcall(CQLSyntax.token, col.asCql(value)).queryString
+        )
+      )
+    }
+
+    def gteToken(value: T): WhereClause.Condition = {
+      new WhereClause.Condition(
+        QueryBuilder.Where.gte(
+          QueryBuilder.Where.token(col.name).queryString,
+          QueryBuilder.Where.fcall(CQLSyntax.token, col.asCql(value)).queryString
+        )
+      )
+    }
+
+    def eqsToken(value: T): WhereClause.Condition = {
+      new WhereClause.Condition(
+        QueryBuilder.Where.eqs(
+          QueryBuilder.Where.token(col.name).queryString,
+          QueryBuilder.Where.fcall(CQLSyntax.token, col.asCql(value)).queryString
+        )
+      )
+    }
   }
 
 }

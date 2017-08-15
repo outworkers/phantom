@@ -20,10 +20,9 @@ import java.util.Random
 import cats.Monad
 import cats.instances.FutureInstances
 import com.datastax.driver.core.utils.UUIDs
-import com.datastax.driver.core.{VersionNumber, ConsistencyLevel => CLevel}
+import com.datastax.driver.core.VersionNumber
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.{UpdateClause, WhereClause}
-import com.outworkers.phantom.builder.ops._
 import com.outworkers.phantom.builder.query._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.execution._

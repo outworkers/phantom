@@ -16,7 +16,6 @@
 package com.outworkers.phantom.tables
 
 import com.outworkers.phantom.NamingStrategy
-import com.outworkers.phantom.tables.TestDatabase
 import org.scalatest.{FlatSpec, Matchers}
 
 class NamingStrategyTests extends FlatSpec with Matchers {
