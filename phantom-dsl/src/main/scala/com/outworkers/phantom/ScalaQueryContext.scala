@@ -37,6 +37,8 @@ object ScalaPromiseInterface extends PromiseInterface[Promise, Future] {
   override def future[T](source: Promise[T]): Future[T] = source.future
 
   override def failed[T](exception: Exception): Future[T] = Future.failed[T](exception)
+
+  override def apply[T](value: T): Future[T] = Future.successful(value)
 }
 
 class ScalaQueryContext extends QueryContext[Promise, Future, Duration](10.seconds)(

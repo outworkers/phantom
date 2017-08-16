@@ -54,6 +54,8 @@ object TwitterPromiseInterface extends PromiseInterface[Promise, Future] {
   override def future[T](source: Promise[T]): Future[T] = source
 
   override def failed[T](exception: Exception): Future[T] = Future.exception[T](exception)
+
+  override def apply[T](value: T): Future[T] = Future.value(value)
 }
 
 class TwitterQueryContext extends QueryContext[Promise, Future, Duration](10.seconds)(
