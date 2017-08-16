@@ -32,7 +32,7 @@ trait GuavaAdapter[F[_]] {
     implicit session: Session,
     ctx: ExecutionContextExecutor
   ): F[ResultSet] = {
-    Manager.queryLogger.debug(s"Executing BATCH query ${batch.debugString}")
+    Manager.logger.info(s"Executing BATCH query ${batch.debugString}")
     fromGuava(batch.statement)
   }
 
@@ -108,7 +108,7 @@ class ExecutableStatements[
     val builder = fbf()
 
     for (q <- queryCol.queries) {
-      Manager.queryLogger.debug(s"Executing query: ${q.qb.queryString}")
+      Manager.logger.info(s"Executing query: ${q.qb.queryString}")
       builder += adapter.fromGuava(q)
     }
 
@@ -121,7 +121,7 @@ class ExecutableStatements[
     cbf: CanBuildFrom[M[ExecutableCqlQuery], ResultSet, M[ResultSet]]
   ): F[M[ResultSet]] = {
     sequencedTraverse(queryCol.queries) { query =>
-      Manager.queryLogger.debug(s"Executing query: ${query.qb.queryString}")
+      Manager.logger.info(s"Executing query: ${query.qb.queryString}")
       adapter.fromGuava(query)
     }
   }
