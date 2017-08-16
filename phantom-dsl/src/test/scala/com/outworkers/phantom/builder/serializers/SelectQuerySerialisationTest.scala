@@ -24,8 +24,6 @@ import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.TestDatabase
 import com.outworkers.util.samplers._
 
-import scala.collection.SeqLike
-
 class SelectQuerySerialisationTest extends QueryBuilderTest {
 
   val BasicTable = TestDatabase.basicTable

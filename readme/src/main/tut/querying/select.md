@@ -18,7 +18,7 @@ If we would just use a timestamp type, if we were to receive two logs for the sa
 the entries would override each other in Cassandra, because in effect they would have the same partition key
 and the same clustering key, so the whole primary key would be identical.
 
-```tut:silent
+```scala
 
 import com.outworkers.phantom.dsl._
 

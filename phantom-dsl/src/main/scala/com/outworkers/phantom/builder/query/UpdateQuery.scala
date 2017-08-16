@@ -15,18 +15,21 @@
  */
 package com.outworkers.phantom.builder.query
 
+import cats.Monad
+import cats.syntax.functor._
 import com.datastax.driver.core.{ConsistencyLevel, Session}
-import com.outworkers.phantom.{CassandraTable, Row}
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.clauses._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
+import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, GuavaAdapter, PromiseInterface}
 import com.outworkers.phantom.builder.query.prepared.{PrepareMark, PreparedBlock, PreparedFlattener}
 import com.outworkers.phantom.connectors.KeySpace
-import com.outworkers.phantom.dsl.DateTime
+import com.outworkers.phantom.{CassandraTable, Row}
+import org.joda.time.DateTime
 import shapeless.ops.hlist.{Prepend, Reverse}
 import shapeless.{::, =:!=, HList, HNil}
 
-import scala.concurrent.{ExecutionContextExecutor, Future}
+import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.duration.{FiniteDuration => ScalaDuration}
 
 case class UpdateQuery[
@@ -68,13 +71,16 @@ case class UpdateQuery[
     new PreparedBlock(flatten.query, flatten.protocolVersion, options)
   }
 
-  def prepareAsync[Rev <: HList]()(
+  def prepareAsync[P[_], F[_], Rev <: HList]()(
     implicit session: Session,
     executor: ExecutionContextExecutor,
     keySpace: KeySpace,
     ev: PS =:!= HNil,
-    rev: Reverse.Aux[PS, Rev]
-  ): Future[PreparedBlock[Rev]] = {
+    rev: Reverse.Aux[PS, Rev],
+    fMonad: Monad[F],
+    adapter: GuavaAdapter[F],
+    interface: PromiseInterface[P, F]
+  ): F[PreparedBlock[Rev]] = {
     val flatten = new PreparedFlattener(qb)
 
     flatten.async map { ps =>
@@ -102,7 +108,7 @@ case class UpdateQuery[
     )
   }
 
-  override def ttl(seconds: Long): UpdateQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
+  def ttl(seconds: Long): UpdateQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
     copy(setPart = setPart append QueryBuilder.ttl(seconds.toString))
   }
 
@@ -146,7 +152,6 @@ case class UpdateQuery[
   ](clause: Table => UpdateClause.Condition[HL])(
     implicit prepend: Prepend.Aux[HL, HNil, Out]
   ): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, Out] = {
-
     AssignmentsQuery(
       table = table,
       init = init,
@@ -176,6 +181,20 @@ case class UpdateQuery[
       options
     )
   }
+
+
+  def consistencyLevel_=(level: ConsistencyLevel)(
+    implicit ev: Status =:= Unspecified,
+    session: Session
+  ): UpdateQuery[Table, Record, Limit, Order, Specified, Chain, PS] = {
+    if (session.protocolConsistency) {
+      copy(options = options.consistencyLevel_=(level))
+    } else {
+      copy(usingPart = usingPart append QueryBuilder.consistencyLevel(level.toString))
+    }
+  }
+
+  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options)
 }
 
 sealed case class AssignmentsQuery[
@@ -193,8 +212,8 @@ sealed case class AssignmentsQuery[
   wherePart : WherePart = WherePart.empty,
   private[phantom] val setPart : SetPart = SetPart.empty,
   casPart : CompareAndSetPart = CompareAndSetPart.empty,
-  override val options: QueryOptions
-) extends ExecutableStatement with Batchable {
+  options: QueryOptions
+) extends RootQuery[Table, Record, Status] with Batchable {
 
   val qb: CQLQuery = usingPart merge setPart merge wherePart merge casPart build init
 
@@ -244,6 +263,8 @@ sealed case class AssignmentsQuery[
   }
 
   def prepareAsync[
+    P[_],
+    F[_],
     Rev <: HList,
     Reversed <: HList,
     Out <: HList
@@ -254,8 +275,11 @@ sealed case class AssignmentsQuery[
     ev: PS =:!= HNil,
     rev: Reverse.Aux[PS, Rev],
     rev2: Reverse.Aux[ModifyPrepared, Reversed],
-    prepend: Prepend.Aux[Reversed, Rev, Out]
-  ): Future[PreparedBlock[Out]] = {
+    prepend: Prepend.Aux[Reversed, Rev, Out],
+    fMonad: Monad[F],
+    adapter: GuavaAdapter[F],
+    interface: PromiseInterface[P, F]
+  ): F[PreparedBlock[Out]] = {
     val flatten = new PreparedFlattener(qb)
 
     flatten.async map { ps =>
@@ -304,6 +328,8 @@ sealed case class AssignmentsQuery[
       copy(usingPart = usingPart append QueryBuilder.consistencyLevel(level.toString))
     }
   }
+
+  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options)
 }
 
 sealed case class ConditionalQuery[
@@ -316,17 +342,15 @@ sealed case class ConditionalQuery[
   PS <: HList,
   ModifyPrepared <: HList
 ](table: Table,
-  val init: CQLQuery,
+  init: CQLQuery,
   usingPart: UsingPart = UsingPart.empty,
   wherePart : WherePart = WherePart.empty,
   private[phantom] val setPart : SetPart = SetPart.empty,
   casPart : CompareAndSetPart = CompareAndSetPart.empty,
-  override val options: QueryOptions
-) extends ExecutableStatement with Batchable {
+  options: QueryOptions
+) extends RootQuery[Table, Record, Status] with Batchable {
 
-  override def qb: CQLQuery = {
-    usingPart merge setPart merge wherePart merge casPart build init
-  }
+  def qb: CQLQuery = usingPart merge setPart merge wherePart merge casPart build init
 
   final def and(
     clause: Table => CompareAndSetClause.Condition
@@ -362,19 +386,24 @@ sealed case class ConditionalQuery[
     new PreparedBlock(flatten.query, flatten.protocolVersion, options)
   }
 
-  def prepareAsync[Rev <: HList]()(
+  def prepareAsync[P[_], F[_], Rev <: HList]()(
     implicit session: Session,
     executor: ExecutionContextExecutor,
     keySpace: KeySpace,
     ev: PS =:!= HNil,
-    rev: Reverse.Aux[PS, Rev]
-  ): Future[PreparedBlock[Rev]] = {
+    rev: Reverse.Aux[PS, Rev],
+    fMonad: Monad[F],
+    adapter: GuavaAdapter[F],
+    interface: PromiseInterface[P, F]
+  ): F[PreparedBlock[Rev]] = {
     val flatten = new PreparedFlattener(qb)
 
     flatten.async map { ps =>
       new PreparedBlock(ps, flatten.protocolVersion, options)
     }
   }
+
+  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options)
 }
 
 object UpdateQuery {

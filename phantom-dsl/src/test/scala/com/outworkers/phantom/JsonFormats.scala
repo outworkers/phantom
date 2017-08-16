@@ -21,9 +21,8 @@ import org.joda.time.{DateTime, DateTimeZone}
 import org.json4s.JsonAST.{JInt, JString}
 import org.json4s.{Formats, JValue, MappingException, Serializer, TypeInfo}
 
-import scala.reflect.ClassTag
-import scala.util.{Failure, Success, Try}
 import scala.util.control.NonFatal
+import scala.util.{Failure, Success, Try}
 
 trait JsonFormats {
 

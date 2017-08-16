@@ -15,7 +15,7 @@
  */
 package com.outworkers.phantom.builder.query.db.crud
 
-import com.datastax.driver.core.exceptions.{InvalidQueryException, SyntaxError}
+import com.datastax.driver.core.exceptions.SyntaxError
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._

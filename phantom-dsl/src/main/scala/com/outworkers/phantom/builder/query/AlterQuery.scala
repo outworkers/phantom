@@ -19,6 +19,7 @@ import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.ops.DropColumn
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.engine.CQLQuery
+import com.outworkers.phantom.builder.query.execution.ExecutableCqlQuery
 import com.outworkers.phantom.builder.query.options.{TablePropertyClause, WithBound, WithChainned, WithUnchainned}
 import com.outworkers.phantom.builder.{ConsistencyBound, QueryBuilder, Unspecified}
 import com.outworkers.phantom.column.AbstractColumn
@@ -29,7 +30,7 @@ class AlterQuery[
   Record,
   Status <: ConsistencyBound,
   Chain <: WithBound
-](table: Table, val qb: CQLQuery, override val options: QueryOptions) extends ExecutableStatement {
+](table: Table, val qb: CQLQuery, val options: QueryOptions) extends RootQuery[Table, Record, Status] {
 
   final def add(column: String, columnType: String, static: Boolean = false): AlterQuery[Table, Record, Status, Chain] = {
     val query = if (static) {
@@ -120,6 +121,7 @@ class AlterQuery[
     new AlterQuery(table, QueryBuilder.Where.and(qb, clause.qb), options)
   }
 
+  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options)
 }
 
 object AlterQuery {

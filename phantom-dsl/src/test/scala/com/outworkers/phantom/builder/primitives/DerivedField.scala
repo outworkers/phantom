@@ -15,7 +15,7 @@
  */
 package com.outworkers.phantom.builder.primitives
 
-import com.outworkers.util.samplers.{Sample, Samples}
+import com.outworkers.util.samplers.Sample
 
 case class DerivedField(value: String)
 

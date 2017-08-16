@@ -16,7 +16,6 @@
 package com.outworkers.phantom.example.basics
 
 import scala.concurrent.{Future => ScalaFuture}
-import com.outworkers.phantom.connectors.RootConnector
 import com.outworkers.phantom.dsl._
 
 /**

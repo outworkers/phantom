@@ -55,18 +55,18 @@ trait TableAliases[T <: CassandraTable[T, R], R] { self: CassandraTable[T, R] =>
   abstract class JsonSetColumn[RR]()(
     implicit ev: Primitive[Set[RR]],
     ev2: Primitive[RR]
-  ) extends SetColumn[RR](this)
+  ) extends SetColumn[RR]
 
   abstract class JsonListColumn[RR]()(
     implicit ev: Primitive[List[RR]],
     ev2: Primitive[RR]
-  ) extends ListColumn[RR](this)
+  ) extends ListColumn[RR]
 
   class JsonMapColumn[KK, VV]()(implicit
     ev: Primitive[KK],
     ev2: Primitive[VV],
     ev3: Primitive[Map[KK, VV]]
-  ) extends MapColumn[KK, VV](this)
+  ) extends MapColumn[KK, VV]
 
   class PrimitiveColumn[RR : Primitive] extends com.outworkers.phantom.column.PrimitiveColumn[T, R, RR](this)
   class TupleColumn[RR : Primitive] extends PrimitiveColumn[RR]

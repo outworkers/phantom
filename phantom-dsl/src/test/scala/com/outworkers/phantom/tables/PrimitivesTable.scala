@@ -74,41 +74,41 @@ case class OldPrimitiveRecord(
   mapCol: Map[String, Int]
 )
 
-abstract class OldDslPrimitivesTable extends CassandraTable[
+abstract class OldDslPrimitivesTable extends Table[
   OldDslPrimitivesTable,
   OldPrimitiveRecord
 ] with RootConnector {
-  object pkey extends StringColumn(this) with PartitionKey
+  object pkey extends StringColumn with PartitionKey
 
-  object long extends LongColumn(this)
+  object long extends LongColumn
 
-  object boolean extends BooleanColumn(this)
+  object boolean extends BooleanColumn
 
-  object bDecimal extends BigDecimalColumn(this)
+  object bDecimal extends BigDecimalColumn
 
-  object double extends DoubleColumn(this)
+  object double extends DoubleColumn
 
-  object float extends FloatColumn(this)
+  object float extends FloatColumn
 
-  object inet extends InetAddressColumn(this)
+  object inet extends InetAddressColumn
 
-  object int extends IntColumn(this)
+  object int extends IntColumn
 
-  object date extends DateColumn(this)
+  object date extends DateColumn
 
-  object uuid extends UUIDColumn(this)
+  object uuid extends UUIDColumn
 
-  object bi extends BigIntColumn(this)
+  object bi extends BigIntColumn
 
-  object timeuuid extends TimeUUIDColumn(this)
+  object timeuuid extends TimeUUIDColumn
 
-  object ld extends LocalDateColumn(this)
+  object ld extends LocalDateColumn
 
-  object stringList extends ListColumn[String](this)
+  object stringList extends ListColumn[String]
 
-  object stringSet extends SetColumn[String](this)
+  object stringSet extends SetColumn[String]
 
-  object mapCol extends MapColumn[String, Int](this)
+  object mapCol extends MapColumn[String, Int]
 
 }
 

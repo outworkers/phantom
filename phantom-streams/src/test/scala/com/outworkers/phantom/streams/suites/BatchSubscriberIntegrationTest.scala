@@ -17,7 +17,7 @@ package com.outworkers.phantom.streams.suites
 
 import java.util.concurrent.{CountDownLatch, TimeUnit}
 
-import com.outworkers.phantom.batch.BatchType
+import com.outworkers.phantom.builder.batch.BatchType
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.streams._
 import com.outworkers.phantom.streams.suites.iteratee.OperaPublisher

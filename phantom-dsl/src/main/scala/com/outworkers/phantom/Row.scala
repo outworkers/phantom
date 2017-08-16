@@ -98,7 +98,7 @@ object BytesExtractor {
     override def isNull(source: Row, index: Int): Boolean = source.isNull(index)
   }
 
-  implicit object GettableByIndexExtracotr extends BytesExtractor[GettableByIndexData] {
+  implicit object GettableByIndexExtractor extends BytesExtractor[GettableByIndexData] {
     override def getBytesUnsafe(source: GettableByIndexData, index: Int): ByteBuffer = source.getBytesUnsafe(index)
 
     override def getBytesUnsafe(source: GettableByIndexData, name: String): ByteBuffer = ByteBuffer.allocate(0)

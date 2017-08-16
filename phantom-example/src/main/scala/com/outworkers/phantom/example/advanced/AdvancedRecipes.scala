@@ -17,13 +17,8 @@ package com.outworkers.phantom.example.advanced
 
 import java.util.UUID
 
-import com.datastax.driver.core.{ResultSet, Row}
-import com.outworkers.phantom.connectors.RootConnector
-import com.twitter.conversions.time._
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.example.basics.Recipe
-import com.outworkers.phantom.{CassandraTable => _, _}
-import org.joda.time.DateTime
 
 import scala.concurrent.{Future => ScalaFuture}
 
@@ -39,7 +34,7 @@ abstract class AdvancedRecipes extends Table[AdvancedRecipes, Recipe] {
   object id extends UUIDColumn with PartitionKey {
     // You can override the name of your key to whatever you like.
     // The default will be the name used for the object, in this case "id".
-    override lazy  val name = "the_primary_key"
+    override lazy val name = "the_primary_key"
   }
 
   object name extends StringColumn

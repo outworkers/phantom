@@ -46,6 +46,10 @@ lazy val Versions = new {
   val scala212 = "2.12.3"
   val scalaAll = Seq(scala210, scala211, scala212)
 
+  val scala = new {
+    val all = Seq(scala210, scala211, scala212)
+  }
+
   val typesafeConfig: String = if (Publishing.isJdk8) {
     "1.3.1"
   } else {
@@ -89,7 +93,7 @@ lazy val Versions = new {
   }
 }
 
-val defaultConcurrency = 8
+val defaultConcurrency = 4
 
 scalacOptions in ThisBuild ++= Seq(
   "-language:experimental.macros",
@@ -202,6 +206,7 @@ lazy val phantomDsl = (project in file("phantom-dsl"))
       "org.typelevel" %% "macro-compat" % Versions.macrocompat,
       "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
       compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
+      "org.typelevel"                %% "cats"                              % "0.9.0",
       "com.chuusai"                  %% "shapeless"                         % Versions.shapeless,
       "joda-time"                    %  "joda-time"                         % Versions.joda,
       "org.joda"                     %  "joda-convert"                      % Versions.jodaConvert,
@@ -365,4 +370,19 @@ lazy val phantomExample = (project in file("phantom-example"))
     phantomThrift
   ).enablePlugins(
     CrossPerProjectPlugin
+  )
+
+lazy val phantomMonix = (project in file("phantom-monix"))
+  .settings(
+    name := "phantom-monix",
+    crossScalaVersions := Versions.scala.all,
+    moduleName := "phantom-monix",
+    libraryDependencies ++= Seq(
+      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
+      "io.monix" %% "monix" % Versions.monix
+    )
+  ).settings(
+    sharedSettings: _*
+  ).dependsOn(
+    phantomDsl % "test->test;compile->compile;"
   )

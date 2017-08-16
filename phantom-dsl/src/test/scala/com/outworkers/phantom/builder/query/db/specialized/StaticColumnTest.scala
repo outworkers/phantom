@@ -22,8 +22,6 @@ import com.outworkers.phantom.macros.TableHelper
 import com.outworkers.phantom.tables.{StaticCollectionRecord, StaticCollectionTable}
 import com.outworkers.util.samplers._
 
-import scala.concurrent.Future
-
 class StaticColumnTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {

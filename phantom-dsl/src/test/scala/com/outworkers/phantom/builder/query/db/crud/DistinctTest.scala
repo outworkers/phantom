@@ -20,7 +20,6 @@ import java.util.UUID
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
-import org.joda.time.{ DateTime, DateTimeZone }
 
 class DistinctTest extends PhantomSuite {
 
@@ -54,10 +53,8 @@ class DistinctTest extends PhantomSuite {
 
     val expectedResult = rows.filter(_.name != "b").map(_.id)
 
-    whenReady(chain) {
-      res => res should contain only (expectedResult: _*)
+    whenReady(chain) { res =>
+      res should contain only (expectedResult: _*)
     }
   }
-
-  private[this] implicit def string2date(date: String): DateTime = new DateTime(date, DateTimeZone.UTC)
 }

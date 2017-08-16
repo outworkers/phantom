@@ -15,19 +15,20 @@
  */
 package com.outworkers.phantom.database
 
-import com.datastax.driver.core.{ResultSet, Session}
-import com.outworkers.phantom.{CassandraTable, Manager}
+import com.datastax.driver.core.Session
 import com.outworkers.phantom.CassandraTable
-import com.outworkers.phantom.builder.query.{CreateQuery, ExecutableStatementList}
-import com.outworkers.phantom.connectors.{KeySpace, CassandraConnection}
+import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, QueryCollection}
+import com.outworkers.phantom.connectors.{CassandraConnection, KeySpace}
 import com.outworkers.phantom.macros.DatabaseHelper
 
-import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContextExecutor, Future, blocking}
+import scala.concurrent.blocking
+import scala.collection.immutable.Seq
 
 abstract class Database[
   DB <: Database[DB]
-](val connector: CassandraConnection)(implicit helper: DatabaseHelper[DB]) {
+](val connector: CassandraConnection)(
+  implicit helper: DatabaseHelper[DB]
+) {
 
   trait Connector extends connector.Connector
 
@@ -39,13 +40,10 @@ abstract class Database[
 
   def shutdown(): Unit = {
     blocking {
-      Manager.shutdown()
       session.getCluster.close()
       session.close()
     }
   }
-
-  private[this] val defaultTimeout = 10.seconds
 
   /**
    * Returns a list of executable statements that will be parallelized with futures
@@ -59,29 +57,7 @@ abstract class Database[
    * @return An executable statement list that can be used with Scala or Twitter futures to simultaneously
    *         execute an entire sequence of queries.
    */
-  private[phantom] def autocreate(): ExecutableCreateStatementsList = helper.createQueries(this.asInstanceOf[DB])
-
-  /**
-    * A blocking method that will create all the tables. This is designed to prevent the
-    * requirement of the implicit session to escape the enclosure of the database object.
- *
-    * @param timeout The timeout for the initialisation call.
-    *                Defaults to [[com.outworkers.phantom.database.Database#defaultTimeout]]
-    * @return A sequence of result sets, where every result is the result of a single create operation.
-    */
-  def create(timeout: FiniteDuration = defaultTimeout)(implicit ex: ExecutionContextExecutor): Seq[ResultSet] = {
-    Await.result(createAsync(), timeout)
-  }
-
-  /**
-    * An asynchronous method that will create all the tables. This is designed to prevent the
-    * requirement of the implicit session to escape the enclosure of the database object.
- *
-    * @return A sequence of result sets, where every result is the result of a single create operation.
-    */
-  def createAsync()(implicit ex: ExecutionContextExecutor): Future[Seq[ResultSet]] = {
-    autocreate().future()
-  }
+  private[phantom] def autocreate(): QueryCollection[Seq] = helper.createQueries(this.asInstanceOf[DB])
 
   /**
    * Returns a list of executable statements that will be parallelized with futures
@@ -95,32 +71,10 @@ abstract class Database[
    * @return An executable statement list that can be used with Scala or Twitter futures to simultaneously
    *         execute an entire sequence of queries.
    */
-  private[phantom] def autodrop(): ExecutableStatementList[Seq] = {
-    new ExecutableStatementList(tables.map {
-      table => table.alter().drop().qb
+  private[phantom] def autodrop(): QueryCollection[Seq] = {
+    new QueryCollection(tables.map { table =>
+      ExecutableCqlQuery(table.alter().drop().qb)
     })
-  }
-
-  /**
-    * An async method that will drop all the tables. This is designed to prevent the
-    * requirement of the implicit session to escape the enclosure of the database object.
- *
-    * @return A sequence of result sets, where every result is the result of a single drop operation.
-    */
-  def dropAsync()(implicit ex: ExecutionContextExecutor): Future[Seq[ResultSet]] = {
-    autodrop().future()
-  }
-
-  /**
-    * A blocking method that will drop all the tables. This is designed to prevent the
-    * requirement of the implicit session to escape the enclosure of the database object.
- *
-    * @param timeout The timeout for the initialisation call.
-    *                Defaults to [[com.outworkers.phantom.database.Database#defaultTimeout]]
-    * @return A sequence of result sets, where every result is the result of a single drop operation.
-    */
-  def drop(timeout: FiniteDuration = defaultTimeout)(implicit ex: ExecutionContextExecutor): Seq[ResultSet] = {
-    Await.result(dropAsync(), timeout)
   }
 
   /**
@@ -135,39 +89,7 @@ abstract class Database[
    * @return An executable statement list that can be used with Scala or Twitter futures to simultaneously
    *         execute an entire sequence of queries.
    */
-  private[phantom] def autotruncate(): ExecutableStatementList[Seq] = {
-    new ExecutableStatementList(tables.map(_.truncate().qb))
-  }
-
-  /**
-    * A blocking method that will truncate all the tables. This is designed to prevent the
-    * requirement of the implicit session to escape the enclosure of the database object.
- *
-    * @param timeout The timeout for the initialisation call.
-    *                Defaults to [[com.outworkers.phantom.database.Database#defaultTimeout]]
-    * @return A sequence of result sets, where every result is the result of a single truncate operation.
-    */
-  def truncate(timeout: FiniteDuration = defaultTimeout)(implicit ex: ExecutionContextExecutor): Seq[ResultSet] = {
-    Await.result(truncateAsync(), timeout)
-  }
-
-  /**
-    * An async method that will truncate all the tables. This is designed to prevent the
-    * requirement of the implicit session to escape the enclosure of the database object.
- *
-    * @return A sequence of result sets, where every result is the result of a single truncate operation.
-    */
-  def truncateAsync()(implicit ex: ExecutionContextExecutor): Future[Seq[ResultSet]] = {
-    autotruncate().future()
-  }
-}
-
-sealed class ExecutableCreateStatementsList(val queries: KeySpace => Seq[CreateQuery[_, _, _]]) {
-  def future()(
-    implicit session: Session,
-    keySpace: KeySpace,
-    ec: ExecutionContextExecutor
-  ): Future[Seq[ResultSet]] = {
-    Future.sequence(queries(keySpace).map(_.future()))
+  private[phantom] def autotruncate(): QueryCollection[Seq] = {
+    new QueryCollection(tables.map(table => ExecutableCqlQuery(table.truncate().qb)))
   }
 }

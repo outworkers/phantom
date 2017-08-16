@@ -15,23 +15,22 @@
  */
 package com.outworkers.phantom
 
+import cats.Monad
 import com.datastax.driver.core.Session
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.DeleteClause
 import com.outworkers.phantom.builder.primitives.Primitive
-import com.outworkers.phantom.builder.query.sasi.{Analyzer, Mode}
+import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, ExecutableStatements, GuavaAdapter, QueryCollection}
+import com.outworkers.phantom.builder.query.sasi.Mode
 import com.outworkers.phantom.builder.query.{RootCreateQuery, _}
-import com.outworkers.phantom.builder.syntax.CQLSyntax
-import com.outworkers.phantom.column.{AbstractColumn, CollectionColumn}
-import com.outworkers.phantom.connectors.KeySpace
+import com.outworkers.phantom.column.AbstractColumn
+import com.outworkers.phantom.connectors.{KeySpace, RootConnector}
 import com.outworkers.phantom.keys.SASIIndex
 import com.outworkers.phantom.macros.{==:==, SingleGeneric, TableHelper}
 import org.slf4j.{Logger, LoggerFactory}
 import shapeless.{Generic, HList}
 
-import scala.collection.generic.CanBuildFrom
-import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContextExecutor, Future}
+import scala.concurrent.ExecutionContextExecutor
 
 /**
  * Main representation of a Cassandra table.
@@ -41,25 +40,6 @@ import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 abstract class CassandraTable[T <: CassandraTable[T, R], R](
   implicit val helper: TableHelper[T, R]
 ) extends SelectTable[T, R] { self =>
-
-  @deprecated("Use Table instead of CassandraTable, and skip passing in the 'this' argument", "2.9.1")
-  class ListColumn[RR](t: CassandraTable[T, R])(
-    implicit ev: Primitive[RR],
-    ev2: Primitive[List[RR]]
-  ) extends CollectionColumn[T, R, List, RR](t, CQLSyntax.Collections.list)
-
-  @deprecated("Use Table instead of CassandraTable, and skip passing in the 'this' argument", "2.9.1")
-  class SetColumn[RR](t: CassandraTable[T, R])(
-    implicit ev: Primitive[RR],
-    ev2: Primitive[Set[RR]]
-  ) extends CollectionColumn[T, R, Set, RR](t, CQLSyntax.Collections.set)
-
-  @deprecated("Use Table instead of CassandraTable, and skip passing in the 'this' argument", "2.9.1")
-  class MapColumn[KK, VV](t: CassandraTable[T, R])(
-    implicit ev: Primitive[KK],
-    ev2: Primitive[VV],
-    ev3: Primitive[Map[KK, VV]]
-  ) extends com.outworkers.phantom.column.MapColumn[T, R, KK, VV](t)
 
   def columns: Seq[AbstractColumn[_]] = helper.fields(instance)
 
@@ -77,11 +57,15 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
 
   lazy val logger: Logger = LoggerFactory.getLogger(getClass.getName.stripSuffix("$"))
 
-  def createSchema()(
+  def generateSchema[F[_]]()(
     implicit session: Session,
     keySpace: KeySpace,
-    ec: ExecutionContextExecutor
-  ): ResultSet = Await.result(autocreate(keySpace).future(), 10.seconds)
+    ec: ExecutionContextExecutor,
+    monad: Monad[F],
+    guavaAdapter: GuavaAdapter[F]
+  ): F[Seq[ResultSet]] = {
+    new ExecutableStatements[F, Seq](autocreate(keySpace).queries).sequence()
+  }
 
   def tableName: String = helper.tableName
 
@@ -118,17 +102,17 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
 
   final def insert()(implicit keySpace: KeySpace): InsertQuery.Default[T, R] = InsertQuery(instance)
 
-  def sasiQueries()(implicit keySpace: KeySpace): ExecutableStatementList[Seq] = {
+  def sasiQueries()(implicit keySpace: KeySpace): QueryCollection[Seq] = {
     val queries = sasiIndexes.map { index =>
-      QueryBuilder.Create.createSASIIndex(
+      ExecutableCqlQuery(QueryBuilder.Create.createSASIIndex(
         keySpace,
         tableName,
         QueryBuilder.Create.sasiIndexName(tableName, index.name),
         index.name,
         index.analyzer.qb
-      )
+      ))
     }
-    new ExecutableStatementList[Seq](queries)
+    new QueryCollection[Seq](queries)
   }
 
   def sasiIndexes: Seq[SASIIndex[_ <: Mode]] = helper.sasiIndexes(instance)
@@ -148,29 +132,6 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
     ev: Out ==:== Repr
   ): InsertQuery.Default[T, R] = thl.store(instance, (sg to input).asInstanceOf[Repr])
 
-  def storeRecord[V1, Repr <: HList, HL <: HList, Out <: HList](input: V1)(
-    implicit keySpace: KeySpace,
-    session: Session,
-    thl: TableHelper.Aux[T, R, Repr],
-    ex: ExecutionContextExecutor,
-    gen: Generic.Aux[V1, HL],
-    sg: SingleGeneric.Aux[V1, Repr, HL, Out],
-    ev: Out ==:== Repr
-  ): Future[ResultSet] = store(input).future()
-
-  def storeRecords[M[X] <: TraversableOnce[X], V1, Repr <: HList, HL <: HList, Out <: HList](inputs: M[V1])(
-    implicit keySpace: KeySpace,
-    session: Session,
-    thl: TableHelper.Aux[T, R, Repr],
-    ex: ExecutionContextExecutor,
-    gen: Generic.Aux[V1, HL],
-    sg: SingleGeneric.Aux[V1, Repr, HL, Out],
-    ev: Out ==:== Repr,
-    cbf: CanBuildFrom[M[V1], ResultSet, M[ResultSet]]
-  ): Future[M[ResultSet]] = {
-    Future.traverse(inputs)(el => storeRecord(el))
-  }
-
   final def delete()(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = DeleteQuery[T, R](instance)
 
   final def delete(
@@ -183,3 +144,6 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
     implicit keySpace: KeySpace
   ): TruncateQuery.Default[T, R] = TruncateQuery[T, R](instance)
 }
+
+
+trait Table[T <: Table[T, R], R] extends CassandraTable[T, R] with TableAliases[T, R] with RootConnector

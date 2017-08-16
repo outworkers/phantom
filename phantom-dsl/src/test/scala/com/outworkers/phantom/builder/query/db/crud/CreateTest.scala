@@ -16,7 +16,6 @@
 package com.outworkers.phantom.builder.query.db.crud
 
 import com.outworkers.phantom.PhantomFreeSuite
-import com.outworkers.phantom.tables.TestDatabase
 import com.outworkers.phantom.dsl._
 
 class CreateTest extends PhantomFreeSuite {
@@ -34,7 +33,7 @@ class CreateTest extends PhantomFreeSuite {
         } yield create
 
         whenReady(chain) { res =>
-          res.wasApplied() shouldEqual true
+          res.forall(_.wasApplied()) shouldEqual true
         }
       }
     }
@@ -52,8 +51,8 @@ class CreateTest extends PhantomFreeSuite {
           create <- query.future()
         } yield create
 
-        whenReady(chain) {
-          res => res.wasApplied() shouldEqual true
+        whenReady(chain) { res =>
+          res.forall(_.wasApplied())
         }
       }
 
@@ -69,8 +68,8 @@ class CreateTest extends PhantomFreeSuite {
           create <- query.future()
         } yield create
 
-        whenReady(chain) {
-          res => res.wasApplied() shouldEqual true
+        whenReady(chain) { res =>
+          res.forall(_.wasApplied())
         }
       }
 
@@ -86,8 +85,8 @@ class CreateTest extends PhantomFreeSuite {
           create <- query.future()
         } yield create
 
-        whenReady(chain) {
-          res => res.wasApplied() shouldEqual true
+        whenReady(chain) { res =>
+          res.forall(_.wasApplied())
         }
       }
 
@@ -101,7 +100,7 @@ class CreateTest extends PhantomFreeSuite {
         } yield create
 
         whenReady(chain) { res =>
-          res.wasApplied() shouldEqual true
+          res.forall(_.wasApplied()) shouldEqual true
         }
       }
     }

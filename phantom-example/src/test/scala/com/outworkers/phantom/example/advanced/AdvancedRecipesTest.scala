@@ -15,7 +15,7 @@
  */
 package com.outworkers.phantom.example.advanced
 
-import com.outworkers.phantom.dsl.context
+import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.example.ExampleSuite
 import com.outworkers.phantom.example.basics.Recipe
 import com.outworkers.util.samplers._

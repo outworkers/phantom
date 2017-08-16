@@ -19,8 +19,8 @@ import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column.AbstractColumn
-import com.outworkers.phantom.dsl.?
 import com.outworkers.phantom.Row
+import com.outworkers.phantom.builder.query.prepared.PrepareMark
 import shapeless.{::, HList, HNil}
 
 abstract class QueryCondition[T <: HList](val qb: CQLQuery)
@@ -30,7 +30,7 @@ abstract class QueryCondition[T <: HList](val qb: CQLQuery)
   */
 sealed trait Clause
 
-class PreparedCondition[RR] extends QueryCondition[RR :: HNil](?.qb)
+class PreparedCondition[RR] extends QueryCondition[RR :: HNil](PrepareMark.?.qb)
 class ValueCondition[RR](val obj: RR) extends QueryCondition[HNil](CQLQuery.empty)
 
 class WhereClause extends Clause {

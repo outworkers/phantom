@@ -16,8 +16,6 @@
 package com.outworkers.phantom.builder.query.db.specialized
 
 import com.outworkers.phantom.PhantomSuite
-import org.scalatest.concurrent.PatienceConfiguration
-import org.scalatest.time.SpanSugar._
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
 import com.outworkers.util.samplers._
@@ -26,25 +24,23 @@ class CounterColumnTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    TestDatabase.counterTableTest.createSchema()
+    database.counterTableTest.createSchema()
   }
 
   it should "+= counter values by 1" in {
     val sample = gen[CounterRecord]
 
     val chain = for {
-      incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 0).future()
-      select <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).one
-      incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 1).future()
-      select2 <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).one
+      incr <-  database.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 0).future()
+      select <- database.counterTableTest.select.where(_.id eqs sample.id).one
+      incr <-  database.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 1).future()
+      select2 <- database.counterTableTest.select.where(_.id eqs sample.id).one
     } yield (select, select2)
 
 
-    whenReady(chain) {
-      case (res1, res2) => {
-        res1.value.count shouldEqual 0
-        res2.value.count shouldEqual 1
-      }
+    whenReady(chain) { case (res1, res2) =>
+      res1.value.count shouldEqual 0
+      res2.value.count shouldEqual 1
     }
   }
 
@@ -52,18 +48,16 @@ class CounterColumnTest extends PhantomSuite {
     val sample = gen[CounterRecord]
 
     val chain = for {
-      incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 500).future()
-      select <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).one
-      incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 1).future()
-      select2 <- TestDatabase.counterTableTest.select(_.count_entries).where(_.id eqs sample.id).one
+      incr <-  database.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 500).future()
+      select <- database.counterTableTest.select.where(_.id eqs sample.id).one
+      incr <-  database.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 1).future()
+      select2 <- database.counterTableTest.select(_.count_entries).where(_.id eqs sample.id).one
     } yield (select, select2)
 
 
-    whenReady(chain) {
-      case (res1, res2) => {
-        res1.value.count shouldEqual 500
-        res2.value shouldEqual 501
-      }
+    whenReady(chain) { case (res1, res2) =>
+      res1.value.count shouldEqual 500
+      res2.value shouldEqual 501
     }
   }
 
@@ -72,18 +66,16 @@ class CounterColumnTest extends PhantomSuite {
     val diff = 200
 
     val chain = for {
-      incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 0).future()
-      select <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).one
-      incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += diff).future()
-      select2 <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).one
+      incr <-  database.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 0).future()
+      select <- database.counterTableTest.select.where(_.id eqs sample.id).one
+      incr <-  database.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += diff).future()
+      select2 <- database.counterTableTest.select.where(_.id eqs sample.id).one
     } yield (select, select2)
 
 
-    whenReady(chain) {
-      case (res, res1) => {
-        res.value.count shouldEqual 0
-        res1.value.count shouldEqual diff
-      }
+    whenReady(chain) { case (res, res1) =>
+      res.value.count shouldEqual 0
+      res1.value.count shouldEqual diff
     }
   }
 
@@ -91,18 +83,16 @@ class CounterColumnTest extends PhantomSuite {
     val sample = gen[CounterRecord]
 
     val chain = for {
-      incr1 <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 1).future()
-      select <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).one()
-      incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries -= 1).future()
-      select2 <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).one()
+      incr1 <-  database.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 1).future()
+      select <- database.counterTableTest.select.where(_.id eqs sample.id).one()
+      incr <-  database.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries -= 1).future()
+      select2 <- database.counterTableTest.select.where(_.id eqs sample.id).one()
     } yield (select, select2)
 
 
-    whenReady(chain) {
-      case (res, res1) => {
-        res.value.count shouldEqual 1
-        res1.value.count shouldEqual 0
-      }
+    whenReady(chain) { case (res, res1) =>
+      res.value.count shouldEqual 1
+      res1.value.count shouldEqual 0
     }
   }
 
@@ -112,17 +102,15 @@ class CounterColumnTest extends PhantomSuite {
     val initial = 500
 
     val chain = for {
-      incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += initial).future()
-      select <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).one
-      incr <-  TestDatabase.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries -= diff).future()
-      select2 <- TestDatabase.counterTableTest.select.where(_.id eqs sample.id).one
+      incr <-  database.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += initial).future()
+      select <- database.counterTableTest.select.where(_.id eqs sample.id).one
+      incr <- database.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries -= diff).future()
+      select2 <- database.counterTableTest.select.where(_.id eqs sample.id).one
     } yield (select, select2)
 
 
-    whenReady(chain) {
-      case (res1, res2) => {
-        res2.value.count shouldEqual (initial - diff)
-      }
+    whenReady(chain) { case (res1, res2) =>
+      res2.value.count shouldEqual (initial - diff)
     }
   }
 }

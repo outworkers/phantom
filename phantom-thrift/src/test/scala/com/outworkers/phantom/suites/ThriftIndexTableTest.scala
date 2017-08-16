@@ -18,13 +18,12 @@ package com.outworkers.phantom.suites
 import com.outworkers.phantom.tables.{ThriftDatabase, ThriftRecord}
 import com.outworkers.util.samplers._
 import com.outworkers.util.testing.twitter._
-import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.finagle._
 import com.outworkers.phantom.thrift._
 import com.outworkers.phantom.thrift.models.ThriftTest
 import org.scalatest.FlatSpec
 
-class ThriftIndexTableTest extends FlatSpec with ThriftTestSuite {
+class ThriftIndexTableTest extends FlatSpec with ThriftTestSuite with TwitterFutures {
 
   val ThriftIndexedTable = ThriftDatabase.thriftIndexedTable
 
@@ -55,8 +54,8 @@ class ThriftIndexTableTest extends FlatSpec with ThriftTestSuite {
     val sample = gen[ThriftRecord]
 
     val chain = for {
-      store <- ThriftIndexedTable.store(sample).execute()
-      get <- ThriftIndexedTable.select.where(_.ref eqs sample.struct).get()
+      store <- ThriftIndexedTable.store(sample).future()
+      get <- ThriftIndexedTable.select.where(_.ref eqs sample.struct).one()
     } yield get
 
     whenReady(chain.asScala) { res =>

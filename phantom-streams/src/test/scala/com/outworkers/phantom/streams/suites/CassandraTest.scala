@@ -16,16 +16,13 @@
 package com.outworkers.phantom.streams.suites
 
 import akka.actor.ActorSystem
-import com.outworkers.phantom.builder.query.{Batchable, ExecutableStatement, InsertQuery}
-import com.outworkers.phantom.connectors.{CassandraConnection, RootConnector}
+import com.outworkers.phantom.builder.query.Batchable
+import com.outworkers.phantom.connectors.CassandraConnection
 import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.streams.RequestBuilder
 import com.outworkers.util.samplers._
 import org.scalatest._
-
-import scala.concurrent.Await
-import scala.concurrent.duration._
 
 trait TestImplicits {
   implicit val system = ActorSystem()
@@ -35,7 +32,7 @@ trait TestImplicits {
     override def request(ct: OperaTable, t: Opera)(
       implicit session: Session,
       keySpace: KeySpace
-    ): ExecutableStatement with Batchable = ct.insert.value(_.name, t.name)
+    ): Batchable = ct.insert.value(_.name, t.name)
   }
 
 }

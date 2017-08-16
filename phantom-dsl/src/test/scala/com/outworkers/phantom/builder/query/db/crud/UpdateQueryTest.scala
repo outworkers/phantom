@@ -21,7 +21,6 @@ import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
 import com.outworkers.util.samplers._
 import org.joda.time.{DateTime, DateTimeZone}
-import org.scalatest.concurrent.Waiters
 import org.scalatest.{Assertions, Inside, Matchers}
 
 class UpdateQueryTest extends PhantomSuite with Matchers with Assertions with Inside {

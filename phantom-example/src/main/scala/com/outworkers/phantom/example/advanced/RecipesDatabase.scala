@@ -15,13 +15,10 @@
  */
 package com.outworkers.phantom.example.advanced
 
-import java.util.UUID
-
 import com.outworkers.phantom.connectors
 import com.outworkers.phantom.connectors.CassandraConnection
-import com.outworkers.phantom.dsl.{UUID, _}
+import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.example.basics._
-import shapeless.{::, Generic, HList, HNil}
 
 import scala.concurrent.{Future => ScalaFuture}
 

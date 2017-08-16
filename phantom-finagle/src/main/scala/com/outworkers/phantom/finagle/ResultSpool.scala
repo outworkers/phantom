@@ -16,7 +16,6 @@
 package com.outworkers.phantom.finagle
 
 import com.datastax.driver.core.{ResultSet => DatastaxResultSet}
-import com.outworkers.phantom.{ResultSet, Row}
 import com.twitter.concurrent.Spool
 import com.twitter.util.{Future, Promise, Try}
 import com.google.common.util.concurrent.{

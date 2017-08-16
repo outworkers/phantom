@@ -20,16 +20,12 @@ import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.Recipe
 import com.outworkers.util.samplers._
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
-
 class InOperatorTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
     database.recipes.createSchema()
   }
-
 
   it should "find a record with a in operator if the record exists" in {
     val recipe = gen[Recipe]

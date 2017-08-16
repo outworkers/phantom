@@ -20,7 +20,6 @@ import com.outworkers.phantom.tables.ThriftDatabase
 import com.outworkers.phantom.dsl._
 import com.outworkers.util.samplers._
 import org.scalatest.FlatSpec
-import org.scalatest.time.SpanSugar._
 
 class ThriftColumnTest extends FlatSpec with ThriftTestSuite {
 
@@ -36,8 +35,8 @@ class ThriftColumnTest extends FlatSpec with ThriftTestSuite {
       _ => ThriftDatabase.thriftColumnTable.select.where(_.id eqs id).one()
     }
 
-    whenReady(insert) {
-      result => result.value.struct shouldEqual sample
+    whenReady(insert) { result =>
+      result.value.struct shouldEqual sample
     }
   }
 

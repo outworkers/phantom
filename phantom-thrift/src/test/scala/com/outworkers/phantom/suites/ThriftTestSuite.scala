@@ -18,12 +18,11 @@ package com.outworkers.phantom.suites
 import java.util.UUID
 
 import com.outworkers.phantom.PhantomSuite
-import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.tables.{ThriftDatabase, ThriftRecord}
-import com.outworkers.phantom.dsl.context
+import com.outworkers.phantom.finagle._
 import com.outworkers.util.samplers._
 
-trait ThriftTestSuite extends PhantomSuite {
+trait ThriftTestSuite extends PhantomSuite with TwitterFutures {
 
   def thriftDb: ThriftDatabase = ThriftDatabase
 

@@ -15,8 +15,8 @@
  */
 package com.outworkers.phantom.database
 
-import com.datastax.driver.core.{ Session, VersionNumber }
-import com.outworkers.phantom.connectors.{ KeySpace, SessionAugmenterImplicits }
+import com.datastax.driver.core.{Session, VersionNumber}
+import com.outworkers.phantom.connectors.{KeySpace, SessionAugmenterImplicits}
 
 trait DatabaseProvider[T <: Database[T]] extends SessionAugmenterImplicits {
 

@@ -26,7 +26,7 @@ import org.scalatest.concurrent.Eventually
 import org.scalatest.tagobjects.Retryable
 import org.scalatest.time.SpanSugar._
 
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Await
 
 class PublisherIntegrationTest extends FlatSpec with StreamTest with TestImplicits with Eventually {
 

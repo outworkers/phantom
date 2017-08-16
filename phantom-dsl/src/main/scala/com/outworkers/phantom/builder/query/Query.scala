@@ -15,39 +15,25 @@
  */
 package com.outworkers.phantom.builder.query
 
-import com.datastax.driver.core.{ConsistencyLevel, Session}
-import com.outworkers.phantom.{ CassandraTable, Row }
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.clauses.QueryCondition
 import com.outworkers.phantom.builder.query.engine.CQLQuery
+import com.outworkers.phantom.builder.query.execution.ExecutableCqlQuery
+import com.outworkers.phantom.connectors.SessionAugmenterImplicits
+import com.outworkers.phantom.{CassandraTable, Row}
 import shapeless.HList
 import shapeless.ops.hlist.Prepend
-
-import scala.annotation.implicitNotFound
 
 abstract class RootQuery[
   Table <: CassandraTable[Table, _],
   Record,
   Status <: ConsistencyBound
-](table: Table, val qb: CQLQuery, override val options: QueryOptions) extends ExecutableStatement {
+] extends SessionAugmenterImplicits {
 
-  protected[this] type QueryType[
-    T <: CassandraTable[T, _],
-    R,
-    S <: ConsistencyBound
-  ] <: RootQuery[T, R, S]
+  def queryString: String = executableQuery.qb.terminate.queryString
 
-  protected[this] def create[
-    T <: CassandraTable[T, _],
-    R,
-    S <: ConsistencyBound
-  ](t: T, q: CQLQuery, options: QueryOptions): QueryType[T, R, S]
-
-
-  @implicitNotFound("You have already specified a ConsistencyLevel for this query")
-  def consistencyLevel_=(level: ConsistencyLevel)(implicit ev: Status =:= Unspecified, session: Session): QueryType[Table, Record, Specified]
+  def executableQuery: ExecutableCqlQuery
 }
-
 
 abstract class Query[
   Table <: CassandraTable[Table, _],
@@ -59,11 +45,11 @@ abstract class Query[
   PS <: HList
 ](
   table: Table,
-  override val qb: CQLQuery,
+  val qb: CQLQuery,
   row: Row => Record,
   usingPart: UsingPart = UsingPart.empty,
-  override val options: QueryOptions
-) extends ExecutableStatement {
+  val options: QueryOptions
+) extends RootQuery[Table, Record, Status] {
 
   protected[this] type QueryType[
     T <: CassandraTable[T, _],
@@ -74,38 +60,6 @@ abstract class Query[
     C <: WhereBound,
     P <: HList
   ] <: Query[T, R, L, O, S, C, P]
-
-  protected[this] def create[
-    T <: CassandraTable[T, _],
-    R,
-    L <: LimitBound,
-    O <: OrderBound,
-    S <: ConsistencyBound,
-    C <: WhereBound,
-    P <: HList
-  ](t: T, q: CQLQuery, r: Row => R, usingPart: UsingPart, options: QueryOptions): QueryType[T, R, L, O, S, C, P]
-
-  @implicitNotFound("A ConsistencyLevel was already specified for this query.")
-  def consistencyLevel_=(level: ConsistencyLevel)
-    (implicit ev: Status =:= Unspecified, session: Session): QueryType[Table, Record, Limit, Order, Specified, Chain, PS] = {
-    if (session.protocolConsistency) {
-      create[Table, Record, Limit, Order, Specified, Chain, PS](
-        table,
-        CQLQuery.empty,
-        row,
-        usingPart,
-        options.consistencyLevel_=(level)
-      )
-    } else {
-      create[Table, Record, Limit, Order, Specified, Chain, PS](
-        table,
-        CQLQuery.empty,
-        row,
-        usingPart append QueryBuilder.consistencyLevel(level.toString),
-        options
-      )
-    }
-  }
 
   /**
     * The where method of a select query.
@@ -140,21 +94,8 @@ abstract class Query[
     ev: Chain =:= Chainned,
     prepend: Prepend.Aux[HL, PS, Out]
   ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out]
-
-
-  def ttl(seconds: Long): QueryType[Table, Record, Limit, Order, Status, Chain, PS] = {
-    create[Table, Record, Limit, Order, Status, Chain, PS](
-      table,
-      qb,
-      row,
-      usingPart append QueryBuilder.ttl(seconds.toString),
-      options
-    )
-  }
-
-  def ttl(duration: scala.concurrent.duration.FiniteDuration): QueryType[Table, Record, Limit, Order, Status, Chain, PS] = {
-    ttl(duration.toSeconds)
-  }
 }
 
-trait Batchable { self: ExecutableStatement => }
+private[phantom] trait Batchable {
+  def executableQuery: ExecutableCqlQuery
+}

@@ -18,7 +18,7 @@ package com.outworkers.phantom.builder.query.prepared
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.tables.bugs.NestedJsonRecord
 import com.outworkers.util.samplers._
-import com.outworkers.phantom.dsl.context
+import com.outworkers.phantom.dsl._
 
 class JsonPreparedInserts extends PhantomSuite {
 

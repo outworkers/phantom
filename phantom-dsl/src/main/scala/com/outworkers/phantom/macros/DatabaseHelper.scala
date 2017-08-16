@@ -16,16 +16,18 @@
 package com.outworkers.phantom.macros
 
 import com.outworkers.phantom.CassandraTable
-import com.outworkers.phantom.database.{Database, ExecutableCreateStatementsList}
+import com.outworkers.phantom.builder.query.execution.QueryCollection
 import com.outworkers.phantom.connectors.KeySpace
+import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.macros.toolbelt.WhiteboxToolbelt
 
 import scala.reflect.macros.whitebox
+import scala.collection.immutable.Seq
 
 trait DatabaseHelper[T <: Database[T]] {
   def tables(db: T): Seq[CassandraTable[_ ,_]]
 
-  def createQueries(db: T)(implicit keySpace: KeySpace): ExecutableCreateStatementsList
+  def createQueries(db: T)(implicit keySpace: KeySpace): QueryCollection[Seq]
 }
 
 object DatabaseHelper {
@@ -38,11 +40,11 @@ object DatabaseHelper {
 class DatabaseHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbelt with RootMacro {
   import c.universe._
 
-  private[this] val seqTpe: Tree => Tree = { tpe =>
+  private[this] val seqTpe: Type => Tree = { tpe =>
     tq"_root_.scala.collection.immutable.Seq[$tpe]"
   }
 
-  private[this] val tableSymbol = tq"_root_.com.outworkers.phantom.CassandraTable[_, _]"
+  private[this] val tableSymbol = typeOf[com.outworkers.phantom.CassandraTable[_, _]]
 
   private[this] val seqCmp = q"_root_.scala.collection.immutable.Seq"
 
@@ -53,29 +55,32 @@ class DatabaseHelperMacro(override val c: whitebox.Context) extends WhiteboxTool
   def deriveHelper(tpe: Type): Tree = {
     val accessors = filterMembers[CassandraTable[_, _]](tpe, Some(_))
 
-    val prefix = q"_root_.com.outworkers.phantom.database"
+    val execution = q"_root_.com.outworkers.phantom.builder.query.execution"
 
     val tableList = accessors.map { sym =>
       val name = sym.asTerm.name.toTermName
       q"db.$name"
     }
 
-    val queryList = tableList.map(tb => q"$tb.autocreate(space)")
+    val queryList = tableList.map(tb => q"$tb.autocreate(space).executableQuery")
 
-    val listType = tq"$prefix.ExecutableCreateStatementsList"
-
-    q"""
+    val tree = q"""
        new $macroPkg.DatabaseHelper[$tpe] {
          def tables(db: $tpe): ${seqTpe(tableSymbol)} = {
            $seqCmp.apply[$tableSymbol](..$tableList)
          }
 
-         def createQueries(db: $tpe)(implicit space: $keyspaceType): $listType = {
-            new $prefix.ExecutableCreateStatementsList(
-              space => $seqCmp.apply(..$queryList)
-            )
+         def createQueries(db: $tpe)(
+           implicit space: $keyspaceType
+         ): $execution.QueryCollection[_root_.scala.collection.immutable.Seq] = {
+            new $execution.QueryCollection($seqCmp.apply(..$queryList))
          }
        }
      """
+    if (showTrees) {
+      echo(s"Generating type tree for ${showCode(q"$macroPkg.DatabaseHelper[$tpe]")}")
+    }
+
+    tree
   }
 }

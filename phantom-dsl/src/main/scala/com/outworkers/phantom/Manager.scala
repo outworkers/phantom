@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 Sphonic Ltd. All Rights Reserved.
+ * Copyright 2013 - 2017 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ object Manager {
   implicit lazy val scalaExecutor: ExecutionContextExecutor = ExecutionContext.fromExecutor(taskExecutor)
 
   val logger = LoggerFactory.getLogger("com.outworkers.phantom")
+  val queryLogger = LoggerFactory.getLogger("com.outworkers.phantom.queries")
 
   /**
     * Shuts down the default task executors for Guava ListenableFutures and for Scala Futures.

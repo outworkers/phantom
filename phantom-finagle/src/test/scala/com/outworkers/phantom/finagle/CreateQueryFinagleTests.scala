@@ -17,16 +17,13 @@ package com.outworkers.phantom.finagle
 
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.util.testing.twitter._
-import com.outworkers.phantom.dsl.context
-import com.outworkers.phantom.finagle._
-import com.twitter.util.Future
 
-class CreateQueryFinagleTests extends PhantomSuite {
+class CreateQueryFinagleTests extends PhantomSuite with TwitterFutures {
 
   it should "execute a simple query with secondary indexes with Twitter futures" in {
-    database.secondaryIndexTable.create.ifNotExists().execute.successful { res =>
+    whenReady(database.secondaryIndexTable.create.ifNotExists().future()) { res =>
       info("The creation query of secondary indexes should execute successfully")
-      res.wasApplied() shouldEqual true
+      res.forall(_.wasApplied() == true) shouldEqual true
     }
   }
 }

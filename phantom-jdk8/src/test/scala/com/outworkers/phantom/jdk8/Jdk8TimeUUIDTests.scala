@@ -20,7 +20,6 @@ import java.time.{OffsetDateTime, ZonedDateTime}
 import com.datastax.driver.core.utils.UUIDs
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.jdk8._
 import com.outworkers.phantom.tables.TimeUUIDRecord
 import com.outworkers.util.samplers._
 import org.scalacheck.Gen

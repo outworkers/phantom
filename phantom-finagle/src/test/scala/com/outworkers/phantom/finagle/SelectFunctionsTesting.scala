@@ -23,7 +23,7 @@ import com.outworkers.util.samplers._
 import com.twitter.util._
 import org.joda.time.DateTimeZone
 
-class SelectFunctionsTesting extends PhantomSuite {
+class SelectFunctionsTesting extends PhantomSuite with TwitterFutures {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -32,25 +32,14 @@ class SelectFunctionsTesting extends PhantomSuite {
     database.primitives.createSchema()
   }
 
-  implicit def twitterFutureToConcept[T](f: Future[T]): FutureConcept[T] = new FutureConcept[T] {
-    override def eitherValue: Option[Either[Throwable, T]] = f.poll match {
-      case Some(Return(ret)) => Some(Right(ret))
-      case Some(Throw(err)) => Some(Left(err))
-      case None => None
-    }
-
-    override def isExpired: Boolean = false
-
-    override def isCanceled: Boolean = false
-  }
-
   it should "retrieve the writetime of a field from Cassandra" in {
     val record = gen[Recipe]
 
     val chain = for {
-      _ <- database.recipes.store(record).execute()
-      timestamp <- database.recipes.select.function(t => writetime(t.description))
-        .where(_.url eqs record.url).get()
+      _ <- database.recipes.store(record).future()
+      timestamp <- database.recipes.select
+        .function(t => writetime(t.description))
+        .where(_.url eqs record.url).one()
     } yield timestamp
 
     whenReady(chain) { res =>
@@ -63,9 +52,9 @@ class SelectFunctionsTesting extends PhantomSuite {
     val record = gen[TimeUUIDRecord].copy(id = UUIDs.timeBased())
 
     val chain = for {
-      _ <- database.timeuuidTable.store(record).execute()
+      _ <- database.timeuuidTable.store(record).future()
       timestamp <- database.timeuuidTable.select.function(t => dateOf(t.id)).where(_.user eqs record.user)
-        .and(_.id eqs record.id).get()
+        .and(_.id eqs record.id).one()
     } yield timestamp
 
     whenReady(chain) { res =>
@@ -77,9 +66,9 @@ class SelectFunctionsTesting extends PhantomSuite {
     val record = gen[TimeUUIDRecord].copy(id = UUIDs.timeBased())
 
     val chain = for {
-      _ <- database.timeuuidTable.store(record).execute()
+      _ <- database.timeuuidTable.store(record).future()
       timestamp <- database.timeuuidTable.select.function(t => unixTimestampOf(t.id)).where(_.user eqs record.user)
-        .and(_.id eqs record.id).get()
+        .and(_.id eqs record.id).one()
     } yield timestamp
 
     whenReady(chain) { res =>
@@ -94,11 +83,11 @@ class SelectFunctionsTesting extends PhantomSuite {
     val potentialList = List(timeToLive - 2, timeToLive - 1, timeToLive)
 
     val chain = for {
-      _ <- database.timeuuidTable.store(record).ttl(timeToLive).execute()
+      _ <- database.timeuuidTable.store(record).ttl(timeToLive).future()
       timestamp <- database.timeuuidTable.select.function(t => ttl(t.name))
         .where(_.user eqs record.user)
         .and(_.id eqs record.id)
-        .get()
+        .one()
     } yield timestamp
 
     whenReady(chain) { res =>
@@ -112,8 +101,8 @@ class SelectFunctionsTesting extends PhantomSuite {
     val record = gen[PrimitiveRecord]
 
     val chain = for {
-      _ <- database.primitives.store(record).execute()
-      res <- database.primitives.select.function(t => sum(t.int)).where(_.pkey eqs record.pkey).aggregated()
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => sum(t.int)).where(_.pkey eqs record.pkey).aggregate()
     } yield res
 
     whenReady(chain) { res =>
@@ -125,8 +114,8 @@ class SelectFunctionsTesting extends PhantomSuite {
     val record = gen[PrimitiveRecord]
 
     val chain = for {
-      _ <- database.primitives.store(record).execute()
-      res <- database.primitives.select.function(t => sum(t.long)).where(_.pkey eqs record.pkey).aggregated()
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => sum(t.long)).where(_.pkey eqs record.pkey).aggregate()
     } yield res
 
     whenReady(chain) { res =>
@@ -138,8 +127,8 @@ class SelectFunctionsTesting extends PhantomSuite {
     val record = gen[PrimitiveRecord]
 
     val chain = for {
-      _ <- database.primitives.store(record).execute()
-      res <- database.primitives.select.function(t => sum(t.float)).where(_.pkey eqs record.pkey).aggregated()
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => sum(t.float)).where(_.pkey eqs record.pkey).aggregate()
     } yield res
 
     whenReady(chain) { res =>
@@ -152,8 +141,8 @@ class SelectFunctionsTesting extends PhantomSuite {
     val record = gen[PrimitiveRecord]
 
     val chain = for {
-      _ <- database.primitives.store(record).execute()
-      res <- database.primitives.select.function(t => sum(t.bDecimal)).where(_.pkey eqs record.pkey).aggregated()
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => sum(t.bDecimal)).where(_.pkey eqs record.pkey).aggregate()
     } yield res
 
     whenReady(chain) { res =>
@@ -166,8 +155,8 @@ class SelectFunctionsTesting extends PhantomSuite {
     val record = gen[PrimitiveRecord]
 
     val chain = for {
-      _ <- database.primitives.store(record).execute()
-      res <- database.primitives.select.function(t => sum(t.bi)).where(_.pkey eqs record.pkey).aggregated()
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => sum(t.bi)).where(_.pkey eqs record.pkey).aggregate()
     } yield res
 
     whenReady(chain) { res =>
@@ -179,8 +168,8 @@ class SelectFunctionsTesting extends PhantomSuite {
     val record = gen[PrimitiveRecord]
 
     val chain = for {
-      _ <- database.primitives.store(record).execute()
-      res <- database.primitives.select.function(t => sum(t.long)).where(_.pkey eqs record.pkey).aggregated()
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => sum(t.long)).where(_.pkey eqs record.pkey).aggregate()
     } yield res
 
     whenReady(chain) { res =>
@@ -193,8 +182,8 @@ class SelectFunctionsTesting extends PhantomSuite {
     val record = gen[PrimitiveRecord]
 
     val chain = for {
-      _ <- database.primitives.store(record).execute()
-      res <- database.primitives.select.function(t => min(t.int)).where(_.pkey eqs record.pkey).aggregated()
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => min(t.int)).where(_.pkey eqs record.pkey).aggregate()
     } yield res
 
     whenReady(chain) { res =>
@@ -206,8 +195,8 @@ class SelectFunctionsTesting extends PhantomSuite {
     val record = gen[PrimitiveRecord]
 
     val chain = for {
-      _ <- database.primitives.store(record).execute()
-      res <- database.primitives.select.function(t => min(t.long)).where(_.pkey eqs record.pkey).aggregated()
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => min(t.long)).where(_.pkey eqs record.pkey).aggregate()
     } yield res
 
     whenReady(chain) { res =>
@@ -219,8 +208,8 @@ class SelectFunctionsTesting extends PhantomSuite {
     val record = gen[PrimitiveRecord]
 
     val chain = for {
-      _ <- database.primitives.store(record).execute()
-      res <- database.primitives.select.function(t => min(t.float)).where(_.pkey eqs record.pkey).aggregated()
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => min(t.float)).where(_.pkey eqs record.pkey).aggregate()
     } yield res
 
     whenReady(chain) { res =>
@@ -233,8 +222,8 @@ class SelectFunctionsTesting extends PhantomSuite {
     val record = gen[PrimitiveRecord]
 
     val chain = for {
-      _ <- database.primitives.store(record).execute()
-      res <- database.primitives.select.function(t => min(t.bDecimal)).where(_.pkey eqs record.pkey).aggregated()
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => min(t.bDecimal)).where(_.pkey eqs record.pkey).aggregate()
     } yield res
 
     whenReady(chain) { res =>
@@ -247,8 +236,8 @@ class SelectFunctionsTesting extends PhantomSuite {
     val record = gen[PrimitiveRecord]
 
     val chain = for {
-      _ <- database.primitives.store(record).execute()
-      res <- database.primitives.select.function(t => min(t.bi)).where(_.pkey eqs record.pkey).aggregated()
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => min(t.bi)).where(_.pkey eqs record.pkey).aggregate()
     } yield res
 
     whenReady(chain) { res =>
@@ -260,8 +249,8 @@ class SelectFunctionsTesting extends PhantomSuite {
     val record = gen[PrimitiveRecord]
 
     val chain = for {
-      _ <- database.primitives.store(record).execute()
-      res <- database.primitives.select.function(t => min(t.long)).where(_.pkey eqs record.pkey).aggregated()
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => min(t.long)).where(_.pkey eqs record.pkey).aggregate()
     } yield res
 
     whenReady(chain) { res =>
@@ -274,8 +263,8 @@ class SelectFunctionsTesting extends PhantomSuite {
     val record = gen[PrimitiveRecord]
 
     val chain = for {
-      _ <- database.primitives.store(record).execute()
-      res <- database.primitives.select.function(t => min(t.int)).where(_.pkey eqs record.pkey).aggregated()
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => min(t.int)).where(_.pkey eqs record.pkey).aggregate()
     } yield res
 
     whenReady(chain) { res =>
@@ -287,8 +276,8 @@ class SelectFunctionsTesting extends PhantomSuite {
     val record = gen[PrimitiveRecord]
 
     val chain = for {
-      _ <- database.primitives.store(record).execute()
-      res <- database.primitives.select.function(t => min(t.long)).where(_.pkey eqs record.pkey).aggregated()
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => min(t.long)).where(_.pkey eqs record.pkey).aggregate()
     } yield res
 
     whenReady(chain) { res =>
@@ -300,8 +289,8 @@ class SelectFunctionsTesting extends PhantomSuite {
     val record = gen[PrimitiveRecord]
 
     val chain = for {
-      _ <- database.primitives.store(record).execute()
-      res <- database.primitives.select.function(t => min(t.float)).where(_.pkey eqs record.pkey).aggregated()
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => min(t.float)).where(_.pkey eqs record.pkey).aggregate()
     } yield res
 
     whenReady(chain) { res =>
@@ -314,8 +303,8 @@ class SelectFunctionsTesting extends PhantomSuite {
     val record = gen[PrimitiveRecord]
 
     val chain = for {
-      _ <- database.primitives.store(record).execute()
-      res <- database.primitives.select.function(t => min(t.bDecimal)).where(_.pkey eqs record.pkey).aggregated()
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => min(t.bDecimal)).where(_.pkey eqs record.pkey).aggregate()
     } yield res
 
     whenReady(chain) { res =>
@@ -328,8 +317,8 @@ class SelectFunctionsTesting extends PhantomSuite {
     val record = gen[PrimitiveRecord]
 
     val chain = for {
-      _ <- database.primitives.store(record).execute()
-      res <- database.primitives.select.function(t => min(t.bi)).where(_.pkey eqs record.pkey).aggregated()
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => min(t.bi)).where(_.pkey eqs record.pkey).aggregate()
     } yield res
 
     whenReady(chain) { res =>
@@ -341,8 +330,8 @@ class SelectFunctionsTesting extends PhantomSuite {
     val record = gen[PrimitiveRecord]
 
     val chain = for {
-      _ <- database.primitives.store(record).execute()
-      res <- database.primitives.select.function(t => min(t.long)).where(_.pkey eqs record.pkey).aggregated()
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => min(t.long)).where(_.pkey eqs record.pkey).aggregate()
     } yield res
 
     whenReady(chain) { res =>
@@ -355,8 +344,8 @@ class SelectFunctionsTesting extends PhantomSuite {
     val record = gen[PrimitiveRecord]
 
     val chain = for {
-      _ <- database.primitives.store(record).execute()
-      res <- database.primitives.select.function(t => avg(t.int)).where(_.pkey eqs record.pkey).aggregated()
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => avg(t.int)).where(_.pkey eqs record.pkey).aggregate()
     } yield res
 
     whenReady(chain) { res =>
@@ -368,8 +357,8 @@ class SelectFunctionsTesting extends PhantomSuite {
     val record = gen[PrimitiveRecord]
 
     val chain = for {
-      _ <- database.primitives.store(record).execute()
-      res <- database.primitives.select.function(t => avg(t.long)).where(_.pkey eqs record.pkey).aggregated()
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => avg(t.long)).where(_.pkey eqs record.pkey).aggregate()
     } yield res
 
     whenReady(chain) { res =>
@@ -381,8 +370,8 @@ class SelectFunctionsTesting extends PhantomSuite {
     val record = gen[PrimitiveRecord]
 
     val chain = for {
-      _ <- database.primitives.store(record).execute()
-      res <- database.primitives.select.function(t => avg(t.float)).where(_.pkey eqs record.pkey).aggregated()
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => avg(t.float)).where(_.pkey eqs record.pkey).aggregate()
     } yield res
 
     whenReady(chain) { res =>
@@ -395,8 +384,8 @@ class SelectFunctionsTesting extends PhantomSuite {
     val record = gen[PrimitiveRecord]
 
     val chain = for {
-      _ <- database.primitives.store(record).execute()
-      res <- database.primitives.select.function(t => min(t.bDecimal)).where(_.pkey eqs record.pkey).aggregated()
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => min(t.bDecimal)).where(_.pkey eqs record.pkey).aggregate()
     } yield res
 
     whenReady(chain) { res =>
@@ -409,8 +398,8 @@ class SelectFunctionsTesting extends PhantomSuite {
     val record = gen[PrimitiveRecord]
 
     val chain = for {
-      _ <- database.primitives.store(record).execute()
-      res <- database.primitives.select.function(t => avg(t.bi)).where(_.pkey eqs record.pkey).aggregated()
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => avg(t.bi)).where(_.pkey eqs record.pkey).aggregate()
     } yield res
 
     whenReady(chain) { res =>
@@ -422,8 +411,8 @@ class SelectFunctionsTesting extends PhantomSuite {
     val record = gen[PrimitiveRecord]
 
     val chain = for {
-      _ <- database.primitives.store(record).execute()
-      res <- database.primitives.select.function(t => avg(t.long)).where(_.pkey eqs record.pkey).aggregated()
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => avg(t.long)).where(_.pkey eqs record.pkey).aggregate()
     } yield res
 
     whenReady(chain) { res =>
