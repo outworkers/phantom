@@ -548,7 +548,7 @@ object Primitives {
   def option[T : Primitive]: Primitive[Option[T]] = {
     val ev = implicitly[Primitive[T]]
 
-    val nullString = None.orNull.asInstanceOf[String]
+    val nullString = "null"
 
     new Primitive[Option[T]] {
 

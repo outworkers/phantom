@@ -306,7 +306,7 @@ class PrimitiveRoundtripTests extends FlatSpec
   }
 
   it should "serialize and deserialize an Option wrapped derived Primitive with a type" in {
-    //sroundtrip[Option[Username[Serialized]]]
+    sroundtrip[Option[Username[Serialized]]]
   }
 
 }
