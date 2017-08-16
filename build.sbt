@@ -32,7 +32,6 @@ lazy val Versions = new {
   val reactivestreams = "1.0.0"
   val cassandraUnit = "3.1.3.2"
   val javaxServlet = "3.0.1"
-  val monix = "2.3.0"
   val joda = "2.9.9"
   val jodaConvert = "1.8.1"
   val scalamock = "3.5.0"
@@ -370,19 +369,4 @@ lazy val phantomExample = (project in file("phantom-example"))
     phantomThrift
   ).enablePlugins(
     CrossPerProjectPlugin
-  )
-
-lazy val phantomMonix = (project in file("phantom-monix"))
-  .settings(
-    name := "phantom-monix",
-    crossScalaVersions := Versions.scala.all,
-    moduleName := "phantom-monix",
-    libraryDependencies ++= Seq(
-      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
-      "io.monix" %% "monix" % Versions.monix
-    )
-  ).settings(
-    sharedSettings: _*
-  ).dependsOn(
-    phantomDsl % "test->test;compile->compile;"
   )
