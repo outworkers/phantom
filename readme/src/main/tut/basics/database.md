@@ -276,13 +276,14 @@ When you later call `database.create` or `database.createAsync` or any other fla
 ```tut
 
 import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.builder.query.CreateQuery
 
 class UserDatabase(
   override val connector: CassandraConnection
 ) extends Database[UserDatabase](connector) {
 
   object users extends Users with Connector {
-    def autocreate(keySpace: KeySpace): CreateQuery.Default[T, R] = {
+    override def autocreate(keySpace: KeySpace): CreateQuery.Default[Users, User] = {
       create.ifNotExists()(keySpace)
         .`with`(compaction eqs LeveledCompactionStrategy.sstable_size_in_mb(50))
         .and(compression eqs LZ4Compressor.crc_check_chance(0.5))

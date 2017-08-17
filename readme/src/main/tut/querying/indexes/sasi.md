@@ -26,10 +26,9 @@ libraryDependencies ++= Seq(
 
 Then let's start from a simple Cassandra connection:
 
-```scala
+```tut:silent
 
 import com.datastax.driver.core.SocketOptions
-import com.outworkers.phantom.connectors._
 import com.outworkers.phantom.dsl._
 
 object Connector {
@@ -45,14 +44,7 @@ object Connector {
       )
     )
 }
-```
 
-
-Simple example:
-
-```scala
-
-import com.outworkers.phantom.connectors._
 import com.outworkers.phantom.dsl._
 
 case class MultiSASIRecord(
@@ -162,7 +154,7 @@ Examples can be found in [SASIIntegrationTest.scala](/phantom-dsl/src/test/scala
 
 Example possible queries, based on the schema defined above.
 
-```scala
+```tut:silent
 
 import com.outworkers.phantom.dsl._
 
@@ -187,7 +179,7 @@ Examples can be found in [SASIIntegrationTest.scala](/phantom-dsl/src/test/scala
 
 Example possible queries.
 
-```scala
+```tut:silent
 
 import com.outworkers.phantom.dsl._
 
