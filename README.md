@@ -10,6 +10,13 @@ If you use phantom, please consider adding your company to our list of adopters.
 
 ![phantom](https://s3-eu-west-1.amazonaws.com/websudos/oss/logos/phantom.png "Outworkers Phantom")
 
+Migrating to phantom 2.14.0(phantom-finagle users)
+=================================
+
+Please refer to the new docs on query execution to understand the breaking changes in phantom 2.14.0. They will
+affect users of `phantom-finagle`.
+
+
 Migrating to phantom 2.x.x series
 =================================
 
@@ -46,7 +53,9 @@ Modules marked with "x" are still in beta or pre-publishing mode.
 | ------------          | ------------------- | ------------------| ----------------- | -------------- |
 | phantom-dse           | <span>yes</span>    | <span>yes</span>  | <span>yes</span>  | Released       |
 | phantom-udt           | <span>yes</span>    | <span>yes</span>  | <span>yes</span>  | Released       |
-| phantom-autotables    | <span>x</span>      | <span>x</span>    | <span>x</span>    | May 2017       |
+| phantom-autotables    | <span>x</span>      | <span>x</span>    | <span>x</span>    | Released       |
+| phantom-monix         | <span>x</span>      | <span>x</span>    | <span>x</span>    | Released       |
+| phantom-docker          <span>x</span>      | <span>x</span>    | <span>x</span>    | Released       |
 | phantom-graph         | <span>x</span>      | <span>x</span>    | <span>x</span>    | April 2017     |
 | phantom-spark         | <span>x</span>      | <span>x</span>    | <span>x</span>    | July 2017      |
 | phantom-solr          | <span>x</span>      | <span>x</span>    | <span>x</span>    | July 2017      |

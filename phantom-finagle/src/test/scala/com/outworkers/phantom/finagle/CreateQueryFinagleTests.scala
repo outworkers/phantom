@@ -16,7 +16,6 @@
 package com.outworkers.phantom.finagle
 
 import com.outworkers.phantom.PhantomSuite
-import com.outworkers.util.testing.twitter._
 
 class CreateQueryFinagleTests extends PhantomSuite with TwitterFutures {
 

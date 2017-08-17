@@ -17,23 +17,12 @@ package com.outworkers.phantom
 
 import cats.Monad
 import cats.instances.FutureInstances
-import com.outworkers.phantom.builder.query._
-import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.execution._
 
 import scala.collection.generic.CanBuildFrom
 import scala.concurrent.{ExecutionContextExecutor, Future}
 
 package object dsl extends ScalaQueryContext with DefaultImports with FutureInstances {
-
-  def cql(
-    str: CQLQuery,
-    options: QueryOptions = QueryOptions.empty
-  ): QueryInterface[Future] = new QueryInterface[Future]() {
-    override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(str, options)
-  }
-
-  def cql(str: String): QueryInterface[Future] = cql(CQLQuery(str))
 
   implicit class ExecuteQueries[M[X] <: TraversableOnce[X]](val qc: QueryCollection[M]) extends AnyVal {
     def executable()(

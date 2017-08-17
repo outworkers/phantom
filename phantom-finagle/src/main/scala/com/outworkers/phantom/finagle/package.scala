@@ -19,8 +19,7 @@ import cats.Monad
 import com.datastax.driver.core.Statement
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.query._
-import com.outworkers.phantom.builder.query.engine.CQLQuery
-import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, ExecutableStatements, GuavaAdapter, QueryCollection, QueryInterface, ResultQueryInterface}
+import com.outworkers.phantom.builder.query.execution._
 import com.outworkers.phantom.builder.query.options.{CompressionStrategy, GcGraceSecondsBuilder, TablePropertyClause, TimeToLiveBuilder}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.finagle.execution.{TwitterFutureImplicits, TwitterQueryContext}
@@ -59,8 +58,7 @@ package object finagle extends TwitterQueryContext with DefaultImports {
       * @return
       */
     def fetchSpool(modifier: Statement => Statement)(
-      implicit session: Session,
-      keySpace: KeySpace
+      implicit session: Session
     ): Future[Spool[Seq[Record]]] = {
       query.future(modifier) flatMap { rs =>
         ResultSpool.spool(rs).map(spool => spool.map(_.map(query.fromRow)))
@@ -197,12 +195,6 @@ package object finagle extends TwitterQueryContext with DefaultImports {
       strategy.option(CQLSyntax.CompressionOptions.chunk_length_kb, unit.inKilobytes + "KB")
     }
   }
-
-  def cql(str: CQLQuery, options: QueryOptions = QueryOptions.empty): QueryInterface[Future] = new QueryInterface[Future]() {
-    override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(str, options)
-  }
-
-  def cql(str: String): QueryInterface[Future] = cql(CQLQuery(str))
 
   implicit class ExecuteQueries[M[X] <: TraversableOnce[X]](val qc: QueryCollection[M]) extends AnyVal {
     def executable()(

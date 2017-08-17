@@ -18,7 +18,6 @@ package com.outworkers.phantom.finagle
 import com.datastax.driver.core.utils.UUIDs
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.tables.{PrimitiveRecord, Recipe, TimeUUIDRecord}
-import com.outworkers.phantom.dsl._
 import com.outworkers.util.samplers._
 import com.twitter.util._
 import org.joda.time.DateTimeZone
