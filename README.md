@@ -14,7 +14,7 @@ Migrating to phantom 2.14.0(phantom-finagle users)
 =================================
 
 Please refer to the new docs on query execution to understand the breaking changes in phantom 2.14.0. They will
-affect users of `phantom-finagle`.
+affect users of `phantom-finagle`. Details [here](docs/querying/execution.md)
 
 
 Migrating to phantom 2.x.x series

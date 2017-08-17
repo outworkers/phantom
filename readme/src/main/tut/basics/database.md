@@ -119,7 +119,7 @@ abstract class Users extends Table[Users, User] {
   object email extends StringColumn
   object name extends StringColumn
 
-  def getById(id: UUID): Future[Option[User]] = {
+  def findById(id: UUID): Future[Option[User]] = {
     select.where(_.id eqs id).one()
   }
 }
@@ -129,14 +129,14 @@ abstract class UsersByEmail extends Table[UsersByEmail, User] {
   object id extends UUIDColumn
   object name extends StringColumn
 
-  def getById(email: String): Future[Option[User]] = {
+  def findByEmail(email: String): Future[Option[User]] = {
     select.where(_.email eqs email).one()
   }
 }
 
 class AppDatabase(
   override val connector: CassandraConnection
-) extends Database[UserDatabase](connector) {
+) extends Database[AppDatabase](connector) {
   object users extends Users with Connector
   object usersByEmail extends UsersByEmail with Connector
 }
@@ -157,8 +157,8 @@ trait UserService extends AppDatabaseProvider {
    */
   def store(user: User): Future[ResultSet] = {
     for {
-      byId <- db.users.store(user)
-      byEmail <- db.usersByEmail.store(user)
+      byId <- db.users.store(user).future()
+      byEmail <- db.usersByEmail.store(user).future()
     } yield byEmail
   }
 
@@ -209,20 +209,20 @@ import com.outworkers.phantom.dsl._
 
 import org.scalatest.{BeforeAndAfterAll, OptionValues, Matchers, FlatSpec}
 import org.scalatest.concurrent.ScalaFutures
-import com.outworkers.phantom.dsl.context
+import com.outworkers.util.samplers._
 
-class UserServiceTest extends FlatSpec with Matchers with ScalaFutures {
+class UserServiceTest extends FlatSpec with Matchers with ScalaFutures with BeforeAndAfterAll with OptionValues {
 
   val userService = new UserService with TestDatabaseProvider {}
 
   override def beforeAll(): Unit = {
     super.beforeAll()
     // all our tables will now be initialised automatically against the target keyspace.
-    database.create()
+    userService.database.create()
   }
 
   it should "store a user using the user service and retrieve it by id and email" in {
-    val user = User(...)
+    val user = gen[User]
 
     val chain = for {
       store <- userService.store(user)

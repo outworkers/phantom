@@ -2,67 +2,22 @@ phantom
 [![Build Status](https://travis-ci.org/outworkers/phantom.svg?branch=develop)](https://travis-ci.org/outworkers/phantom?branch=develop) [![Coverage Status](https://coveralls.io/repos/github/outworkers/phantom/badge.svg?branch=develop)](https://coveralls.io/github/outworkers/phantom?branch=develop)  [![Codacy Rating](https://api.codacy.com/project/badge/grade/25bee222a7d142ff8151e6ceb39151b4)](https://www.codacy.com/app/flavian/phantom_2) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11) [![Bintray](https://api.bintray.com/packages/outworkers/oss-releases/phantom-dsl/images/download.svg) ](https://bintray.com/outworkers/oss-releases/phantom-dsl/_latestVersion) [![ScalaDoc](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11.svg?label=scaladoc)](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/outworkers/phantom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 ===============================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================
 
-This is a section about managing custom type support in phantom. It coveralls modelling scenarios where you wish
-to make your types act as primitive to Cassandra. There are several options at hand.
+We, the people behind phantom run a software development house specialised in Scala and NoSQL. If you are after enterprise grade training or production support for using phantom and Cassandra, [Outworkers](http://outworkers.com) is here to help!
 
+We offer a comprehensive range of elite Scala development services, including but not limited to:
 
-### JSON Columns
+- Software development
+- Remote contractors for hire
+- Advanced Scala and Cassandra training
 
-One simple way to encode case classes or other Scala types as Cassandra native is to use native JSON support in phantom.
-This works in a really simple way, phantom will automatically use implicits to serialize/de-serialize your types
-to something Cassandra understands, namely string types.
+We are big fans of open source and we will open source every project we can! To read more about our OSS efforts, click [here](http://www.outworkers.com/work).
 
-Let's explore a simple example using the [circe](https://github.com/circe/circe) library.
-Phantom does not ship with any particular JSON library, you have complete freedom over what JSON library you use.
+### phantom-pro
 
+`phantom-pro` is a heavily upgraded version of Phantom which includes several extremely powerful features that will not be available in the open source version, including and not limited to:
 
-```scala
-
-import com.outworkers.phantom.dsl._
-
-import io.circe._
-import io.circe.generic.semiauto._
-import io.circe.parser._
-import io.circe.syntax._
-
-case class JsonRecord(
-  prop1: String,
-  prop2: String
-)
-
-object JsonRecord {
-
-  implicit val jsonDecoder: Decoder[JsonRecord] = deriveDecoder[JsonRecord]
-  implicit val jsonEncoder: Encoder[JsonRecord] = deriveEncoder[JsonRecord]
-  
-  implicit val jsonPrimitive: Primitive[JsonRecord] = {
-    Primitive.json[JsonRecord](_.asJson.noSpaces)(decode[JsonRecord](_).right.get)
-  }
-
-}
-
-case class JsonClass(
-  id: UUID,
-  name: String,
-  json: JsonRecord,
-  optionalJson : Option[JsonRecord],
-  jsonList: List[JsonRecord],
-  jsonSet: Set[JsonRecord]
-)
-
-abstract class JsonTable extends Table[JsonTable, JsonClass] {
-
-  object id extends UUIDColumn with PartitionKey
-
-  object name extends StringColumn
-
-  object json extends JsonColumn[JsonRecord]
-
-  object optionalJson extends OptionalJsonColumn[JsonRecord]
-
-  object jsonList extends JsonListColumn[JsonRecord]
-
-  object jsonSet extends JsonSetColumn[JsonRecord]
-
-}
-```
+- Full online access to a complete set of phantom tutorials, accompanied by our direct support.
+- Advanced support for integrating phantom with Apache Spark.
+- A very powerful schema management framework called `phantom-migrations` which allows you not only to completely automate schema management and do it all in Scala, but also to let phantom automatically handle most use cases for you.
+- `phantom-autotables`, an advanced macro based framework which will auto-generate, auto-manage, and auto-migrate all your queries from case classes.
+- Full support for integration with Datastax Enterprise and Datastax Ops Center, including protocol level support for authentication, reporting, and much more.
