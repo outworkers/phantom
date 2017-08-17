@@ -18,7 +18,6 @@ package com.outworkers.phantom.builder.ops
 import java.util.Date
 
 import com.datastax.driver.core.Session
-import com.outworkers.phantom.{CassandraTable, TableAliases}
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.OperatorClause.Condition
 import com.outworkers.phantom.builder.clauses.{OperatorClause, TypedClause, WhereClause}
@@ -27,6 +26,7 @@ import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column.{AbstractColumn, Column, TimeUUIDColumn}
 import com.outworkers.phantom.connectors.SessionAugmenterImplicits
+import com.outworkers.phantom.{CassandraTable, TableAliases}
 import org.joda.time.{DateTime, DateTimeZone}
 import shapeless.{=:!=, HList}
 

@@ -17,7 +17,7 @@ package com.outworkers.phantom.example.basics
 
 import com.outworkers.phantom.example.ExampleSuite
 import com.outworkers.util.samplers._
-import com.outworkers.phantom.dsl.context
+import com.outworkers.phantom.dsl._
 
 class CompositeKeyTests extends ExampleSuite {
 

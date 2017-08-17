@@ -9,7 +9,7 @@ of a `Database` class.
 
 Let's consider the below example.
 
-```tut:silent
+```tut
 
 import com.outworkers.phantom.dsl._
 import org.joda.time.DateTime
@@ -57,7 +57,7 @@ This enables inheritance, but it does not support singletons/objects, so as a re
 scenario, the macro engine will infer the table name as "Recipes", based on the type information. If you hit trouble upgrading because names no longer match, simply
 override the table name manually inside the table definition.
 
-```tut:silent
+```tut
 
 import com.outworkers.phantom.dsl._
 
@@ -85,7 +85,7 @@ All available imports will have two flavours. It's important to note they only w
 when imported in the scope where tables are defined. That's where the macro will evaluate
 the call site for implicits.
 
-```tut:silent
+```tut
 import com.outworkers.phantom.NamingStrategy.CamelCase.caseSensitive
 import com.outworkers.phantom.NamingStrategy.CamelCase.caseInsensitive
 
@@ -100,7 +100,7 @@ import com.outworkers.phantom.NamingStrategy.Default.caseInsensitive
 ====================================================
 <a href="#table-of-contents">back to top</a>
 
-```tut:silent
+```tut
 
 import java.util.UUID
 import com.outworkers.phantom.dsl._
@@ -223,7 +223,7 @@ This is the most standard use case, where your table has the exact same number o
  record and there is a perfect mapping(bijection) between your table and your record. In this case,
  the generated `store` method will simply take a single argument of type `Record`, as illustrated below.
 
-```tut:silent
+```scala
 
 import com.outworkers.phantom.dsl._
 import scala.concurrent.duration._
@@ -287,7 +287,7 @@ The macro will always create a `Tuple` as described initially, of all the types 
 by the `Record` type.
 
 
-```tut:silent
+```tut
 
 import java.util.UUID
 import com.outworkers.phantom.dsl._
@@ -335,7 +335,7 @@ So the new type of the generated store method will now be:
 
 The new table definition to store the above is:
 
-```tut:silent
+```tut
 
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.builder.query.InsertQuery

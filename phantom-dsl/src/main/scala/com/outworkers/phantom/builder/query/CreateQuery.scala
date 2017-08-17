@@ -16,15 +16,15 @@
 package com.outworkers.phantom.builder.query
 
 import com.datastax.driver.core.{ConsistencyLevel, Session}
+import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
+import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, QueryCollection}
 import com.outworkers.phantom.builder.query.options.TablePropertyClause
 import com.outworkers.phantom.builder.syntax.CQLSyntax
-import com.outworkers.phantom.connectors.KeySpace
-import com.outworkers.phantom.{CassandraTable, Manager, ResultSet}
+import com.outworkers.phantom.connectors.{KeySpace, SessionAugmenterImplicits}
 
 import scala.annotation.implicitNotFound
-import scala.concurrent.{ExecutionContextExecutor, Future => ScalaFuture}
 
 class RootCreateQuery[
   Table <: CassandraTable[Table, _],
@@ -75,56 +75,32 @@ class RootCreateQuery[
   }
 }
 
-class CreateQuery[
+case class CreateQuery[
   Table <: CassandraTable[Table, _],
   Record,
   Status <: ConsistencyBound
 ](
-  val table: Table,
-  val init: CQLQuery,
-  val withClause: WithPart = WithPart.empty,
-  val usingPart: UsingPart = UsingPart.empty,
-  override val options: QueryOptions = QueryOptions.empty
-)(implicit val keySpace: KeySpace) extends ExecutableStatement {
+  table: Table,
+  init: CQLQuery,
+  withClause: WithPart = WithPart.empty,
+  usingPart: UsingPart = UsingPart.empty,
+  options: QueryOptions = QueryOptions.empty
+)(implicit val keySpace: KeySpace) extends SessionAugmenterImplicits {
 
   def consistencyLevel_=(level: ConsistencyLevel)(implicit session: Session): CreateQuery[Table, Record, Specified] = {
     if (session.protocolConsistency) {
-      new CreateQuery(
-        table,
-        qb,
-        withClause,
-        usingPart,
-        options.consistencyLevel_=(level)
-      )
+      copy(options = options.consistencyLevel_=(level))
     } else {
-      new CreateQuery(
-        table,
-        init,
-        withClause,
-        usingPart append QueryBuilder.consistencyLevel(level.toString),
-        options
-      )
+      copy(usingPart = usingPart append QueryBuilder.consistencyLevel(level.toString))
     }
   }
 
   @implicitNotFound("You cannot use 2 `with` clauses on the same create query. Use `and` instead.")
   final def `with`(clause: TablePropertyClause): CreateQuery[Table, Record, Status] = {
     if (withClause.queries.isEmpty) {
-      new CreateQuery(
-        table,
-        init,
-        withClause append QueryBuilder.Create.`with`(clause.qb),
-        usingPart,
-        options
-      )
+      copy(withClause = withClause append QueryBuilder.Create.`with`(clause.qb))
     } else {
-      new CreateQuery(
-        table,
-        init,
-        withClause append QueryBuilder.Update.and(clause.qb),
-        usingPart,
-        options
-      )
+      copy(withClause = withClause append QueryBuilder.Update.and(clause.qb))
     }
   }
 
@@ -136,11 +112,9 @@ class CreateQuery[
     * @return A new Create query, where the builder contains a full clustering clause specified.
     */
   final def withClustering(): CreateQuery[Table, Record, Status] = {
-    val clusteringPairs = table.clusteringColumns.map {
-      col => {
+    val clusteringPairs = table.clusteringColumns.map { col =>
         val order = if (col.isAscending) CQLSyntax.Ordering.asc else CQLSyntax.Ordering.desc
         (col.name, order)
-      }
     }.toList
 
     `with`(new TablePropertyClause {
@@ -158,44 +132,27 @@ class CreateQuery[
     `with`(clause)
   }
 
-  override def qb: CQLQuery = (withClause merge WithPart.empty merge usingPart) build init
+  val qb: CQLQuery = (withClause merge WithPart.empty merge usingPart) build init
 
-  private[phantom] val indexList: ExecutableStatementList[Seq] = {
+  def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options)
+
+  def queryString: String = qb.queryString
+
+  private[phantom] val indexList: QueryCollection[Seq] = {
     val name = keySpace.name
 
-    new ExecutableStatementList(table.secondaryKeys map { key =>
+    new QueryCollection(table.secondaryKeys map { key =>
       if (key.isMapKeyIndex) {
-        QueryBuilder.Create.mapIndex(table.tableName, name, key.name)
+        ExecutableCqlQuery(QueryBuilder.Create.mapIndex(table.tableName, name, key.name))
       } else if (key.isMapEntryIndex) {
-        QueryBuilder.Create.mapEntries(table.tableName, name, key.name)
+        ExecutableCqlQuery(QueryBuilder.Create.mapEntries(table.tableName, name, key.name))
       } else {
-        QueryBuilder.Create.index(table.tableName, name, key.name)
+        ExecutableCqlQuery(QueryBuilder.Create.index(table.tableName, name, key.name))
       }
     })
   }
 
-  override def future()(
-    implicit session: Session,
-    ec: ExecutionContextExecutor
-  ): ScalaFuture[ResultSet] = {
-    for {
-      init <- super.future()
-      secondaryIndexFuture = if (indexList.isEmpty) ScalaFuture.successful(Seq.empty[ResultSet]) else indexList.future()
-      secondaryIndexes <- secondaryIndexFuture map { results =>
-        Manager.logger.debug(s"Creating secondary indexes on ${QueryBuilder.keyspace(keySpace.name, table.tableName).queryString}")
-        results
-      }
-      sasiFutures = {
-        val sasiQueries = table.sasiQueries()
-        if (sasiQueries.isEmpty) {
-          ScalaFuture.successful(Seq.empty[ResultSet])
-        } else {
-          sasiQueries.future()
-        }
-      }
-      sasiIndexes <- sasiFutures
-    } yield init
-  }
+  val queries = new QueryCollection[Seq](Seq(ExecutableCqlQuery(qb, options))) ++ indexList ++ table.sasiQueries
 }
 
 object CreateQuery {

@@ -20,8 +20,6 @@ import com.outworkers.phantom.tables.sasi.MultiSASIRecord
 import com.outworkers.phantom.dsl._
 import com.outworkers.util.samplers._
 
-import scala.concurrent.Future
-
 class SASIIntegrationTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {

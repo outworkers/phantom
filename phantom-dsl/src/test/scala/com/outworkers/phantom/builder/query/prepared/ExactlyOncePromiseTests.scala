@@ -17,18 +17,19 @@ package com.outworkers.phantom.builder.query.prepared
 
 import java.util.concurrent.atomic.AtomicInteger
 
+import com.outworkers.phantom.builder.query.execution.ExactlyOncePromise
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import com.outworkers.phantom.dsl._
 
 class ExactlyOncePromiseTests extends FlatSpec with Matchers with ScalaFutures {
 
   it should "only execute the logic inside an exactly once promise a single time" in {
     val atomic = new AtomicInteger(0)
 
-    val promise = ExactlyOncePromise(Future(atomic.incrementAndGet()))
+    val promise = new ExactlyOncePromise(Future(atomic.incrementAndGet()))
 
     val chain = for {
       one <- promise.future

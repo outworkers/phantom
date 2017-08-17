@@ -65,7 +65,7 @@ class UnloggedBatchTest extends PhantomSuite {
       s"WHERE pkey = '${row2.pkey}'; DELETE FROM phantom.primitivesJoda " +
       s"WHERE pkey = '${row3.pkey}'; APPLY BATCH;"
 
-    batch.statement shouldEqual expected
+    batch.queryString() shouldEqual expected
   }
 
   ignore should "serialize a multiple table batch query chained from adding statements" in {
@@ -228,8 +228,8 @@ class UnloggedBatchTest extends PhantomSuite {
       updated <- database.primitivesJoda.select.where(_.pkey eqs row.pkey).one()
     } yield updated
 
-    whenReady(chain) {
-      res => res.value.intColumn shouldEqual (row.intColumn + 15)
+    whenReady(chain) { res =>
+      res.value.intColumn shouldEqual (row.intColumn + 15)
     }
   }
 }

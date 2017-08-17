@@ -32,7 +32,6 @@ lazy val Versions = new {
   val reactivestreams = "1.0.0"
   val cassandraUnit = "3.1.3.2"
   val javaxServlet = "3.0.1"
-  val monix = "2.3.0"
   val joda = "2.9.9"
   val jodaConvert = "1.8.1"
   val scalamock = "3.5.0"
@@ -45,6 +44,10 @@ lazy val Versions = new {
   val scala211 = "2.11.11"
   val scala212 = "2.12.3"
   val scalaAll = Seq(scala210, scala211, scala212)
+
+  val scala = new {
+    val all = Seq(scala210, scala211, scala212)
+  }
 
   val typesafeConfig: String = if (Publishing.isJdk8) {
     "1.3.1"
@@ -89,7 +92,7 @@ lazy val Versions = new {
   }
 }
 
-val defaultConcurrency = 8
+val defaultConcurrency = 4
 
 scalacOptions in ThisBuild ++= Seq(
   "-language:experimental.macros",
@@ -202,6 +205,7 @@ lazy val phantomDsl = (project in file("phantom-dsl"))
       "org.typelevel" %% "macro-compat" % Versions.macrocompat,
       "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
       compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
+      "org.typelevel"                %% "cats"                              % "0.9.0",
       "com.chuusai"                  %% "shapeless"                         % Versions.shapeless,
       "joda-time"                    %  "joda-time"                         % Versions.joda,
       "org.joda"                     %  "joda-convert"                      % Versions.jodaConvert,

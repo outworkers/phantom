@@ -15,7 +15,6 @@
  */
 package com.outworkers.phantom.builder.query.prepared
 
-import com.datastax.driver.core.{BoundStatement, ProtocolVersion}
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.builder.primitives.{DerivedField, DerivedTupleField}
 import com.outworkers.phantom.dsl.{?, _}

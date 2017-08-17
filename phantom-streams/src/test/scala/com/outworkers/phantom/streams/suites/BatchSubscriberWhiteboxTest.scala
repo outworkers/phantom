@@ -15,7 +15,7 @@
  */
 package com.outworkers.phantom.streams.suites
 
-import com.outworkers.phantom.batch.BatchType
+import com.outworkers.phantom.builder.batch.BatchType
 import com.outworkers.phantom.streams.BatchSubscriber
 import com.outworkers.util.samplers._
 import org.reactivestreams.tck.SubscriberWhiteboxVerification.{SubscriberPuppet, WhiteboxSubscriberProbe}

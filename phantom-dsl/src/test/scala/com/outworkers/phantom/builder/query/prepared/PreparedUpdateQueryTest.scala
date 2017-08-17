@@ -20,6 +20,9 @@ import com.outworkers.phantom.tables.Recipe
 import com.outworkers.phantom.dsl._
 import com.outworkers.util.samplers._
 
+import scala.concurrent.Await
+import scala.concurrent.duration._
+
 class PreparedUpdateQueryTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
@@ -44,6 +47,8 @@ class PreparedUpdateQueryTest extends PhantomSuite {
       update <- query.bind(updated, recipe.url).future()
       get2 <- database.recipes.select.where(_.url eqs recipe.url).one()
     } yield (get, get2)
+
+    Await.result(chain, 20.seconds)
 
     whenReady(chain) { case (initial, afterUpdate) =>
 
