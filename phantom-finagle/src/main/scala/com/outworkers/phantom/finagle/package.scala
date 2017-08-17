@@ -20,7 +20,7 @@ import com.datastax.driver.core.Statement
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.query._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
-import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, ExecutableStatements, GuavaAdapter, QueryCollection, QueryInterface, ResultQueryInterface}
+import com.outworkers.phantom.builder.query.execution._
 import com.outworkers.phantom.builder.query.options.{CompressionStrategy, GcGraceSecondsBuilder, TablePropertyClause, TimeToLiveBuilder}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.finagle.execution.{TwitterFutureImplicits, TwitterQueryContext}
@@ -32,11 +32,37 @@ import org.joda.time.Seconds
 import shapeless.HList
 
 import scala.collection.generic.CanBuildFrom
-import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.{ExecutionContextExecutor}
 
 package object finagle extends TwitterQueryContext with DefaultImports {
 
   implicit val twitterFutureMonad: Monad[Future] = TwitterFutureImplicits.monadInstance
+
+  /**
+    * Method that allows executing a simple query straight from text, by-passing the entire mapping layer
+    * but leveraging the execution layer.
+    * @param str The input [[CQLQuery]] to execute.
+    * @param options The [[QueryOptions]] to pass alongside the query.
+    * @return A future wrapping a database result set.
+    */
+  def cql(
+    str: CQLQuery,
+    options: QueryOptions
+  ): QueryInterface[Future] = new QueryInterface[Future]() {
+    override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(str, options)
+  }
+
+  /**
+    * Method that allows executing a simple query straight from text, by-passing the entire mapping layer
+    * but leveraging the execution layer.
+    * @param str The input [[CQLQuery]] to execute.
+    * @param options The [[QueryOptions]] to pass alongside the query.
+    * @return A future wrapping a database result set.
+    */
+  def cql(
+    str: String,
+    options: QueryOptions = QueryOptions.empty
+  ): QueryInterface[Future] = cql(CQLQuery(str), options)
 
   implicit class SpoolSelectQueryOps[
     P[_],
@@ -59,8 +85,7 @@ package object finagle extends TwitterQueryContext with DefaultImports {
       * @return
       */
     def fetchSpool(modifier: Statement => Statement)(
-      implicit session: Session,
-      keySpace: KeySpace
+      implicit session: Session
     ): Future[Spool[Seq[Record]]] = {
       query.future(modifier) flatMap { rs =>
         ResultSpool.spool(rs).map(spool => spool.map(_.map(query.fromRow)))
@@ -197,12 +222,6 @@ package object finagle extends TwitterQueryContext with DefaultImports {
       strategy.option(CQLSyntax.CompressionOptions.chunk_length_kb, unit.inKilobytes + "KB")
     }
   }
-
-  def cql(str: CQLQuery, options: QueryOptions = QueryOptions.empty): QueryInterface[Future] = new QueryInterface[Future]() {
-    override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(str, options)
-  }
-
-  def cql(str: String): QueryInterface[Future] = cql(CQLQuery(str))
 
   implicit class ExecuteQueries[M[X] <: TraversableOnce[X]](val qc: QueryCollection[M]) extends AnyVal {
     def executable()(

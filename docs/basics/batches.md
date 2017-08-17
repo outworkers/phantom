@@ -90,7 +90,6 @@ trait TestDbProvider extends DatabaseProvider[TestDatabase] {
 
 import java.util.UUID
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.batch._
 
 trait LoggedQueries extends TestDbProvider {
 
@@ -109,7 +108,6 @@ trait LoggedQueries extends TestDbProvider {
 ```scala
 
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.batch._
 
 trait UnloggedQueries extends TestDbProvider {
 
@@ -129,7 +127,6 @@ trait UnloggedQueries extends TestDbProvider {
 ```scala
 
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.batch._
 
 trait CounterQueries extends TestDbProvider {
 
@@ -147,7 +144,6 @@ you can also use `+=` and `-=` to achieve the same thing.
 ```scala
 
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.batch._
 
 trait CounterOpsQueries extends TestDbProvider {
 

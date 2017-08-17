@@ -47,7 +47,7 @@ trait MultiQueryInterface[M[X] <: TraversableOnce[X], F[_]] {
 }
 
 
-abstract class QueryInterface[M[_]]()(implicit adapter: GuavaAdapter[M]) {
+abstract class QueryInterface[F[_]]()(implicit adapter: GuavaAdapter[F]) {
 
   def executableQuery: ExecutableCqlQuery
 
@@ -67,7 +67,7 @@ abstract class QueryInterface[M[_]]()(implicit adapter: GuavaAdapter[M]) {
   def future()(
     implicit session: Session,
     ec: ExecutionContextExecutor
-  ): M[ResultSet] = {
+  ): F[ResultSet] = {
     adapter.fromGuava(executableQuery)
   }
 
@@ -87,6 +87,6 @@ abstract class QueryInterface[M[_]]()(implicit adapter: GuavaAdapter[M]) {
   def future(modifyStatement: Statement => Statement)(
     implicit session: Session,
     executor: ExecutionContextExecutor
-  ): M[ResultSet] = adapter.fromGuava(modifyStatement(executableQuery.statement()))
+  ): F[ResultSet] = adapter.fromGuava(modifyStatement(executableQuery.statement()))
 }
 

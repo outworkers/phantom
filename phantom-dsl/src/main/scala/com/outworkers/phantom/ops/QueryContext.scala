@@ -21,9 +21,10 @@ import cats.syntax.flatMap._
 import com.datastax.driver.core.{Session, Statement}
 import com.outworkers.phantom.builder.batch.BatchQuery
 import com.outworkers.phantom.builder._
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.execution._
 import com.outworkers.phantom.builder.query.prepared.{ExecutablePreparedQuery, ExecutablePreparedSelectQuery}
-import com.outworkers.phantom.builder.query.{CreateQuery, RootQuery, RootSelectBlock, SelectQuery}
+import com.outworkers.phantom.builder.query._
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.macros.{==:==, SingleGeneric, TableHelper}

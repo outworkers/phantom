@@ -29,7 +29,6 @@ Then let's start from a simple Cassandra connection:
 ```scala
 
 import com.datastax.driver.core.SocketOptions
-import com.outworkers.phantom.connectors._
 import com.outworkers.phantom.dsl._
 
 object Connector {
@@ -45,13 +44,7 @@ object Connector {
       )
     )
 }
-```
 
-Simple example:
-
-```scala
-
-import com.outworkers.phantom.connectors._
 import com.outworkers.phantom.dsl._
 
 case class MultiSASIRecord(

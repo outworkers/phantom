@@ -15,3 +15,54 @@ to something Cassandra understands, namely string types.
 Let's explore a simple example using the [circe](https://github.com/circe/circe) library.
 Phantom does not ship with any particular JSON library, you have complete freedom over what JSON library you use.
 
+
+```scala
+
+import com.outworkers.phantom.dsl._
+
+import io.circe._
+import io.circe.generic.semiauto._
+import io.circe.parser._
+import io.circe.syntax._
+
+case class JsonRecord(
+  prop1: String,
+  prop2: String
+)
+
+object JsonRecord {
+
+  implicit val jsonDecoder: Decoder[JsonRecord] = deriveDecoder[JsonRecord]
+  implicit val jsonEncoder: Encoder[JsonRecord] = deriveEncoder[JsonRecord]
+  
+  implicit val jsonPrimitive: Primitive[JsonRecord] = {
+    Primitive.json[JsonRecord](_.asJson.noSpaces)(decode[JsonRecord](_).right.get)
+  }
+
+}
+
+case class JsonClass(
+  id: UUID,
+  name: String,
+  json: JsonRecord,
+  optionalJson : Option[JsonRecord],
+  jsonList: List[JsonRecord],
+  jsonSet: Set[JsonRecord]
+)
+
+abstract class JsonTable extends Table[JsonTable, JsonClass] {
+
+  object id extends UUIDColumn with PartitionKey
+
+  object name extends StringColumn
+
+  object json extends JsonColumn[JsonRecord]
+
+  object optionalJson extends OptionalJsonColumn[JsonRecord]
+
+  object jsonList extends JsonListColumn[JsonRecord]
+
+  object jsonSet extends JsonSetColumn[JsonRecord]
+
+}
+```
