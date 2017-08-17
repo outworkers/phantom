@@ -50,13 +50,6 @@ abstract class QueryContext[P[_], F[_], Timeout](
 
   def await[T](f: F[T], timeout: Timeout): T
 
-
-  def cql(str: CQLQuery, options: QueryOptions = QueryOptions.empty): QueryInterface[F] = new QueryInterface[F]() {
-    override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(str, options)
-  }
-
-  def cql(str: String): QueryInterface[F] = cql(CQLQuery(str))
-
   implicit class BatchOps[Status <: ConsistencyBound](val query: BatchQuery[Status]) {
     def future()(implicit session: Session, ctx: ExecutionContextExecutor): F[ResultSet] = {
       adapter.executeBatch(query.makeBatch())

@@ -17,6 +17,9 @@ package com.outworkers.phantom
 
 import cats.Monad
 import cats.instances.FutureInstances
+import com.datastax.driver.core.Statement
+import com.outworkers.phantom.builder.query.QueryOptions
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.execution._
 
 import scala.collection.generic.CanBuildFrom
@@ -37,4 +40,30 @@ package object dsl extends ScalaQueryContext with DefaultImports with FutureInst
       ebf: CanBuildFrom[M[Future[ResultSet]], ResultSet, M[ResultSet]]
     ): Future[M[ResultSet]] = executable().future()
   }
+
+  /**
+    * Method that allows executing a simple query straight from text, by-passing the entire mapping layer
+    * but leveraging the execution layer.
+    * @param str The input [[CQLQuery]] to execute.
+    * @param options The [[QueryOptions]] to pass alongside the query.
+    * @return A future wrapping a database result set.
+    */
+  def cql(
+    str: CQLQuery,
+    options: QueryOptions
+  ): QueryInterface[Future] = new QueryInterface[Future]() {
+    override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(str, options)
+  }
+
+  /**
+    * Method that allows executing a simple query straight from text, by-passing the entire mapping layer
+    * but leveraging the execution layer.
+    * @param str The input [[CQLQuery]] to execute.
+    * @param options The [[QueryOptions]] to pass alongside the query.
+    * @return A future wrapping a database result set.
+    */
+  def cql(
+    str: String,
+    options: QueryOptions = QueryOptions.empty
+  ): QueryInterface[Future] = cql(CQLQuery(str), options)
 }

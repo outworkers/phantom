@@ -19,6 +19,7 @@ import cats.Monad
 import com.datastax.driver.core.Statement
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.query._
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.execution._
 import com.outworkers.phantom.builder.query.options.{CompressionStrategy, GcGraceSecondsBuilder, TablePropertyClause, TimeToLiveBuilder}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
@@ -31,11 +32,37 @@ import org.joda.time.Seconds
 import shapeless.HList
 
 import scala.collection.generic.CanBuildFrom
-import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.{ExecutionContextExecutor}
 
 package object finagle extends TwitterQueryContext with DefaultImports {
 
   implicit val twitterFutureMonad: Monad[Future] = TwitterFutureImplicits.monadInstance
+
+  /**
+    * Method that allows executing a simple query straight from text, by-passing the entire mapping layer
+    * but leveraging the execution layer.
+    * @param str The input [[CQLQuery]] to execute.
+    * @param options The [[QueryOptions]] to pass alongside the query.
+    * @return A future wrapping a database result set.
+    */
+  def cql(
+    str: CQLQuery,
+    options: QueryOptions
+  ): QueryInterface[Future] = new QueryInterface[Future]() {
+    override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(str, options)
+  }
+
+  /**
+    * Method that allows executing a simple query straight from text, by-passing the entire mapping layer
+    * but leveraging the execution layer.
+    * @param str The input [[CQLQuery]] to execute.
+    * @param options The [[QueryOptions]] to pass alongside the query.
+    * @return A future wrapping a database result set.
+    */
+  def cql(
+    str: String,
+    options: QueryOptions = QueryOptions.empty
+  ): QueryInterface[Future] = cql(CQLQuery(str), options)
 
   implicit class SpoolSelectQueryOps[
     P[_],
