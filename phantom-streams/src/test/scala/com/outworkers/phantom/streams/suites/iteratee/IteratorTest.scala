@@ -40,11 +40,9 @@ class IteratorTest extends BigTest with ScalaFutures {
       iterator <- database.timeuuidTable.select.where(_.user eqs user).iterator()
     } yield iterator
 
-    whenReady(chain) {
-      res => {
-        res.records.size shouldEqual generationSize
-        res.records.forall(rows contains _)
-      }
+    whenReady(chain) { res =>
+      res.records.size shouldEqual generationSize
+      res.records.forall(rows contains _)
     }
   }
 
@@ -71,7 +69,6 @@ class IteratorTest extends BigTest with ScalaFutures {
     } yield (count, firstHalf, secondHalf)
 
     whenReady(chain) { case (count, firstBatch, secondBatch) =>
-
       count shouldBe defined
       count.value shouldEqual generationSize
 
