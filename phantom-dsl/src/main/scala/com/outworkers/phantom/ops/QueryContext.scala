@@ -284,13 +284,26 @@ abstract class QueryContext[P[_], F[_], Timeout](
       fbf2: CanBuildFrom[M[F[ResultSet]], ResultSet, M[ResultSet]]
     ): F[M[ResultSet]] = {
 
-      val builder = cbfB()
+      val queries = (cbfB() /: inputs)((acc, el) => acc += table.store(el).executableQuery)
 
-      for (el <- inputs) {
-        builder += table.store(el).executableQuery
-      }
-
-      executeStatements[M](new QueryCollection[M](builder.result())).future()(session, ctx, fbf, fbf2)
+      executeStatements[M](new QueryCollection[M](queries.result())).future()(session, ctx, fbf, fbf2)
     }
+  }
+
+  implicit class QueryCollectionOps[M[X] <: TraversableOnce[X]](val col: QueryCollection[M]) {
+
+    def future()(
+      implicit session: Session,
+      ec: ExecutionContextExecutor,
+      fbf: CanBuildFrom[M[F[ResultSet]], F[ResultSet], M[F[ResultSet]]],
+      ebf: CanBuildFrom[M[F[ResultSet]], ResultSet, M[ResultSet]]
+    ): F[M[ResultSet]] = executeStatements(col).future()
+
+    def sequence()(
+      implicit session: Session,
+      ec: ExecutionContextExecutor,
+      cbf: CanBuildFrom[M[ExecutableCqlQuery], ResultSet, M[ResultSet]]
+    ): F[M[ResultSet]] = executeStatements(col).sequence()
+
   }
 }
