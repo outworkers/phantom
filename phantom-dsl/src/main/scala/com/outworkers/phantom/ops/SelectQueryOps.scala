@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 package com.outworkers.phantom.ops
-import com.outworkers.phantom.builder.query.execution._
 import com.datastax.driver.core.Session
 import com.outworkers.phantom.builder._
-import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, FutureMonad, GuavaAdapter, PromiseInterface, ResultQueryInterface}
+import com.outworkers.phantom.builder.query.execution._
 import com.outworkers.phantom.builder.query.prepared.{PreparedFlattener, PreparedSelectBlock}
 import com.outworkers.phantom.builder.query.{LimitedPart, SelectQuery}
 import com.outworkers.phantom.connectors.KeySpace

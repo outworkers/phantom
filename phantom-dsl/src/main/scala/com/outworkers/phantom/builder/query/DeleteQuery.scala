@@ -21,7 +21,6 @@ import com.outworkers.phantom.builder.clauses._
 import com.outworkers.phantom.builder.query.execution._
 import com.outworkers.phantom.builder.ops.MapKeyUpdateClause
 import com.outworkers.phantom.builder.query.engine.CQLQuery
-import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, FutureMonad, GuavaAdapter, PromiseInterface}
 import com.outworkers.phantom.builder.query.prepared.{PreparedBlock, PreparedFlattener}
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.KeySpace
