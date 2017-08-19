@@ -18,7 +18,6 @@ package com.outworkers.phantom.ops
 import com.datastax.driver.core.{Session, Statement}
 import com.outworkers.phantom.builder.batch.BatchQuery
 import com.outworkers.phantom.builder._
-import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.execution._
 import com.outworkers.phantom.builder.query.prepared.{ExecutablePreparedQuery, ExecutablePreparedSelectQuery}
 import com.outworkers.phantom.builder.query._
@@ -67,7 +66,9 @@ abstract class QueryContext[P[_], F[_], Timeout](
   implicit class RootSelectBlockOps[
     Table <: CassandraTable[Table, Record],
     Record
-  ](val block: RootSelectBlock[Table, Record])(implicit keySpace: KeySpace) extends ResultQueryInterface[F, Table, Record, Unlimited] {
+  ](val block: RootSelectBlock[Table, Record])(
+    implicit keySpace: KeySpace
+  ) extends ResultQueryInterface[F, Table, Record, Unlimited] {
     override def fromRow(r: Row): Record = block.rowFunc(r)
 
     /**
