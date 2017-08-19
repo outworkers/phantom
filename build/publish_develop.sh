@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 echo "Pull request: ${TRAVIS_PULL_REQUEST}; Branch: ${TRAVIS_BRANCH}"
-TARGET_SCALA_VERSION="2.12.2"
+TARGET_SCALA_VERSION="2.12.3"
 
 if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "develop" ];
 then
