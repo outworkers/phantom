@@ -14,7 +14,13 @@ Migrating to phantom 2.14.0(phantom-finagle users)
 =================================
 
 Please refer to the new docs on query execution to understand the breaking changes in phantom 2.14.0. They will
-affect users of `phantom-finagle`. Details [here](docs/querying/execution.md)
+affect users of `phantom-finagle`. Details [here](docs/querying/execution.md).
+
+Even if you do not use `phantom-finagle` but just the normal `phantom-dsl`, `import com.outworkers.phantom.dsl._` is
+ now required in more places than before. The `future` method is no longer implementation by query classes, but
+ rather added via implicit augmentation by `QueryContext`. The return type of the `future` method is now dependent
+ on which `QueryContext` you use, so that's why importing is required, without it the necessary implicits will not
+ be in scope.
 
 
 Migrating to phantom 2.x.x series
