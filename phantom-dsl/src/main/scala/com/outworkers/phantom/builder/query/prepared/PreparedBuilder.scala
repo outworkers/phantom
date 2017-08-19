@@ -15,13 +15,12 @@
  */
 package com.outworkers.phantom.builder.query.prepared
 
-import cats.Monad
 import com.datastax.driver.core.{QueryOptions => _, _}
 import com.outworkers.phantom.builder.LimitBound
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
-import com.outworkers.phantom.builder.query.execution.{ExactlyOncePromise, ExecutableCqlQuery, GuavaAdapter, PromiseInterface}
+import com.outworkers.phantom.builder.query.execution.{ExactlyOncePromise, ExecutableCqlQuery, FutureMonad, GuavaAdapter, PromiseInterface}
 import com.outworkers.phantom.connectors.{KeySpace, SessionAugmenterImplicits}
 import com.outworkers.phantom.macros.BindHelper
 import com.outworkers.phantom.{CassandraTable, Row}
@@ -69,7 +68,7 @@ class PreparedFlattener(qb: CQLQuery)(
 
   def async[P[_], F[_]]()(
     implicit executor: ExecutionContextExecutor,
-    monad: Monad[F],
+    monad: FutureMonad[F],
     adapter: GuavaAdapter[F],
     interface: PromiseInterface[P, F]
   ): F[PreparedStatement] = {

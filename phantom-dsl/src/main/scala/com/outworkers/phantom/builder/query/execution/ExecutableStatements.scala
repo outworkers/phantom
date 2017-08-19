@@ -15,8 +15,6 @@
  */
 package com.outworkers.phantom.builder.query.execution
 
-import cats.Monad
-import cats.implicits._
 import com.datastax.driver.core.{Session, SimpleStatement, Statement}
 import com.google.common.util.concurrent.ListenableFuture
 import com.outworkers.phantom.{Manager, ResultSet}
@@ -62,11 +60,12 @@ class ExecutableStatements[
   F[_],
   M[X] <: TraversableOnce[X]
 ](val queryCol: QueryCollection[M])(
-  implicit fMonad: Monad[F],
+  implicit fMonad: FutureMonad[F],
   adapter: GuavaAdapter[F]
 ) {
   def sequencedTraverse[A, B](in: M[A])(fn: A => F[B])(
-    implicit cbf: CanBuildFrom[M[A], B, M[B]]
+    implicit cbf: CanBuildFrom[M[A], B, M[B]],
+    ctx: ExecutionContextExecutor
   ): F[M[B]] = {
     in.foldLeft(fMonad.pure(cbf(in))) { (fr, a) =>
       for (r <- fr; b <- fn(a)) yield r += b
@@ -82,7 +81,8 @@ class ExecutableStatements[
     * @return          the `Future` of the `TraversableOnce` of results
     */
   def parallel[A](in: M[F[A]])(
-    implicit cbf: CanBuildFrom[M[F[A]], A, M[A]]
+    implicit cbf: CanBuildFrom[M[F[A]], A, M[A]],
+    ctx: ExecutionContextExecutor
   ): F[M[A]] = {
     (fMonad.pure(cbf(in)) /: in) { (fr, fa) => fr.zipWith(fa)(_ += _) }.map(_.result())
   }
@@ -112,7 +112,7 @@ class ExecutableStatements[
       builder += adapter.fromGuava(q)
     }
 
-    parallel(builder.result())(ebf)
+    parallel(builder.result())(ebf, ec)
   }
 
   def sequence()(

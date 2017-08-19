@@ -15,13 +15,11 @@
  */
 package com.outworkers.phantom.builder.query
 
-import cats.Monad
-import cats.syntax.functor._
 import com.datastax.driver.core.{ConsistencyLevel, Session}
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.clauses._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
-import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, GuavaAdapter, PromiseInterface}
+import com.outworkers.phantom.builder.query.execution._
 import com.outworkers.phantom.builder.query.prepared.{PrepareMark, PreparedBlock, PreparedFlattener}
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.{CassandraTable, Row}
@@ -77,7 +75,7 @@ case class UpdateQuery[
     keySpace: KeySpace,
     ev: PS =:!= HNil,
     rev: Reverse.Aux[PS, Rev],
-    fMonad: Monad[F],
+    fMonad: FutureMonad[F],
     adapter: GuavaAdapter[F],
     interface: PromiseInterface[P, F]
   ): F[PreparedBlock[Rev]] = {
@@ -276,7 +274,7 @@ sealed case class AssignmentsQuery[
     rev: Reverse.Aux[PS, Rev],
     rev2: Reverse.Aux[ModifyPrepared, Reversed],
     prepend: Prepend.Aux[Reversed, Rev, Out],
-    fMonad: Monad[F],
+    fMonad: FutureMonad[F],
     adapter: GuavaAdapter[F],
     interface: PromiseInterface[P, F]
   ): F[PreparedBlock[Out]] = {
@@ -392,7 +390,7 @@ sealed case class ConditionalQuery[
     keySpace: KeySpace,
     ev: PS =:!= HNil,
     rev: Reverse.Aux[PS, Rev],
-    fMonad: Monad[F],
+    fMonad: FutureMonad[F],
     adapter: GuavaAdapter[F],
     interface: PromiseInterface[P, F]
   ): F[PreparedBlock[Rev]] = {

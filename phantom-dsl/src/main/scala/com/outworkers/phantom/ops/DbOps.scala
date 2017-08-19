@@ -15,17 +15,15 @@
  */
 package com.outworkers.phantom.ops
 
-import cats.Monad
 import com.outworkers.phantom.ResultSet
-import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, ExecutableStatements, QueryCollection}
+import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, ExecutableStatements, FutureMonad, QueryCollection}
 import com.outworkers.phantom.database.Database
 
 import scala.collection.generic.CanBuildFrom
 import scala.concurrent.ExecutionContextExecutor
-import scala.collection.immutable.Seq
 
 abstract class DbOps[
-  F[_] : Monad,
+  F[_] : FutureMonad,
   DB <: Database[DB],
   Timeout
 ](val db: Database[DB]) {

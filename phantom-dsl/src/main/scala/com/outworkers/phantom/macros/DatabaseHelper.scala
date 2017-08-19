@@ -22,7 +22,6 @@ import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.macros.toolbelt.WhiteboxToolbelt
 
 import scala.reflect.macros.whitebox
-import scala.collection.immutable.Seq
 
 trait DatabaseHelper[T <: Database[T]] {
   def tables(db: T): Seq[CassandraTable[_ ,_]]
@@ -41,12 +40,12 @@ class DatabaseHelperMacro(override val c: whitebox.Context) extends WhiteboxTool
   import c.universe._
 
   private[this] val seqTpe: Type => Tree = { tpe =>
-    tq"_root_.scala.collection.immutable.Seq[$tpe]"
+    tq"_root_.scala.collection.Seq[$tpe]"
   }
 
   private[this] val tableSymbol = typeOf[com.outworkers.phantom.CassandraTable[_, _]]
 
-  private[this] val seqCmp = q"_root_.scala.collection.immutable.Seq"
+  private[this] val seqCmp = q"_root_.scala.collection.Seq"
 
   def materialize[T <: Database[T] : WeakTypeTag]: Tree = {
     memoize[Type, Tree](WhiteboxToolbelt.ddHelperCache)(weakTypeOf[T], deriveHelper)
@@ -72,7 +71,7 @@ class DatabaseHelperMacro(override val c: whitebox.Context) extends WhiteboxTool
 
          def createQueries(db: $tpe)(
            implicit space: $keyspaceType
-         ): $execution.QueryCollection[_root_.scala.collection.immutable.Seq] = {
+         ): $execution.QueryCollection[_root_.scala.collection.Seq] = {
             new $execution.QueryCollection($seqCmp.apply(..$queryList))
          }
        }

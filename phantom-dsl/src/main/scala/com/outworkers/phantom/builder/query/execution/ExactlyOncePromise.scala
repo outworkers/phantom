@@ -17,7 +17,12 @@ package com.outworkers.phantom.builder.query.execution
 
 import java.util.concurrent.atomic.AtomicBoolean
 
-import cats.Monad
+import com.datastax.driver.core.{Session, Statement}
+import com.google.common.util.concurrent.{FutureCallback, Futures, ListenableFuture}
+import com.outworkers.phantom.ResultSet
+import com.outworkers.phantom.connectors.SessionAugmenterImplicits
+
+import scala.concurrent.ExecutionContextExecutor
 
 trait PromiseInterface[P[_], F[_]] {
 
@@ -29,13 +34,40 @@ trait PromiseInterface[P[_], F[_]] {
 
   def future[T](source: P[T]): F[T]
 
-  def failed[T](exception: Exception): F[T]
+  def failed[T](exception: Throwable): F[T]
+
+  def adapter(implicit monad: FutureMonad[F]): GuavaAdapter[F] = new GuavaAdapter[F] with SessionAugmenterImplicits {
+
+    override def fromGuava[T](source: ListenableFuture[T])(
+      implicit executor: ExecutionContextExecutor
+    ): F[T] = {
+      val promise = empty[T]
+
+      val callback = new FutureCallback[T] {
+        def onSuccess(result: T): Unit = {
+          become(promise, apply(result))
+        }
+
+        def onFailure(err: Throwable): Unit = {
+          become(promise, failed(err))
+        }
+      }
+
+      Futures.addCallback(source, callback, executor)
+      future(promise)
+    }
+
+    override def fromGuava(in: Statement)(
+      implicit session: Session,
+      ctx: ExecutionContextExecutor
+    ): F[ResultSet] = fromGuava(session.executeAsync(in)).map(res => ResultSet(res, session.protocolVersion))
+  }
 }
 
 class ExactlyOncePromise[P[_], F[_], T](
   fn: => F[T]
 )(
-  implicit fMonad: Monad[F],
+  implicit fMonad: FutureMonad[F],
   interface: PromiseInterface[P, F]
 ) {
 

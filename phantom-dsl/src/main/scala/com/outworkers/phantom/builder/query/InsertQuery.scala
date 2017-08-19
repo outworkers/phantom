@@ -15,18 +15,16 @@
  */
 package com.outworkers.phantom.builder.query
 
-import cats.Monad
-import cats.syntax.functor._
 import com.datastax.driver.core.{ConsistencyLevel, Session}
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.clauses.{OperatorClause, UsingClause}
 import com.outworkers.phantom.builder.query.engine.CQLQuery
-import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, GuavaAdapter, PromiseInterface}
+import com.outworkers.phantom.builder.query.execution._
 import com.outworkers.phantom.builder.query.prepared.{PrepareMark, PreparedBlock, PreparedFlattener}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column.AbstractColumn
-import com.outworkers.phantom.connectors.{KeySpace, SessionAugmenterImplicits}
+import com.outworkers.phantom.connectors.KeySpace
 import org.joda.time.DateTime
 import shapeless.ops.hlist.Reverse
 import shapeless.{::, =:!=, HList, HNil}
@@ -130,7 +128,7 @@ case class InsertQuery[
     keySpace: KeySpace,
     ev: PS =:!= HNil,
     rev: Reverse.Aux[PS, Rev],
-    fMonad: Monad[F],
+    fMonad: FutureMonad[F],
     adapter: GuavaAdapter[F],
     interface: PromiseInterface[P, F]
   ): F[PreparedBlock[Rev]] = {
@@ -246,7 +244,7 @@ class InsertJsonQuery[
     keySpace: KeySpace,
     ev: PS =:!= HNil,
     rev: Reverse.Aux[PS, Rev],
-    fMonad: Monad[F],
+    fMonad: FutureMonad[F],
     adapter: GuavaAdapter[F],
     interface: PromiseInterface[P, F]
   ): F[PreparedBlock[Rev]] = {

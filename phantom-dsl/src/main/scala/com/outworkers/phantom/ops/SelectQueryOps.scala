@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 package com.outworkers.phantom.ops
-
-import cats.Monad
-import cats.syntax.functor._
 import com.datastax.driver.core.Session
 import com.outworkers.phantom.builder._
-import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, GuavaAdapter, PromiseInterface, ResultQueryInterface}
+import com.outworkers.phantom.builder.query.execution._
 import com.outworkers.phantom.builder.query.prepared.{PreparedFlattener, PreparedSelectBlock}
 import com.outworkers.phantom.builder.query.{LimitedPart, SelectQuery}
 import com.outworkers.phantom.connectors.KeySpace
@@ -44,7 +41,7 @@ class SelectQueryOps[
   val query: SelectQuery[Table, Record, Limit, Order, Status, Chain, PS]
 )(
   implicit adapter: GuavaAdapter[F],
-  fMonad: Monad[F]
+  fMonad: FutureMonad[F]
 ) extends ResultQueryInterface[F, Table, Record, Limit] {
 
   /**
@@ -90,7 +87,7 @@ class SelectQueryOps[
     keySpace: KeySpace,
     ev: PS =:!= HNil,
     rev: Reverse.Aux[PS, Rev],
-    fMonad: Monad[F],
+    fMonad: FutureMonad[F],
     adapter: GuavaAdapter[F],
     interface: PromiseInterface[P, F]
   ): F[PreparedSelectBlock[Table, Record, Limit, Rev]] = {

@@ -15,30 +15,25 @@
  */
 package com.outworkers.phantom.finagle.execution
 
-import cats.Monad
-import com.outworkers.phantom.builder.query.execution.PromiseInterface
+import com.outworkers.phantom.builder.query.execution.{FutureMonad, PromiseInterface}
 import com.outworkers.phantom.ops.QueryContext
 import com.twitter.conversions.time._
 import com.twitter.util.{Await, Duration, Future, Promise}
 
+import scala.concurrent.ExecutionContextExecutor
+
 object TwitterFutureImplicits {
 
-  val monadInstance: Monad[Future] = new Monad[Future] {
+  val monadInstance: FutureMonad[Future] = new FutureMonad[Future] {
+    override def flatMap[A, B](fa: Future[A])(f: (A) => Future[B])(
+      implicit ctx: ExecutionContextExecutor
+    ): Future[B] = fa flatMap f
 
-    override def flatMap[A, B](fa: Future[A])(f: (A) => Future[B]): Future[B] = fa flatMap f
+    override def map[A, B](source: Future[A])(f: (A) => B)(
+      implicit ctx: ExecutionContextExecutor
+    ): Future[B] = source map f
 
-    /**
-      * Note that while this implementation will not compile with `@tailrec`,
-      * it is in fact stack-safe.
-      */
-    final def tailRecM[B, C](b: B)(f: B => Future[Either[B, C]]): Future[C] = {
-      f(b).flatMap {
-        case Left(b1) => tailRecM(b1)(f)
-        case Right(c) => Future.value(c)
-      }
-    }
-
-    override def pure[A](x: A): Future[A] = Future.value(x)
+    override def pure[A](source: A): Future[A] = Future.value(source)
   }
 
 }
@@ -53,7 +48,7 @@ object TwitterPromiseInterface extends PromiseInterface[Promise, Future] {
 
   override def future[T](source: Promise[T]): Future[T] = source
 
-  override def failed[T](exception: Exception): Future[T] = Future.exception[T](exception)
+  override def failed[T](exception: Throwable): Future[T] = Future.exception[T](exception)
 
   override def apply[T](value: T): Future[T] = Future.value(value)
 }
