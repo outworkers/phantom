@@ -15,12 +15,11 @@
  */
 package com.outworkers.phantom
 
-import cats.Monad
 import com.datastax.driver.core.Session
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.DeleteClause
 import com.outworkers.phantom.builder.primitives.Primitive
-import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, ExecutableStatements, GuavaAdapter, QueryCollection}
+import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, ExecutableStatements, FutureMonad, GuavaAdapter, QueryCollection}
 import com.outworkers.phantom.builder.query.sasi.Mode
 import com.outworkers.phantom.builder.query.{RootCreateQuery, _}
 import com.outworkers.phantom.column.AbstractColumn
@@ -61,7 +60,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
     implicit session: Session,
     keySpace: KeySpace,
     ec: ExecutionContextExecutor,
-    monad: Monad[F],
+    monad: FutureMonad[F],
     guavaAdapter: GuavaAdapter[F]
   ): F[Seq[ResultSet]] = {
     new ExecutableStatements[F, Seq](autocreate(keySpace).queries).sequence()

@@ -15,7 +15,6 @@
  */
 package com.outworkers.phantom
 
-import cats.Monad
 import com.datastax.driver.core.Statement
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.query._
@@ -32,11 +31,11 @@ import org.joda.time.Seconds
 import shapeless.HList
 
 import scala.collection.generic.CanBuildFrom
-import scala.concurrent.{ExecutionContextExecutor}
+import scala.concurrent.ExecutionContextExecutor
 
 package object finagle extends TwitterQueryContext with DefaultImports {
 
-  implicit val twitterFutureMonad: Monad[Future] = TwitterFutureImplicits.monadInstance
+  implicit val twitterFutureMonad: FutureMonad[Future] = TwitterFutureImplicits.monadInstance
 
   /**
     * Method that allows executing a simple query straight from text, by-passing the entire mapping layer

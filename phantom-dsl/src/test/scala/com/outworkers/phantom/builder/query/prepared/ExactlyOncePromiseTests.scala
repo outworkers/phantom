@@ -17,6 +17,7 @@ package com.outworkers.phantom.builder.query.prepared
 
 import java.util.concurrent.atomic.AtomicInteger
 
+import com.outworkers.phantom.ScalaFutureImplicits._
 import com.outworkers.phantom.builder.query.execution.ExactlyOncePromise
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FlatSpec, Matchers}

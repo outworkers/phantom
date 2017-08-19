@@ -17,8 +17,6 @@ package com.outworkers.phantom.builder.query.execution
 
 import java.util.concurrent.atomic.AtomicBoolean
 
-import cats.Monad
-import cats.syntax.functor._
 import com.datastax.driver.core.{Session, Statement}
 import com.google.common.util.concurrent.{FutureCallback, Futures, ListenableFuture}
 import com.outworkers.phantom.ResultSet
@@ -38,7 +36,7 @@ trait PromiseInterface[P[_], F[_]] {
 
   def failed[T](exception: Throwable): F[T]
 
-  def adapter(implicit monad: Monad[F]): GuavaAdapter[F] = new GuavaAdapter[F] with SessionAugmenterImplicits {
+  def adapter(implicit monad: FutureMonad[F]): GuavaAdapter[F] = new GuavaAdapter[F] with SessionAugmenterImplicits {
 
     override def fromGuava[T](source: ListenableFuture[T])(
       implicit executor: ExecutionContextExecutor
@@ -69,7 +67,7 @@ trait PromiseInterface[P[_], F[_]] {
 class ExactlyOncePromise[P[_], F[_], T](
   fn: => F[T]
 )(
-  implicit fMonad: Monad[F],
+  implicit fMonad: FutureMonad[F],
   interface: PromiseInterface[P, F]
 ) {
 

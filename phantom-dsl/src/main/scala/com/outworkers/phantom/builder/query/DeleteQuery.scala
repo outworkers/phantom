@@ -15,21 +15,20 @@
  */
 package com.outworkers.phantom.builder.query
 
-import cats.Monad
 import com.datastax.driver.core.{ConsistencyLevel, Session}
-import com.outworkers.phantom.{CassandraTable, Row}
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.clauses._
+import com.outworkers.phantom.builder.query.execution._
 import com.outworkers.phantom.builder.ops.MapKeyUpdateClause
 import com.outworkers.phantom.builder.query.engine.CQLQuery
-import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, GuavaAdapter, PromiseInterface}
-import com.outworkers.phantom.builder.query.prepared.{PreparedBlock, PreparedFlattener, PreparedSelectBlock}
+import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, FutureMonad, GuavaAdapter, PromiseInterface}
+import com.outworkers.phantom.builder.query.prepared.{PreparedBlock, PreparedFlattener}
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.KeySpace
+import com.outworkers.phantom.{CassandraTable, Row}
 import org.joda.time.DateTime
 import shapeless.ops.hlist.{Prepend, Reverse}
 import shapeless.{=:!=, HList, HNil}
-import cats.syntax.functor._
 
 import scala.concurrent.ExecutionContextExecutor
 
@@ -93,7 +92,7 @@ case class DeleteQuery[
     keySpace: KeySpace,
     ev: PS =:!= HNil,
     rev: Reverse.Aux[PS, Rev],
-    monad: Monad[F],
+    monad: FutureMonad[F],
     adapter: GuavaAdapter[F],
     interface: PromiseInterface[P, F]
   ): F[PreparedBlock[Rev]] = {

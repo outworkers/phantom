@@ -15,8 +15,6 @@
  */
 package com.outworkers.phantom.builder.query.execution
 
-import cats.Monad
-import cats.implicits._
 import com.datastax.driver.core.{PagingState, Session, Statement}
 import com.outworkers.phantom.builder.{LimitBound, Unlimited}
 import com.outworkers.phantom.{CassandraTable, ResultSet, Row}
@@ -29,7 +27,7 @@ abstract class ResultQueryInterface[
   T <: CassandraTable[T, _],
   R,
   Limit <: LimitBound
-]()(implicit fMonad: Monad[F], adapter: GuavaAdapter[F]) extends QueryInterface[F] {
+]()(implicit fMonad: FutureMonad[F], adapter: GuavaAdapter[F]) extends QueryInterface[F] {
 
   def fromRow(r: Row): R
 
@@ -49,13 +47,13 @@ abstract class ResultQueryInterface[
 
   protected[this] def greedyEval(
     f: F[ResultSet]
-  ): F[ListResult[R]] = {
+  )(implicit ctx: ExecutionContextExecutor): F[ListResult[R]] = {
     f map { r => ListResult(directMapper(r.iterate()), r) }
   }
 
   protected[this] def lazyEval(
     f: F[ResultSet]
-  ): F[IteratorResult[R]] = {
+  )(implicit ctx: ExecutionContextExecutor): F[IteratorResult[R]] = {
     f map { r => IteratorResult(r.iterate().map(fromRow), r) }
   }
 

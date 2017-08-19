@@ -15,9 +15,6 @@
  */
 package com.outworkers.phantom
 
-import cats.Monad
-import cats.instances.FutureInstances
-import com.datastax.driver.core.Statement
 import com.outworkers.phantom.builder.query.QueryOptions
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.execution._
@@ -25,13 +22,13 @@ import com.outworkers.phantom.builder.query.execution._
 import scala.collection.generic.CanBuildFrom
 import scala.concurrent.{ExecutionContextExecutor, Future}
 
-package object dsl extends ScalaQueryContext with DefaultImports with FutureInstances {
+package object dsl extends ScalaQueryContext with DefaultImports {
 
   implicit class ExecuteQueries[M[X] <: TraversableOnce[X]](val qc: QueryCollection[M]) extends AnyVal {
     def executable()(
       implicit ctx: ExecutionContextExecutor
     ): ExecutableStatements[Future, M] = {
-      implicit val fMonad: Monad[Future] = catsStdInstancesForFuture(ctx)
+      import ScalaFutureImplicits._
       new ExecutableStatements[Future, M](qc)
     }
 

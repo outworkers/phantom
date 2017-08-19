@@ -15,9 +15,6 @@
  */
 package com.outworkers.phantom.ops
 
-import cats.Monad
-import cats.syntax.functor._
-import cats.syntax.flatMap._
 import com.datastax.driver.core.{Session, Statement}
 import com.outworkers.phantom.builder.batch.BatchQuery
 import com.outworkers.phantom.builder._
@@ -37,7 +34,7 @@ import scala.concurrent.ExecutionContextExecutor
 abstract class QueryContext[P[_], F[_], Timeout](
   defaultTimeout: Timeout
 )(
-  implicit fMonad: Monad[F],
+  implicit fMonad: FutureMonad[F],
   val promiseInterface: PromiseInterface[P, F],
   val adapter: GuavaAdapter[F]
 ) { outer =>

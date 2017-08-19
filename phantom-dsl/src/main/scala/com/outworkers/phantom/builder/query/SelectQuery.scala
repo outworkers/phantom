@@ -15,13 +15,11 @@
  */
 package com.outworkers.phantom.builder.query
 
-import cats.Monad
-import cats.syntax.functor._
 import com.datastax.driver.core.{ConsistencyLevel, Session}
 import com.outworkers.phantom.builder.clauses._
 import com.outworkers.phantom.builder.primitives.Primitives.{LongPrimitive, StringPrimitive}
 import com.outworkers.phantom.builder.query.engine.CQLQuery
-import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, GuavaAdapter, PromiseInterface}
+import com.outworkers.phantom.builder.query.execution._
 import com.outworkers.phantom.builder.query.prepared.{PrepareMark, PreparedFlattener, PreparedSelectBlock}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.builder.{ConsistencyBound, LimitBound, OrderBound, WhereBound, _}
@@ -31,7 +29,7 @@ import shapeless.ops.hlist.{Prepend, Reverse}
 import shapeless.{::, =:!=, HList, HNil}
 
 import scala.annotation.implicitNotFound
-import scala.concurrent.{ExecutionContextExecutor, Future => ScalaFuture}
+import scala.concurrent.ExecutionContextExecutor
 
 case class SelectQuery[
   Table <: CassandraTable[Table, _],
@@ -75,29 +73,6 @@ case class SelectQuery[
     P <: HList
   ] = SelectQuery[T, R, L, O, S, C, P]
 
-  protected[this] def create[
-    T <: CassandraTable[T, _],
-    R,
-    L <: LimitBound,
-    O <: OrderBound,
-    S <: ConsistencyBound,
-    C <: WhereBound,
-    P <: HList
-  ](t: T, q: CQLQuery, r: Row => R, part: UsingPart, opts: QueryOptions): QueryType[T, R, L, O, S, C, P] = {
-    new SelectQuery[T, R, L, O, S, C, P](
-      table = t,
-      rowFunc = r,
-      init = q,
-      wherePart = wherePart,
-      orderPart = orderPart,
-      limitedPart = limitedPart,
-      filteringPart = filteringPart,
-      usingPart = part,
-      count = count,
-      options = opts
-    )
-  }
-
   def allowFiltering(): SelectQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
     copy(filteringPart = filteringPart append QueryBuilder.Select.allowFiltering())
   }
@@ -118,7 +93,7 @@ case class SelectQuery[
     keySpace: KeySpace,
     ev: PS =:!= HNil,
     rev: Reverse.Aux[PS, Rev],
-    fMonad: Monad[F],
+    fMonad: FutureMonad[F],
     adapter: GuavaAdapter[F],
     interface: PromiseInterface[P, F]
   ): F[PreparedSelectBlock[Table, Record, Limit, Rev]] = {
