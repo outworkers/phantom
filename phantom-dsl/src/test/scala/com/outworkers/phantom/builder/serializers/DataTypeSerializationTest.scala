@@ -97,10 +97,34 @@ class DataTypeSerializationTest extends FlatSpec with Matchers with Serializatio
     cType shouldEqual s"map<frozen<set<${stringP.dataType}>>, frozen<list<${stringP.dataType}>>>"
   }
 
+  it should "generate a frozen collection type for a nested list" in {
+    val stringP = Primitive[String]
+    val cType = db.nestedCollectionTable.nestedList.cassandraType
+
+    cType shouldEqual s"list<frozen<list<${stringP.dataType}>>>"
+  }
+
+  it should "generate a frozen collection type for a nested list set" in {
+    val stringP = Primitive[String]
+    val cType = db.nestedCollectionTable.nestedListSet.cassandraType
+
+    cType shouldEqual s"list<frozen<set<${stringP.dataType}>>>"
+  }
+
   it should "generate a frozen collection type for map with a collection value type" in {
     val stringP = Primitive[String]
     val cType = db.nestedCollectionTable.props.cassandraType
 
     cType shouldEqual s"map<text, frozen<list<${stringP.dataType}>>>"
+  }
+
+  it should "freeze nested collections properly" in {
+    val stringP = Primitive[String]
+    val inner = Primitive[List[String]]
+    val listP = Primitive[List[List[String]]]
+
+    inner.frozen shouldEqual true
+
+    listP.cassandraType shouldEqual s"frozen<list<frozen<list<${stringP.dataType}>>>>"
   }
 }
