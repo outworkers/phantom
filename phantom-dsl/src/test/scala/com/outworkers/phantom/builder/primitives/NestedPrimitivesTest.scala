@@ -22,6 +22,11 @@ import com.outworkers.util.samplers._
 
 class NestedPrimitivesTest extends PhantomSuite {
 
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    db.nestedCollectionTable.createSchema()
+  }
+
   it should "automatically store a nested primitive record" in {
     val sample = gen[NestedCollections]
 
@@ -56,6 +61,29 @@ class NestedPrimitivesTest extends PhantomSuite {
 
       afterUpdate shouldBe defined
       afterUpdate.value.nestedList should contain theSameElementsAs updated
+    }
+  }
+
+  it should "update the value of an entire record inside a nested list set field" in {
+    val sample = gen[NestedCollections]
+    val updated = genList[Set[String]]()
+
+    val chain = for {
+      store <- db.nestedCollectionTable.storeRecord(sample)
+      retrieve <- db.nestedCollectionTable.select.where(_.id eqs sample.id).one()
+      update <- db.nestedCollectionTable.update
+        .where(_.id eqs sample.id)
+        .modify(_.nestedListSet setTo updated)
+        .future()
+      retrieve2 <- db.nestedCollectionTable.select.where(_.id eqs sample.id).one()
+    } yield (retrieve, retrieve2)
+
+    whenReady(chain) { case (beforeUpdate, afterUpdate) =>
+      beforeUpdate shouldBe defined
+      beforeUpdate.value shouldEqual sample
+
+      afterUpdate shouldBe defined
+      afterUpdate.value.nestedListSet should contain theSameElementsAs updated
     }
   }
 }
