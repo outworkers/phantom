@@ -36,6 +36,8 @@ abstract class PrimaryCollectionTable extends Table[PrimaryCollectionTable, Prim
 case class NestedCollections(
   id: UUID,
   text: String,
+  nestedList: List[List[String]],
+  nestedListSet: List[Set[String]],
   props: Map[String, List[String]],
   doubleProps: Map[Set[String], List[String]]
 )
@@ -46,6 +48,8 @@ abstract class NestedCollectionTable extends Table[
 ] {
   object id extends UUIDColumn with PartitionKey
   object text extends StringColumn
+  object nestedList extends ListColumn[List[String]]
+  object nestedListSet extends ListColumn[Set[String]]
   object props extends MapColumn[String, List[String]]
   object doubleProps extends MapColumn[Set[String], List[String]]
 }

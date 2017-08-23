@@ -485,7 +485,7 @@ object Primitives {
     implicit ev: Primitive[RR],
     cbf: CanBuildFrom[Nothing, RR, M[RR]]
   ): Primitive[M[RR]] = new Primitive[M[RR]] {
-    override def frozen: Boolean = ev.frozen
+    override def frozen: Boolean = true
 
     override def shouldFreeze: Boolean = true
 
