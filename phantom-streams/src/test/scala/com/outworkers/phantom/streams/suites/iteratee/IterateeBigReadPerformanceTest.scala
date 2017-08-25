@@ -19,7 +19,9 @@ import java.util.concurrent.atomic.AtomicLong
 
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.streams._
+import com.outworkers.phantom.tables.JodaRow
 import org.scalatest.concurrent.ScalaFutures
+import com.outworkers.util.samplers._
 
 class IterateeBigReadPerformanceTest extends BigTest with ScalaFutures {
 
@@ -36,7 +38,29 @@ class IterateeBigReadPerformanceTest extends BigTest with ScalaFutures {
     whenReady(chain) { query =>
       val count = counter.getAndIncrement()
       info(s"Done, reading: $count elements from the table.")
-      count shouldEqual count
+      query.value shouldEqual count
+    }
+  }
+
+  it should "derive an enumerator for every single select query" in {
+    val counter = new AtomicLong(0)
+    val generationSize = 200
+    val samples = genList[JodaRow](generationSize)
+
+    val chain = for {
+      initialCount <- database.primitivesJoda.select.count().one()
+      insert <- database.primitivesJoda.storeRecords(samples)
+
+      res <-  database.primitivesJoda.select.fetchEnumerator run Iteratee.forEach {
+        r => counter.incrementAndGet()
+      }
+      count <- database.primitivesJoda.select.count().one()
+    } yield (initialCount, count)
+
+    whenReady(chain) { case (initialCount, finalCount) =>
+      val count = counter.get()
+      info(s"Done, reading: $count elements from the table.")
+      finalCount.value shouldEqual (count + initialCount.value)
     }
   }
 }
