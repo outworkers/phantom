@@ -69,11 +69,10 @@ class PreparedFlattener(qb: CQLQuery)(
   def async[P[_], F[_]]()(
     implicit executor: ExecutionContextExecutor,
     monad: FutureMonad[F],
-    adapter: GuavaAdapter[F],
     interface: PromiseInterface[P, F]
   ): F[PreparedStatement] = {
     new ExactlyOncePromise[P, F, PreparedStatement](
-      adapter.fromGuava(session.prepareAsync(qb.queryString))
+      interface.adapter.fromGuava(session.prepareAsync(qb.queryString))
     ).future
   }
 }

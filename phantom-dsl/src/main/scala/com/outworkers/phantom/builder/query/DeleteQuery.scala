@@ -92,7 +92,6 @@ case class DeleteQuery[
     ev: PS =:!= HNil,
     rev: Reverse.Aux[PS, Rev],
     monad: FutureMonad[F],
-    adapter: GuavaAdapter[F],
     interface: PromiseInterface[P, F]
   ): F[PreparedBlock[Rev]] = {
     val flatten = new PreparedFlattener(qb)
