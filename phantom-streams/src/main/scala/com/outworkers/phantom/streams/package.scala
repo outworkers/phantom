@@ -18,10 +18,11 @@ package com.outworkers.phantom
 import akka.actor.ActorSystem
 import com.datastax.driver.core.{Session, Statement}
 import com.outworkers.phantom.builder.batch.BatchType
+import com.outworkers.phantom.builder.query.execution.{FutureMonad, GuavaAdapter, ResultQueryInterface}
 import com.outworkers.phantom.builder.{ConsistencyBound, LimitBound, OrderBound, WhereBound}
 import com.outworkers.phantom.builder.query.{RootSelectBlock, SelectQuery}
 import com.outworkers.phantom.connectors.KeySpace
-import com.outworkers.phantom.dsl.{context => _, _ }
+import com.outworkers.phantom.dsl.{context => _, _}
 import com.outworkers.phantom.streams.iteratee.{Enumerator, Iteratee => PhantomIteratee}
 import com.outworkers.phantom.streams.lib.EnumeratorPublisher
 import org.reactivestreams.Publisher
@@ -151,6 +152,7 @@ package object streams {
     def publisher: Publisher[T] = enumeratorToPublisher(enumerator)
   }
 
+
   /**
     * Returns the product of the arguments,
     * throwing an exception if the result overflows a {@code long}.
@@ -174,32 +176,6 @@ package object streams {
   }
 
   final val Iteratee = PhantomIteratee
-
-  implicit class RootSelectBlockEnumerator[
-    T <: CassandraTable[T, _],
-    R
-  ](val block: RootSelectBlock[T, R]) extends AnyVal {
-    /**
-      * Produces an Enumerator for [R]ows
-      * This enumerator can be consumed afterwards with an Iteratee
-      *
-      * @param session The Cassandra session in use.
-      * @param keySpace The keyspace object in use.
-      * @param ctx The Execution Context.
-      * @return
-      */
-    def fetchEnumerator()(
-      implicit session: Session,
-      keySpace: KeySpace,
-      ctx: ExecutionContextExecutor
-    ): PlayEnumerator[R] = {
-      PlayEnumerator.flatten {
-        block.all().future() map { res =>
-          Enumerator.enumerator(res) through Enumeratee.map(block.rowFunc)
-        }
-      }
-    }
-  }
 
   implicit class ExecutableQueryStreamsAugmenter[
     T <: CassandraTable[T, R],
@@ -251,6 +227,66 @@ package object streams {
           Enumerator.enumerator(res) through Enumeratee.map(query.fromRow)
         }
       }
+    }
+
+    def publisher: Publisher[R] = enumeratorToPublisher(query.fetchEnumerator())
+
+    def publisher(modifier: Statement => Statement): Publisher[R] = {
+      enumeratorToPublisher(query.fetchEnumerator(modifier))
+    }
+  }
+
+
+  implicit class RootSelectBlockEnumerator[
+    T <: CassandraTable[T, _],
+    R
+  ](val block: RootSelectBlock[T, R]) extends AnyVal {
+    /**
+      * Produces an Enumerator for [R]ows
+      * This enumerator can be consumed afterwards with an Iteratee
+      *
+      * @param session The Cassandra session in use.
+      * @param keySpace The keyspace object in use.
+      * @param ctx The Execution Context.
+      * @return
+      */
+    def fetchEnumerator()(
+      implicit session: Session,
+      keySpace: KeySpace,
+      ctx: ExecutionContextExecutor
+    ): PlayEnumerator[R] = {
+      PlayEnumerator.flatten {
+        block.all().future() map { res =>
+          Enumerator.enumerator(res) through Enumeratee.map(block.rowFunc)
+        }
+      }
+    }
+
+    /**
+      * Produces an Enumerator for [R]ows
+      * This enumerator can be consumed afterwards with an Iteratee
+      *
+      * @param session The Cassandra session in use.
+      * @param keySpace The keyspace object in use.
+      * @param ctx The Execution Context.
+      * @return
+      */
+    def fetchEnumerator(modifier: Statement => Statement)(
+      implicit session: Session,
+      keySpace: KeySpace,
+      ctx: ExecutionContextExecutor
+    ): PlayEnumerator[R] = {
+      PlayEnumerator.flatten {
+        block.all().future(modifier) map { res =>
+          Enumerator.enumerator(res) through Enumeratee.map(block.rowFunc)
+        }
+      }
+    }
+
+    def publisher: Publisher[R] = enumeratorToPublisher(block.fetchEnumerator())
+
+    def publisher(modifier: Statement => Statement): Publisher[R] = {
+      enumeratorToPublisher(block.fetchEnumerator(modifier))
     }
   }
 
