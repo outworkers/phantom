@@ -192,13 +192,11 @@ package object streams {
       * This enumerator can be consumed afterwards with an Iteratee
       *
       * @param session The Cassandra session in use.
-      * @param keySpace The keyspace object in use.
       * @param ctx The Execution Context.
       * @return A play enumerator containing the results of the query.
       */
     def fetchEnumerator()(
       implicit session: Session,
-      keySpace: KeySpace,
       ctx: ExecutionContextExecutor
     ): PlayEnumerator[R] = {
       PlayEnumerator.flatten {
@@ -213,13 +211,11 @@ package object streams {
       * This enumerator can be consumed afterwards with an Iteratee
       * @param mod A modifier to apply to a statement.
       * @param session The Cassandra session in use.
-      * @param keySpace The keyspace object in use.
       * @param ctx The Execution Context.
       * @return A play enumerator containing the results of the query.
       */
     def fetchEnumerator(mod: Statement => Statement)(
       implicit session: Session,
-      keySpace: KeySpace,
       ctx: ExecutionContextExecutor
     ): PlayEnumerator[R] = {
       PlayEnumerator.flatten {
@@ -229,9 +225,15 @@ package object streams {
       }
     }
 
-    def publisher: Publisher[R] = enumeratorToPublisher(query.fetchEnumerator())
+    def publisher()(
+      implicit session: Session,
+      ctx: ExecutionContextExecutor
+    ): Publisher[R] = enumeratorToPublisher(query.fetchEnumerator())
 
-    def publisher(modifier: Statement => Statement): Publisher[R] = {
+    def publisher(modifier: Statement => Statement)(
+      implicit session: Session,
+      ctx: ExecutionContextExecutor
+    ): Publisher[R] = {
       enumeratorToPublisher(query.fetchEnumerator(modifier))
     }
   }
@@ -246,7 +248,6 @@ package object streams {
       * This enumerator can be consumed afterwards with an Iteratee
       *
       * @param session The Cassandra session in use.
-      * @param keySpace The keyspace object in use.
       * @param ctx The Execution Context.
       * @return
       */
@@ -267,7 +268,6 @@ package object streams {
       * This enumerator can be consumed afterwards with an Iteratee
       *
       * @param session The Cassandra session in use.
-      * @param keySpace The keyspace object in use.
       * @param ctx The Execution Context.
       * @return
       */
@@ -283,9 +283,17 @@ package object streams {
       }
     }
 
-    def publisher: Publisher[R] = enumeratorToPublisher(block.fetchEnumerator())
+    def publisher()(
+      implicit session: Session,
+      keySpace: KeySpace,
+      ctx: ExecutionContextExecutor
+    ): Publisher[R] = enumeratorToPublisher(block.fetchEnumerator())
 
-    def publisher(modifier: Statement => Statement): Publisher[R] = {
+    def publisher(modifier: Statement => Statement)(
+      implicit session: Session,
+      keySpace: KeySpace,
+      ctx: ExecutionContextExecutor
+    ): Publisher[R] = {
       enumeratorToPublisher(block.fetchEnumerator(modifier))
     }
   }
