@@ -71,7 +71,7 @@ class TimeUuidTest extends PhantomSuite {
     val records = List(record, record1, record2)
 
     val chain = for {
-      _ <- Future.sequence(records.map(r => database.timeuuidTable.store(r).future()))
+      _ <- database.timeuuidTable.storeRecords(records)
       one <- database.timeuuidTable.select
         .where(_.user eqs record.user)
         .and(_.id <= maxTimeuuid(end))
