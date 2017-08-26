@@ -54,13 +54,12 @@ class IterateeBigReadPerformanceTest extends BigTest with ScalaFutures {
       res <-  database.primitivesJoda.select.fetchEnumerator run Iteratee.forEach {
         r => counter.incrementAndGet()
       }
-      count <- database.primitivesJoda.select.count().one()
-    } yield (initialCount, count)
+    } yield initialCount
 
-    whenReady(chain) { case (initialCount, finalCount) =>
+    whenReady(chain) { initialCount =>
       val count = counter.get()
       info(s"Done, reading: $count elements from the table.")
-      finalCount.value shouldEqual (count + initialCount.value)
+      counter.get() shouldEqual (initialCount.value + generationSize)
     }
   }
 }
