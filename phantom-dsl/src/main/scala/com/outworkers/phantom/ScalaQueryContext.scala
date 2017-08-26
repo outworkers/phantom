@@ -51,8 +51,7 @@ object ScalaPromiseInterface extends PromiseInterface[Promise, Future] {
 
 class ScalaQueryContext extends QueryContext[Promise, Future, Duration](10.seconds)(
   ScalaFutureImplicits.monadInstance,
-  ScalaPromiseInterface,
-  ScalaGuavaAdapter
+  ScalaPromiseInterface
 ) {
 
   override def await[T](f: Future[T], timeout: Duration): T = Await.result(f, timeout)
