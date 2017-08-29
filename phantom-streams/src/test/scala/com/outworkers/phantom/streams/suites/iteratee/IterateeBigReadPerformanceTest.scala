@@ -17,9 +17,10 @@ package com.outworkers.phantom.streams.suites.iteratee
 
 import java.util.concurrent.atomic.AtomicLong
 
+import com.datastax.driver.core.utils.UUIDs
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.streams._
-import com.outworkers.phantom.tables.JodaRow
+import com.outworkers.phantom.tables.{JodaRow, TimeUUIDRecord}
 import org.scalatest.concurrent.ScalaFutures
 import com.outworkers.util.samplers._
 
@@ -29,7 +30,7 @@ class IterateeBigReadPerformanceTest extends BigTest with ScalaFutures {
     val counter = new AtomicLong(0)
 
     val chain = for {
-      res <-  database.primitivesJoda.select.fetchEnumerator run Iteratee.forEach {
+      res <- database.primitivesJoda.select.fetchEnumerator run Iteratee.forEach {
         r => counter.incrementAndGet()
       }
       count <- database.primitivesJoda.select.count().one()
@@ -51,7 +52,7 @@ class IterateeBigReadPerformanceTest extends BigTest with ScalaFutures {
       initialCount <- database.primitivesJoda.select.count().one()
       insert <- database.primitivesJoda.storeRecords(samples)
 
-      res <-  database.primitivesJoda.select.fetchEnumerator run Iteratee.forEach {
+      res <- database.primitivesJoda.select.fetchEnumerator run Iteratee.forEach {
         r => counter.incrementAndGet()
       }
     } yield initialCount
@@ -60,6 +61,73 @@ class IterateeBigReadPerformanceTest extends BigTest with ScalaFutures {
       val count = counter.get()
       info(s"Done, reading: $count elements from the table.")
       counter.get() shouldEqual (initialCount.value + generationSize)
+    }
+  }
+
+  it should "allow using enumerators on a query with a modifier" in {
+    val counter = new AtomicLong(0)
+    val generationSize = 50
+    val samples = genList[JodaRow](generationSize)
+
+    val chain = for {
+      initialCount <- database.primitivesJoda.select.count().one()
+      insert <- database.primitivesJoda.storeRecords(samples)
+
+      res <- database.primitivesJoda.select.fetchEnumerator(_.disableTracing()) run Iteratee.forEach {
+        r => counter.incrementAndGet()
+      }
+    } yield initialCount
+
+    whenReady(chain) { initialCount =>
+      val count = counter.get()
+      info(s"Done, reading: $count elements from the table.")
+      counter.get() shouldEqual (initialCount.value + generationSize)
+    }
+  }
+
+  it should "allow using enumerators on a non top level select query" in {
+    val counter = new AtomicLong(0)
+    val generationSize = 100
+    val user = gen[UUID]
+    val samples = genList[TimeUUIDRecord](generationSize).map(_.copy(user = user, id = UUIDs.timeBased()))
+
+    val chain = for {
+      initialCount <- database.timeuuidTable.select.count().one()
+      insert <- database.timeuuidTable.storeRecords(samples)
+
+      res <- database.timeuuidTable.select
+          .where(_.user eqs user)
+          .limit(generationSize)
+          .fetchEnumerator(_.disableTracing()) run Iteratee.forEach { r => counter.incrementAndGet() }
+    } yield initialCount
+
+    whenReady(chain) { initialCount =>
+      val count = counter.get()
+      info(s"Done, reading: $count elements from the table.")
+      counter.get() shouldEqual generationSize
+    }
+  }
+
+  it should "allow using enumerators on a non top level select query with a modifier" in {
+    val counter = new AtomicLong(0)
+    val generationSize = 100
+    val user = gen[UUID]
+    val samples = genList[TimeUUIDRecord](generationSize).map(_.copy(user = user, id = UUIDs.timeBased()))
+
+    val chain = for {
+      initialCount <- database.timeuuidTable.select.count().one()
+      insert <- database.timeuuidTable.storeRecords(samples)
+
+      res <- database.timeuuidTable.select
+        .where(_.user eqs user)
+        .limit(generationSize)
+        .fetchEnumerator(_.setIdempotent(true)) run Iteratee.forEach { r => counter.incrementAndGet() }
+    } yield initialCount
+
+    whenReady(chain) { initialCount =>
+      val count = counter.get()
+      info(s"Done, reading: $count elements from the table.")
+      counter.get() shouldEqual generationSize
     }
   }
 }

@@ -315,6 +315,7 @@ lazy val phantomSbtPlugin = (project in file("phantom-sbt"))
     sbtPlugin := true,
     publishArtifact := !Publishing.publishingToMaven && { scalaVersion.value.startsWith("2.10") },
     libraryDependencies ++= Seq(
+      "com.datastax.cassandra" % "cassandra-driver-core" % Versions.datastax,
       "org.cassandraunit" % "cassandra-unit"  % Versions.cassandraUnit excludeAll (
         ExclusionRule("org.slf4j", "slf4j-log4j12"),
         ExclusionRule("org.slf4j", "slf4j-jdk14")

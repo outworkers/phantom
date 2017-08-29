@@ -15,20 +15,22 @@
  */
 package com.outworkers.phantom.streams.suites
 
-import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.{AtomicInteger, AtomicLong}
 
+import com.datastax.driver.core.utils.UUIDs
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.streams._
+import com.outworkers.phantom.tables.{TestDatabase, TimeUUIDRecord}
 import com.outworkers.util.samplers._
 import org.reactivestreams.{Subscriber, Subscription}
 import org.scalatest.FlatSpec
-import org.scalatest.concurrent.Eventually
+import org.scalatest.concurrent.{Eventually, ScalaFutures}
 import org.scalatest.tagobjects.Retryable
 import org.scalatest.time.SpanSugar._
 
 import scala.concurrent.Await
 
-class PublisherIntegrationTest extends FlatSpec with StreamTest with TestImplicits with Eventually {
+class PublisherIntegrationTest extends FlatSpec with StreamTest with TestImplicits with Eventually with ScalaFutures {
 
   implicit val defaultPatience = PatienceConfig(timeout = 30.seconds, interval = 200.millis)
 
@@ -68,6 +70,74 @@ class PublisherIntegrationTest extends FlatSpec with StreamTest with TestImplici
 
     eventually {
       counter.get() shouldEqual generatorCount
+    }
+  }
+
+  it should "allow streaming from a non top level select * statement" in {
+    val counter = new AtomicLong(0)
+    val generationSize = 100
+    val user = gen[UUID]
+    val samples = genList[TimeUUIDRecord](generationSize).map(_.copy(user = user, id = UUIDs.timeBased()))
+
+    val chain = for {
+      store <- TestDatabase.timeuuidTable.storeRecords(samples)
+      pub = TestDatabase.timeuuidTable.select.where(_.user eqs user).publisher()
+    } yield pub
+
+    whenReady(chain) { pub =>
+
+      pub.subscribe(new Subscriber[TimeUUIDRecord] {
+        override def onError(t: Throwable): Unit = fail(t)
+
+        override def onSubscribe(s: Subscription): Unit = s.request(Long.MaxValue)
+
+        override def onComplete(): Unit = {
+          info(s"Finished streaming, total count is ${counter.get()}")
+        }
+
+        override def onNext(t: TimeUUIDRecord): Unit = {
+          info(s"The current item is ${t.name}")
+          info(s"The current count is ${counter.incrementAndGet()}")
+        }
+      })
+
+      eventually {
+        counter.get() shouldEqual generationSize
+      }
+    }
+  }
+
+  it should "allow streaming from a non top level select * statement with a modifier" in {
+    val counter = new AtomicLong(0)
+    val generationSize = 100
+    val user = gen[UUID]
+    val samples = genList[TimeUUIDRecord](generationSize).map(_.copy(user = user, id = UUIDs.timeBased()))
+
+    val chain = for {
+      store <- TestDatabase.timeuuidTable.storeRecords(samples)
+      pub = TestDatabase.timeuuidTable.select.where(_.user eqs user).publisher(_.setIdempotent(true))
+    } yield pub
+
+    whenReady(chain) { pub =>
+
+      pub.subscribe(new Subscriber[TimeUUIDRecord] {
+        override def onError(t: Throwable): Unit = fail(t)
+
+        override def onSubscribe(s: Subscription): Unit = s.request(Long.MaxValue)
+
+        override def onComplete(): Unit = {
+          info(s"Finished streaming, total count is ${counter.get()}")
+        }
+
+        override def onNext(t: TimeUUIDRecord): Unit = {
+          info(s"The current item is ${t.name}")
+          info(s"The current count is ${counter.incrementAndGet()}")
+        }
+      })
+
+      eventually {
+        counter.get() shouldEqual generationSize
+      }
     }
   }
 }
