@@ -43,7 +43,7 @@ class IterateeBigReadPerformanceTest extends BigTest with ScalaFutures {
     }
   }
 
-  it should "derive an enumerator for every single select query" in {
+  it should "derive an enumerator for a root select query using a modifier" in {
     val counter = new AtomicLong(0)
     val generationSize = 200
     val samples = genList[JodaRow](generationSize)
@@ -52,7 +52,7 @@ class IterateeBigReadPerformanceTest extends BigTest with ScalaFutures {
       initialCount <- database.primitivesJoda.select.count().one()
       insert <- database.primitivesJoda.storeRecords(samples)
 
-      res <- database.primitivesJoda.select.fetchEnumerator run Iteratee.forEach {
+      res <- database.primitivesJoda.select.fetchEnumerator(_.setIdempotent(true)) run Iteratee.forEach {
         r => counter.incrementAndGet()
       }
     } yield initialCount
