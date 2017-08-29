@@ -225,11 +225,26 @@ package object streams {
       }
     }
 
+    /**
+      * Creates a Reactive Streams publisher from a root select block.
+      * This will create a reactive streams publisher containing all the records found by this [[SelectQuery]].
+      * @param session The database session in which to execute this.
+      * @param ctx The execution context to use.
+      * @return A streams publisher interface clients can subscribe to.
+      */
     def publisher()(
       implicit session: Session,
       ctx: ExecutionContextExecutor
     ): Publisher[R] = enumeratorToPublisher(query.fetchEnumerator())
 
+    /**
+      * Creates a Reactive Streams publisher from a root select block but also
+      * allows passing through a query modifier.
+      * This will create a reactive streams publisher containing all the records found by this [[SelectQuery]].
+      * @param session The database session in which to execute this.
+      * @param ctx The execution context to use.
+      * @return A streams publisher interface clients can subscribe to.
+      */
     def publisher(modifier: Statement => Statement)(
       implicit session: Session,
       ctx: ExecutionContextExecutor
@@ -283,12 +298,31 @@ package object streams {
       }
     }
 
+    /**
+      * Creates a Reactive Streams publisher from a root select block.
+      * Because this is a [[RootSelectBlock]], the default execution profile
+      * of this method will be to select all records in a table and stream them.
+      * @param session The database session in which to execute this.
+      * @param keySpace The keyspace in which to execute the query.
+      * @param ctx The execution context to use.
+      * @return A streams publisher interface clients can subscribe to.
+      */
     def publisher()(
       implicit session: Session,
       keySpace: KeySpace,
       ctx: ExecutionContextExecutor
     ): Publisher[R] = enumeratorToPublisher(block.fetchEnumerator())
 
+    /**
+      * Creates a Reactive Streams publisher from a root select block but also
+      * allows passing through a query modifier.
+      * Because this is a [[RootSelectBlock]], the default execution profile
+      * of this method will be to select all records in a table and stream them.
+      * @param session The database session in which to execute this.
+      * @param keySpace The keyspace in which to execute the query.
+      * @param ctx The execution context to use.
+      * @return A streams publisher interface clients can subscribe to.
+      */
     def publisher(modifier: Statement => Statement)(
       implicit session: Session,
       keySpace: KeySpace,

@@ -34,9 +34,10 @@ abstract class QueryContext[P[_], F[_], Timeout](
   defaultTimeout: Timeout
 )(
   implicit fMonad: FutureMonad[F],
-  val promiseInterface: PromiseInterface[P, F],
-  val adapter: GuavaAdapter[F]
+  val promiseInterface: PromiseInterface[P, F]
 ) { outer =>
+
+  implicit val adapter: GuavaAdapter[F] = promiseInterface.adapter
 
   def executeStatements[M[X] <: TraversableOnce[X]](
     col: QueryCollection[M]
@@ -48,7 +49,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
 
   implicit class BatchOps[Status <: ConsistencyBound](val query: BatchQuery[Status]) {
     def future()(implicit session: Session, ctx: ExecutionContextExecutor): F[ResultSet] = {
-      adapter.executeBatch(query.makeBatch())
+      promiseInterface.adapter.executeBatch(query.makeBatch())
     }
   }
 
@@ -60,7 +61,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
     def future()(
       implicit session: Session,
       ctx: ExecutionContextExecutor
-    ): F[ResultSet] = adapter.fromGuava(query.executableQuery)
+    ): F[ResultSet] = promiseInterface.adapter.fromGuava(query.executableQuery)
   }
 
   implicit class RootSelectBlockOps[
@@ -98,7 +99,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
     PS <: HList
   ](
     override val query: SelectQuery[Table, Record, Limit, Order, Status, Chain, PS]
-  ) extends SelectQueryOps(query) {
+  ) extends SelectQueryOps(query)(promiseInterface.adapter, fMonad) {
     override def executableQuery: ExecutableCqlQuery = query.executableQuery
   }
 
@@ -137,7 +138,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
       implicit session: Session,
       ec: ExecutionContextExecutor
     ): F[ResultSet] = {
-      adapter.fromGuava(query.options(query.st))
+      promiseInterface.adapter.fromGuava(query.options(query.st))
     }
 
     /**
@@ -156,7 +157,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
     override def future(modifyStatement: Statement => Statement)(
       implicit session: Session,
       executor: ExecutionContextExecutor
-    ): F[ResultSet] = adapter.fromGuava(modifyStatement(query.options(query.st)))
+    ): F[ResultSet] = promiseInterface.adapter.fromGuava(modifyStatement(query.options(query.st)))
   }
 
   implicit class ExecutablePreparedSelect[
@@ -183,7 +184,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
       implicit session: Session,
       ec: ExecutionContextExecutor
     ): F[ResultSet] = {
-      adapter.fromGuava(query.options(query.st))
+      promiseInterface.adapter.fromGuava(query.options(query.st))
     }
 
     /**
@@ -267,7 +268,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
       sg: SingleGeneric.Aux[V1, Repr, HL, Out],
       ctx: ExecutionContextExecutor,
       ev: Out ==:== Repr
-    ): F[ResultSet] = adapter.fromGuava(table.store(input).executableQuery)
+    ): F[ResultSet] = promiseInterface.adapter.fromGuava(table.store(input).executableQuery)
 
     def storeRecords[M[X] <: TraversableOnce[X], V1, Repr <: HList, HL <: HList, Out <: HList](inputs: M[V1])(
       implicit keySpace: KeySpace,

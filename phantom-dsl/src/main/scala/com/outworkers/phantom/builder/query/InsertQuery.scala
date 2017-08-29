@@ -129,7 +129,6 @@ case class InsertQuery[
     ev: PS =:!= HNil,
     rev: Reverse.Aux[PS, Rev],
     fMonad: FutureMonad[F],
-    adapter: GuavaAdapter[F],
     interface: PromiseInterface[P, F]
   ): F[PreparedBlock[Rev]] = {
     val flatten = new PreparedFlattener(qb)
@@ -245,7 +244,6 @@ class InsertJsonQuery[
     ev: PS =:!= HNil,
     rev: Reverse.Aux[PS, Rev],
     fMonad: FutureMonad[F],
-    adapter: GuavaAdapter[F],
     interface: PromiseInterface[P, F]
   ): F[PreparedBlock[Rev]] = {
     val flatten = new PreparedFlattener(qb)

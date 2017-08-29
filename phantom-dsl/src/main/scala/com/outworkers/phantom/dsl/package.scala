@@ -28,7 +28,7 @@ package object dsl extends ScalaQueryContext with DefaultImports {
 
   implicit class ExecuteQueries[M[X] <: TraversableOnce[X]](val qc: QueryCollection[M]) extends AnyVal {
     def executable(): ExecutableStatements[Future, M] = {
-      new ExecutableStatements[Future, M](qc)
+      new ExecutableStatements[Future, M](qc)(futureMonad, promiseInterface.adapter)
     }
 
     def future()(implicit session: Session,
@@ -47,7 +47,7 @@ package object dsl extends ScalaQueryContext with DefaultImports {
   def cql(
     str: CQLQuery,
     options: QueryOptions
-  ): QueryInterface[Future] = new QueryInterface[Future]() {
+  ): QueryInterface[Future] = new QueryInterface[Future]()(promiseInterface.adapter) {
     override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(str, options)
   }
 

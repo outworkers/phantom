@@ -55,8 +55,7 @@ object TwitterPromiseInterface extends PromiseInterface[Promise, Future] {
 
 class TwitterQueryContext extends QueryContext[Promise, Future, Duration](10.seconds)(
   TwitterFutureImplicits.monadInstance,
-  TwitterPromiseInterface,
-  TwitterGuavaAdapter
+  TwitterPromiseInterface
 ) {
 
   override def await[T](f: Future[T], timeout: Duration): T = Await.result(f, timeout)
