@@ -57,7 +57,7 @@ abstract class DbOps[
     * @return A sequence of result sets, where every result is the result of a single create operation.
     */
   def createAsync()(implicit ex: ExecutionContextExecutor): F[Seq[ResultSet]] = {
-    execute(db.autocreate()).future()
+    execute(db.autocreate()).sequence()
   }
 
   /**
