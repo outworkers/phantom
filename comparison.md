@@ -118,34 +118,21 @@ case class Recipe(
   side_id: UUID
 )
 
-class Recipes extends CassandraTable[Recipes, Recipe] {
+class Recipes extends Table[Recipes, Recipe] {
 
-  object url extends StringColumn(this) with PartitionKey[String]
+  object url extends StringColumn with PartitionKey
 
-  object description extends OptionalStringColumn(this)
+  object description extends OptionalStringColumn
 
-  object ingredients extends ListColumn[String](this)
+  object ingredients extends ListColumn
 
-  object servings extends OptionalIntColumn(this)
+  object servings extends OptionalIntColumn
 
-  object lastcheckedat extends DateTimeColumn(this)
+  object lastcheckedat extends DateTimeColumn
 
-  object props extends MapColumn[String, String](this)
+  object props extends MapColumn[String, String]
 
   object side_id extends UUIDColumn
-
-
-  override def fromRow(r: Row): Recipe = {
-    Recipe(
-      url(r),
-      description(r),
-      ingredients(r),
-      servings(r),
-      lastcheckedat(r),
-      props(r),
-      side_id(r)
-    )
-  }
 }
 ```
 
