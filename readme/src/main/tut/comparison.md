@@ -20,12 +20,13 @@ are with Cassandra and the support they offer, to their level of activity
 and how up to date they are.
 
 
-| Driver | Language | Commercial | Type-safe | Schema Safe | Spark Support | Streams | DSL | Cassandra | Latest | Activity | Created |
-| ------ | -------- | ---------- | --------- | ----------- | ------------- | --------| --- | --------- | ------ | ------- | -------- |
-| Java Driver     | Java  | [x] | [-] | [-] | [-] | [-] | EDSL | 3.8.0 | 3.1.0 | High | 2012 |
-| Phantom         | Scala | [x] | [x] | [x] | [x] | [x] | EDSL | 3.8.0 | 3.1.0 | High | 2013 |
-| Spark Connector | Scala | [x] | [x] | [x] | [-] | [-] | EDSL | 3.0   | 3.0.0 | High | 2014 |
-| Quill           | Scala | [-] | [x] | [-] | [x] | [-] | QDSL | 3.8.0 | 3.8.0 | High | 2015 |
+| Driver          | Language | Commercial | Type-safe | Schema Safe | Spark Support | Streams | DSL     | Cassandra | Latest    | Activity | Since  |
+| --------------- | -------- | ---------- | --------- | ----------- | ------------- | --------| ------- | --------- | --------- | -------- | ------ |
+| Java Driver     | Java     | [x]        | [-]       | [-]         | [-]           | [-]     | EDSL    | Latest    | 3.1.0     | High     | 2012   |
+| Phantom         | Scala    | [x]        | [x]       | [x]         | [x]           | [x]     | EDSL    | Latest    | 3.1.0     | High     | 2013   |
+| Quill           | Scala    | [-]        | [x]       | [-]         | [x]           | [-]     | QDSL    | Latest    | 3.8.0     | High     | 2015   |
+| Spark Connector | Scala    | [x]        | [x]       | [x]         | [-]           | [-]     | EDSL    | 3.0       | 3.0.0     | High     | 2014   |
+
 
 
 ### An overview of the various drivers and using them from Scala
@@ -132,27 +133,6 @@ class Recipes extends Table[Recipes, Recipe] {
 
   object props extends MapColumn[String, String]
 
-  object side_id extends UUIDColumn
-}
-```
-
-As of version 2.0.0, phantom is capable of auto-generating the `fromRow` method, so the mapping DSL is reduced to:
-
-```
-abstract class Recipes extends CassandraTable[ConcreteRecipes, Recipe] with RootConnector {
-
-  object url extends StringColumn with PartitionKey[String]
-
-  object description extends OptionalStringColumn
-
-  object ingredients extends ListColumn[String]
-
-  object servings extends OptionalIntColumn
-
-  object lastcheckedat extends DateTimeColumn
-
-  object props extends MapColumn[String, String]
-  
   object side_id extends UUIDColumn
 }
 ```
