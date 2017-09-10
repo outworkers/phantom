@@ -60,34 +60,15 @@ abstract class Recipes extends Table[Recipes, Recipe] {
 The whole purpose of `RootConnector` is quite simple, it's saying an implementor will basically specify the `session` and `keySpace` of choice. It looks like this, and it's available in phantom by default via the default import, `import com.outworkers.phantom.dsl._`.
 
 ```scala
-scala> import com.datastax.driver.core.Session
-<console>:9: warning: Unused import
-       import java.util.UUID
-                        ^
-<console>:10: warning: Unused import
-       import org.joda.time.DateTime
-                            ^
-<console>:12: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:17: warning: Unused import
-       import com.datastax.driver.core.Session
-                                       ^
+
 import com.datastax.driver.core.Session
 
-scala> trait RootConnector {
-     | 
-     |   implicit def space: KeySpace
-     | 
-     |   implicit def session: Session
-     | }
-<console>:9: warning: Unused import
-       import java.util.UUID
-                        ^
-<console>:10: warning: Unused import
-       import org.joda.time.DateTime
-                            ^
-defined trait RootConnector
+trait RootConnector {
+
+  implicit def space: KeySpace
+
+  implicit def session: Session
+}
 ```
 
 Later on when we start creating databases, we pass in a `ContactPoint` or what we call a `connector` in more plain English, which basically fully encapsulates a Cassandra connection with all the possible details and settings required to run an application.
@@ -127,200 +108,63 @@ And this is why we offer another native construct, namely the `DatabaseProvider`
 This is pretty simple in its design, it simply aims to provide a simple way of injecting a reference to a particular `database` inside a consumer. For the sake of argument, let's say we are designing a `UserService` backed by Cassandra and phantom. Here's how it might look like:
 
 ```scala
-scala> import scala.concurrent.Future
-<console>:9: warning: Unused import
-       import java.util.UUID
-                        ^
-<console>:10: warning: Unused import
-       import org.joda.time.DateTime
-                            ^
-<console>:12: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:14: warning: Unused import
-       import com.datastax.driver.core.Session
-                                       ^
-<console>:16: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:21: warning: Unused import
-       import scala.concurrent.Future
-                               ^
-import scala.concurrent.Future
 
-scala> import com.outworkers.phantom.dsl._
-<console>:9: warning: Unused import
-       import java.util.UUID
-                        ^
-<console>:10: warning: Unused import
-       import org.joda.time.DateTime
-                            ^
-<console>:12: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:14: warning: Unused import
-       import com.datastax.driver.core.Session
-                                       ^
-<console>:16: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:18: warning: Unused import
-       import scala.concurrent.Future
-                               ^
-<console>:22: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
+import scala.concurrent.Future
 import com.outworkers.phantom.dsl._
 
-scala> case class User(id: UUID, email: String, name: String)
-<console>:10: warning: Unused import
-       import org.joda.time.DateTime
-                            ^
-<console>:12: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:14: warning: Unused import
-       import com.datastax.driver.core.Session
-                                       ^
-<console>:16: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:18: warning: Unused import
-       import scala.concurrent.Future
-                               ^
-defined class User
+case class User(id: UUID, email: String, name: String)
 
-scala> abstract class Users extends Table[Users, User] {
-     |   object id extends UUIDColumn with PartitionKey
-     |   object email extends StringColumn
-     |   object name extends StringColumn
-     | 
-     |   def findById(id: UUID): Future[Option[User]] = {
-     |     select.where(_.id eqs id).one()
-     |   }
-     | }
-<console>:10: warning: Unused import
-       import org.joda.time.DateTime
-                            ^
-<console>:12: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:14: warning: Unused import
-       import com.datastax.driver.core.Session
-                                       ^
-<console>:16: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-defined class Users
+abstract class Users extends Table[Users, User] {
+  object id extends UUIDColumn with PartitionKey
+  object email extends StringColumn
+  object name extends StringColumn
 
-scala> abstract class UsersByEmail extends Table[UsersByEmail, User] {
-     |   object email extends StringColumn with PartitionKey
-     |   object id extends UUIDColumn
-     |   object name extends StringColumn
-     | 
-     |   def findByEmail(email: String): Future[Option[User]] = {
-     |     select.where(_.email eqs email).one()
-     |   }
-     | }
-<console>:9: warning: Unused import
-       import java.util.UUID
-                        ^
-<console>:10: warning: Unused import
-       import org.joda.time.DateTime
-                            ^
-<console>:12: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:14: warning: Unused import
-       import com.datastax.driver.core.Session
-                                       ^
-<console>:16: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-defined class UsersByEmail
+  def findById(id: UUID): Future[Option[User]] = {
+    select.where(_.id eqs id).one()
+  }
+}
 
-scala> class AppDatabase(
-     |   override val connector: CassandraConnection
-     | ) extends Database[AppDatabase](connector) {
-     |   object users extends Users with Connector
-     |   object usersByEmail extends UsersByEmail with Connector
-     | }
-<console>:9: warning: Unused import
-       import java.util.UUID
-                        ^
-<console>:10: warning: Unused import
-       import org.joda.time.DateTime
-                            ^
-<console>:12: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:14: warning: Unused import
-       import com.datastax.driver.core.Session
-                                       ^
-<console>:16: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:18: warning: Unused import
-       import scala.concurrent.Future
-                               ^
-defined class AppDatabase
+abstract class UsersByEmail extends Table[UsersByEmail, User] {
+  object email extends StringColumn with PartitionKey
+  object id extends UUIDColumn
+  object name extends StringColumn
 
-scala> // So now we are saying we have a trait
-     | // that will eventually provide a reference to a specific database.
-     | trait AppDatabaseProvider extends DatabaseProvider[AppDatabase]
-<console>:9: warning: Unused import
-       import java.util.UUID
-                        ^
-<console>:10: warning: Unused import
-       import org.joda.time.DateTime
-                            ^
-<console>:12: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:14: warning: Unused import
-       import com.datastax.driver.core.Session
-                                       ^
-<console>:16: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:18: warning: Unused import
-       import scala.concurrent.Future
-                               ^
-defined trait AppDatabaseProvider
+  def findByEmail(email: String): Future[Option[User]] = {
+    select.where(_.email eqs email).one()
+  }
+}
 
-scala> trait UserService extends AppDatabaseProvider {
-     | 
-     |   /**
-     |    * Stores a user into the database guaranteeing application level consistency of data.
-     |    * E.g we have two tables, one indexing users by ID and another indexing users by email.
-     |    * As in Cassandra we need to de-normalise data, it's natural we need to store it twice.
-     |    * But that also means we have to write to 2 tables every time, and here's how
-     |    * @param user A user case class instance.
-     |    * @return A future containing the result of the last write operation in the sequence.
-     |    */
-     |   def store(user: User): Future[ResultSet] = {
-     |     for {
-     |       byId <- db.users.store(user).future()
-     |       byEmail <- db.usersByEmail.store(user).future()
-     |     } yield byEmail
-     |   }
-     | 
-     |   def findById(id: UUID): Future[Option[User]] = db.users.findById(id)
-     |   def findByEmail(email: String): Future[Option[User]] = db.usersByEmail.findByEmail(email)
-     | }
-<console>:10: warning: Unused import
-       import org.joda.time.DateTime
-                            ^
-<console>:12: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:14: warning: Unused import
-       import com.datastax.driver.core.Session
-                                       ^
-<console>:16: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-defined trait UserService
+class AppDatabase(
+  override val connector: CassandraConnection
+) extends Database[AppDatabase](connector) {
+  object users extends Users with Connector
+  object usersByEmail extends UsersByEmail with Connector
+}
+
+// So now we are saying we have a trait
+// that will eventually provide a reference to a specific database.
+trait AppDatabaseProvider extends DatabaseProvider[AppDatabase]
+
+trait UserService extends AppDatabaseProvider {
+
+  /**
+   * Stores a user into the database guaranteeing application level consistency of data.
+   * E.g we have two tables, one indexing users by ID and another indexing users by email.
+   * As in Cassandra we need to de-normalise data, it's natural we need to store it twice.
+   * But that also means we have to write to 2 tables every time, and here's how
+   * @param user A user case class instance.
+   * @return A future containing the result of the last write operation in the sequence.
+   */
+  def store(user: User): Future[ResultSet] = {
+    for {
+      byId <- db.users.store(user).future()
+      byEmail <- db.usersByEmail.store(user).future()
+    } yield byEmail
+  }
+
+  def findById(id: UUID): Future[Option[User]] = db.users.findById(id)
+  def findByEmail(email: String): Future[Option[User]] = db.usersByEmail.findByEmail(email)
+}
 ```
 
 If I as your colleague and developer would now want to consume the `UserService`, I would basically create an instance or use a pre-existing one to basically consume methods that only require passing in known domain objects as parameters. Notice how `session`, `keySpace` and everything else Cassandra specific has gone away?
@@ -339,116 +183,20 @@ Let's go ahead and create two complete examples. We are going to make some simpl
 Let's look at the most basic example of defining a test connector, which will use all default settings plus a call to `noHearbeat` which will disable heartbeats by setting a pooling option to 0 inside the `ClusterBuilder`. We will go through that in more detail in a second, to show how we can specify more complex options using `ContactPoint`.
 
 ```scala
-scala> import com.outworkers.phantom.dsl._
-<console>:9: warning: Unused import
-       import java.util.UUID
-                        ^
-<console>:10: warning: Unused import
-       import org.joda.time.DateTime
-                            ^
-<console>:12: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:14: warning: Unused import
-       import com.datastax.driver.core.Session
-                                       ^
-<console>:16: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:18: warning: Unused import
-       import scala.concurrent.Future
-                               ^
-<console>:20: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:25: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
+
 import com.outworkers.phantom.dsl._
 
-scala> object TestConnector {
-     |   val connector = ContactPoint.local
-     |     .noHeartbeat()
-     |     .keySpace("myapp_example")
-     | }
-<console>:9: warning: Unused import
-       import java.util.UUID
-                        ^
-<console>:10: warning: Unused import
-       import org.joda.time.DateTime
-                            ^
-<console>:12: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:14: warning: Unused import
-       import com.datastax.driver.core.Session
-                                       ^
-<console>:16: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:18: warning: Unused import
-       import scala.concurrent.Future
-                               ^
-<console>:20: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-defined object TestConnector
+object TestConnector {
+  val connector = ContactPoint.local
+    .noHeartbeat()
+    .keySpace("myapp_example")
+}
 
-scala> object TestDatabase extends AppDatabase(TestConnector.connector)
-<console>:9: warning: Unused import
-       import java.util.UUID
-                        ^
-<console>:10: warning: Unused import
-       import org.joda.time.DateTime
-                            ^
-<console>:12: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:14: warning: Unused import
-       import com.datastax.driver.core.Session
-                                       ^
-<console>:16: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:18: warning: Unused import
-       import scala.concurrent.Future
-                               ^
-<console>:20: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:24: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-defined object TestDatabase
+object TestDatabase extends AppDatabase(TestConnector.connector)
 
-scala> trait TestDatabaseProvider extends AppDatabaseProvider {
-     |   override def database: AppDatabase = TestDatabase
-     | }
-<console>:9: warning: Unused import
-       import java.util.UUID
-                        ^
-<console>:10: warning: Unused import
-       import org.joda.time.DateTime
-                            ^
-<console>:12: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:14: warning: Unused import
-       import com.datastax.driver.core.Session
-                                       ^
-<console>:16: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:18: warning: Unused import
-       import scala.concurrent.Future
-                               ^
-<console>:20: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:25: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-defined trait TestDatabaseProvider
+trait TestDatabaseProvider extends AppDatabaseProvider {
+  override def database: AppDatabase = TestDatabase
+}
 ```
 
 It may feel verbose or slightly too much at first, but the objects wrapping the constructs are basically working a lot in our favour to guarantee the thread safe just in time init static access to various bits that we truly want to be static. Again, we don't want more than one contact point initialised, more than one session and so on, we want it all crystal clear static from the get go.
@@ -526,174 +274,27 @@ To override the settings that will be used during schema auto-generation at `Dat
 When you later call `database.create` or `database.createAsync` or any other flavour of auto-generation on a `Database`, the `autocreate` overriden below will be respected.
 
 ```scala
-     | 
-     | import com.outworkers.phantom.dsl._
-<console>:9: warning: Unused import
-       import java.util.UUID
-                        ^
-<console>:10: warning: Unused import
-       import org.joda.time.DateTime
-                            ^
-<console>:12: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:14: warning: Unused import
-       import com.datastax.driver.core.Session
-                                       ^
-<console>:16: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:18: warning: Unused import
-       import scala.concurrent.Future
-                               ^
-<console>:20: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:23: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:26: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:28: warning: Unused import
-       import org.scalatest.{BeforeAndAfterAll, OptionValues, Matchers, FlatSpec}
-                             ^
-<console>:28: warning: Unused import
-       import org.scalatest.{BeforeAndAfterAll, OptionValues, Matchers, FlatSpec}
-                                                ^
-<console>:28: warning: Unused import
-       import org.scalatest.{BeforeAndAfterAll, OptionValues, Matchers, FlatSpec}
-                                                              ^
-<console>:28: warning: Unused import
-       import org.scalatest.{BeforeAndAfterAll, OptionValues, Matchers, FlatSpec}
-                                                                        ^
-<console>:29: warning: Unused import
-       import org.scalatest.concurrent.ScalaFutures
-                                       ^
-<console>:31: warning: Unused import
-       import com.outworkers.util.samplers._
-                                           ^
-<console>:38: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-import com.outworkers.phantom.dsl._
 
-scala> import com.outworkers.phantom.builder.query.CreateQuery
-<console>:9: warning: Unused import
-       import java.util.UUID
-                        ^
-<console>:10: warning: Unused import
-       import org.joda.time.DateTime
-                            ^
-<console>:12: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:14: warning: Unused import
-       import com.datastax.driver.core.Session
-                                       ^
-<console>:16: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:18: warning: Unused import
-       import scala.concurrent.Future
-                               ^
-<console>:20: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:23: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:26: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:28: warning: Unused import
-       import org.scalatest.{BeforeAndAfterAll, OptionValues, Matchers, FlatSpec}
-                             ^
-<console>:28: warning: Unused import
-       import org.scalatest.{BeforeAndAfterAll, OptionValues, Matchers, FlatSpec}
-                                                ^
-<console>:28: warning: Unused import
-       import org.scalatest.{BeforeAndAfterAll, OptionValues, Matchers, FlatSpec}
-                                                              ^
-<console>:28: warning: Unused import
-       import org.scalatest.{BeforeAndAfterAll, OptionValues, Matchers, FlatSpec}
-                                                                        ^
-<console>:29: warning: Unused import
-       import org.scalatest.concurrent.ScalaFutures
-                                       ^
-<console>:31: warning: Unused import
-       import com.outworkers.util.samplers._
-                                           ^
-<console>:34: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:39: warning: Unused import
-       import com.outworkers.phantom.builder.query.CreateQuery
-                                                   ^
+import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.builder.query.CreateQuery
 
-scala> class UserDatabase(
-     |   override val connector: CassandraConnection
-     | ) extends Database[UserDatabase](connector) {
-     | 
-     |   object users extends Users with Connector {
-     |     override def autocreate(keySpace: KeySpace): CreateQuery.Default[Users, User] = {
-     |       create.ifNotExists()(keySpace)
-     |         .`with`(compaction eqs LeveledCompactionStrategy.sstable_size_in_mb(50))
-     |         .and(compression eqs LZ4Compressor.crc_check_chance(0.5))
-     |         .and(comment eqs "testing")
-     |         .and(read_repair_chance eqs 5D)
-     |         .and(dclocal_read_repair_chance eqs 5D)
-     |     }
-     |   }
-     |   object usersByEmail extends UsersByEmail with Connector
-     | }
-<console>:9: warning: Unused import
-       import java.util.UUID
-                        ^
-<console>:10: warning: Unused import
-       import org.joda.time.DateTime
-                            ^
-<console>:12: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:14: warning: Unused import
-       import com.datastax.driver.core.Session
-                                       ^
-<console>:16: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:18: warning: Unused import
-       import scala.concurrent.Future
-                               ^
-<console>:20: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:27: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:30: warning: Unused import
-       import com.outworkers.phantom.dsl._
-                                         ^
-<console>:32: warning: Unused import
-       import org.scalatest.{BeforeAndAfterAll, OptionValues, Matchers, FlatSpec}
-                             ^
-<console>:32: warning: Unused import
-       import org.scalatest.{BeforeAndAfterAll, OptionValues, Matchers, FlatSpec}
-                                                ^
-<console>:32: warning: Unused import
-       import org.scalatest.{BeforeAndAfterAll, OptionValues, Matchers, FlatSpec}
-                                                              ^
-<console>:32: warning: Unused import
-       import org.scalatest.{BeforeAndAfterAll, OptionValues, Matchers, FlatSpec}
-                                                                        ^
-<console>:33: warning: Unused import
-       import org.scalatest.concurrent.ScalaFutures
-                                       ^
-<console>:35: warning: Unused import
-       import com.outworkers.util.samplers._
-                                           ^
-defined class UserDatabase
+class UserDatabase(
+  override val connector: CassandraConnection
+) extends Database[UserDatabase](connector) {
+
+  object users extends Users with Connector {
+    override def autocreate(keySpace: KeySpace): CreateQuery.Default[Users, User] = {
+      create.ifNotExists()(keySpace)
+        .`with`(compaction eqs LeveledCompactionStrategy.sstable_size_in_mb(50))
+        .and(compression eqs LZ4Compressor.crc_check_chance(0.5))
+        .and(comment eqs "testing")
+        .and(read_repair_chance eqs 5D)
+        .and(dclocal_read_repair_chance eqs 5D)
+    }
+  }
+  object usersByEmail extends UsersByEmail with Connector
+}
+
 ```
 
 By default, `autocreate` will simply try and perform a lightweight create query, as follows, which in the final CQL query will look very familiar. This is a simple example not related to any of the above examples.
