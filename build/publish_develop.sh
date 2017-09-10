@@ -79,6 +79,9 @@ then
         then
             echo "No version bump performed in CI, no GitHub push necessary."
         else
+
+            sbt "project readme" tut
+
             echo "Publishing version bump information to GitHub"
             git add .
             git commit -m "TravisCI: Bumping version to match CI definition [ci skip]"
