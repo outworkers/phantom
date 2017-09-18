@@ -75,20 +75,15 @@ then
         echo "Pushing tag to GitHub."
         git push --tags "https://${github_token}@${GH_REF}"
 
-        if [[ $COMMIT_MSG == *"$COMMIT_SKIP_MESSAGE"* ]]
-        then
-            echo "No version bump performed in CI, no GitHub push necessary."
-        else
 
-            sbt "project readme" tut
+        sbt "project readme" tut
 
-            echo "Publishing version bump information to GitHub"
-            git add .
-            git commit -m "TravisCI: Bumping version to match CI definition [ci skip]"
-            git checkout -b version_branch
-            git checkout -B $TRAVIS_BRANCH version_branch
-            git push "https://${github_token}@${GH_REF}" $TRAVIS_BRANCH
-        fi
+        echo "Publishing version bump information and tut docs to GitHub"
+        git add .
+        git commit -m "TravisCI: Bumping version to match CI definition and pushing compiled documentation [ci skip]"
+        git checkout -b version_branch
+        git checkout -B $TRAVIS_BRANCH version_branch
+        git push "https://${github_token}@${GH_REF}" $TRAVIS_BRANCH
 
         echo "Publishing new version to bintray"
         sbt "such publish"
