@@ -55,6 +55,4 @@ before_script:
 - travis_retry sbt "++$TRAVIS_SCALA_VERSION update"
 
 script: ./build/run_tests.sh
-after_success:
-  - sbt "project readme" "tut"
-  - ./build/publish_develop.sh
+after_success: ./build/publish_develop.sh
