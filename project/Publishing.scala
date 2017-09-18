@@ -122,8 +122,13 @@ object Publishing {
     if (publishingToMaven) mavenSettings else bintraySettings
   }
 
+  /**
+   * This exists because SBT is not capable of reloading publishing configuration during tasks or commands.
+   * Unfortunately we have to load a specific configuration based on an environment variable that we "flip"
+   * during CI.
+   */
   def publishingToMaven: Boolean = {
-    sys.env.contains("MAVEN_PUBLISH")
+    sys.env.exists { case (k, v) => k.equalsIgnoreCase("MAVEN_PUBLISH") && v.equalsIgnoreCase("true") }
   }
 
   def runningUnderCi: Boolean = sys.env.get("CI").isDefined || sys.env.get("TRAVIS").isDefined

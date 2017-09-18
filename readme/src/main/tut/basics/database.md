@@ -59,7 +59,7 @@ abstract class Recipes extends Table[Recipes, Recipe] {
 ```
 The whole purpose of `RootConnector` is quite simple, it's saying an implementor will basically specify the `session` and `keySpace` of choice. It looks like this, and it's available in phantom by default via the default import, `import com.outworkers.phantom.dsl._`.
 
-```tut
+```tut:silent
 
 import com.datastax.driver.core.Session
 
@@ -107,7 +107,7 @@ And this is why we offer another native construct, namely the `DatabaseProvider`
 
 This is pretty simple in its design, it simply aims to provide a simple way of injecting a reference to a particular `database` inside a consumer. For the sake of argument, let's say we are designing a `UserService` backed by Cassandra and phantom. Here's how it might look like:
 
-```tut
+```tut:silent
 
 import scala.concurrent.Future
 import com.outworkers.phantom.dsl._
@@ -182,7 +182,7 @@ Let's go ahead and create two complete examples. We are going to make some simpl
 
 Let's look at the most basic example of defining a test connector, which will use all default settings plus a call to `noHearbeat` which will disable heartbeats by setting a pooling option to 0 inside the `ClusterBuilder`. We will go through that in more detail in a second, to show how we can specify more complex options using `ContactPoint`.
 
-```tut
+```tut:silent
 
 import com.outworkers.phantom.dsl._
 
@@ -273,7 +273,7 @@ To override the settings that will be used during schema auto-generation at `Dat
 
 When you later call `database.create` or `database.createAsync` or any other flavour of auto-generation on a `Database`, the `autocreate` overriden below will be respected.
 
-```tut
+```tut:silent
 
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.builder.query.CreateQuery
