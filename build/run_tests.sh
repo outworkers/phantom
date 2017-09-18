@@ -6,8 +6,9 @@ function run_test_suite {
         sbt ++$TRAVIS_SCALA_VERSION coverage test coverageReport coverageAggregate coveralls
         testExitCode=$?
 
-        if [ ${testExitCode} == 0 ];
+        if [ ${testExitCode} == "0" ];
         then
+            echo "Running tut compilation"
             sbt ++$TRAVIS_SCALA_VERSION "project readme" "tut"
             exit $?
         else
