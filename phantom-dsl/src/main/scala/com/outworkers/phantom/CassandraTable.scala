@@ -30,6 +30,7 @@ import org.slf4j.{Logger, LoggerFactory}
 import shapeless.{Generic, HList}
 
 import scala.concurrent.ExecutionContextExecutor
+import com.outworkers.phantom.builder.query.execution.FutureMonadOps._
 
 /**
  * Main representation of a Cassandra table.
@@ -63,6 +64,15 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
     monad: FutureMonad[F],
     guavaAdapter: GuavaAdapter[F]
   ): F[Seq[ResultSet]] = {
+
+    val qb = autocreate(keySpace)
+
+    for {
+      t <- guavaAdapter.fromGuava(qb.executableQuery)
+      secondaries <- new ExecutableStatements[F, Seq](qb.indexList).future()
+      sasies <- new ExecutableStatements[F, Seq](sasiQueries).future()
+    } yield Seq(t) ++ secondaries ++ sasies
+
     new ExecutableStatements[F, Seq](autocreate(keySpace).queries).sequence()
   }
 

@@ -20,7 +20,7 @@ import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, QueryCollection}
-import com.outworkers.phantom.builder.query.options.TablePropertyClause
+import com.outworkers.phantom.builder.query.options.{CachingStrategies, TablePropertyClause}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.connectors.{KeySpace, SessionAugmenterImplicits}
 
@@ -161,7 +161,7 @@ object CreateQuery {
 
 private[phantom] trait CreateImplicits extends TablePropertyClauses {
 
-  val Cache = Caching
+  val Cache: CachingStrategies = Caching
 
   def apply[
     T <: CassandraTable[T, _],
