@@ -239,25 +239,23 @@ abstract class QueryContext[P[_], F[_], Timeout](
     override def future()(
       implicit session: Session,
       ctx: ExecutionContextExecutor
-    ): F[Seq[ResultSet]] = new ExecutableStatements[F, Seq](query.queries).sequence()
+    ): F[Seq[ResultSet]] = {
+      for {
+        tableCreationQuery <- adapter.fromGuava(query.executableQuery)
+        secondaryIndexes <- new ExecutableStatements(query.indexList).future()
+        sasiIndexes <- new ExecutableStatements(query.table.sasiQueries()).future()
+      } yield Seq(tableCreationQuery) ++ secondaryIndexes ++ sasiIndexes
+    }
   }
 
   implicit class CassandraTableStoreMethods[T <: CassandraTable[T, R], R](val table: CassandraTable[T, R]) {
-
-    def createSchemaAsync()(
-      implicit session: Session,
-      keySpace: KeySpace,
-      ec: ExecutionContextExecutor
-    ): F[Seq[ResultSet]] = {
-      new ExecutableStatements[F, Seq](table.autocreate(keySpace).queries).sequence()
-    }
 
     def createSchema(timeout: Timeout = defaultTimeout)(
       implicit session: Session,
       keySpace: KeySpace,
       ec: ExecutionContextExecutor
     ): Seq[ResultSet] = {
-      await(new ExecutableStatements[F, Seq](table.autocreate(keySpace).queries).sequence(), timeout)
+      await(table.autocreate(keySpace).future(), timeout)
     }
 
     def storeRecord[V1, Repr <: HList, HL <: HList, Out <: HList](input: V1)(

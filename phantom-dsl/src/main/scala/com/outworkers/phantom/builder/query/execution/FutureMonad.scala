@@ -47,3 +47,16 @@ trait FutureMonad[F[_]] {
     implicit ctx: ExecutionContextExecutor
   ): F[B]
 }
+
+
+object FutureMonadOps {
+  implicit class Ops[F[_], A](val source: F[A])(implicit monad: FutureMonad[F]) {
+    def map[B](f: A => B)(
+      implicit ctx: ExecutionContextExecutor
+    ): F[B] = monad.map(source)(f)
+
+    def flatMap[B](fn: A => F[B])(
+      implicit ctx: ExecutionContextExecutor
+    ): F[B]= monad.flatMap(source)(fn)
+  }
+}

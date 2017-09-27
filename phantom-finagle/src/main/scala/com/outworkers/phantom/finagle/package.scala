@@ -66,7 +66,7 @@ package object finagle extends TwitterQueryContext with DefaultImports {
   implicit class SpoolSelectQueryOps[
     P[_],
     F[_],
-    Table <: CassandraTable[Table, _],
+    T <: CassandraTable[T, _],
     Record,
     Limit <: LimitBound,
     Order <: OrderBound,
@@ -74,7 +74,7 @@ package object finagle extends TwitterQueryContext with DefaultImports {
     Chain <: WhereBound,
     PS <: HList
   ](
-    val query: SelectQuery[Table, Record, Limit, Order, Status, Chain, PS]
+    val query: SelectQuery[T, Record, Limit, Order, Status, Chain, PS]
   ) extends AnyVal {
     /**
       * Produces a Twitter Spool of [R]ows
@@ -148,34 +148,34 @@ package object finagle extends TwitterQueryContext with DefaultImports {
   }
 
   implicit class InsertQueryAugmenter[
-    Table <: CassandraTable[Table, Record],
+    T <: CassandraTable[T, Record],
     Record,
     Status <: ConsistencyBound,
     PS <: HList
 
-  ](val query: InsertQuery[Table, Record, Status, PS]) extends AnyVal {
-    def ttl(duration: com.twitter.util.Duration): InsertQuery[Table, Record, Status, PS] = {
+  ](val query: InsertQuery[T, Record, Status, PS]) extends AnyVal {
+    def ttl(duration: com.twitter.util.Duration): InsertQuery[T, Record, Status, PS] = {
       query.ttl(duration.inSeconds)
     }
   }
 
   implicit class UpdateQueryAugmenter[
-    Table <: CassandraTable[Table, _],
+    T <: CassandraTable[T, _],
     Record,
     Limit <: LimitBound,
     Order <: OrderBound,
     Status <: ConsistencyBound,
     Chain <: WhereBound,
     PS <: HList
-  ](val query: UpdateQuery[Table, Record, Limit, Order, Status, Chain, PS]) extends AnyVal {
+  ](val query: UpdateQuery[T, Record, Limit, Order, Status, Chain, PS]) extends AnyVal {
 
-    def ttl(duration: com.twitter.util.Duration): UpdateQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
+    def ttl(duration: com.twitter.util.Duration): UpdateQuery[T, Record, Limit, Order, Status, Chain, PS] = {
       query.ttl(duration.inSeconds)
     }
   }
 
   implicit class AssignmentsUpdateQueryAugmenter[
-    Table <: CassandraTable[Table, _],
+    T <: CassandraTable[T, _],
     Record,
     Limit <: LimitBound,
     Order <: OrderBound,
@@ -183,15 +183,15 @@ package object finagle extends TwitterQueryContext with DefaultImports {
     Chain <: WhereBound,
     PS <: HList,
     ModifiedPrepared <: HList
-  ](val query: AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifiedPrepared]) extends AnyVal {
+  ](val query: AssignmentsQuery[T, Record, Limit, Order, Status, Chain, PS, ModifiedPrepared]) extends AnyVal {
 
-    def ttl(duration: TwitterDuration): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifiedPrepared] = {
+    def ttl(duration: TwitterDuration): AssignmentsQuery[T, Record, Limit, Order, Status, Chain, PS, ModifiedPrepared] = {
       query.ttl(duration.inSeconds)
     }
   }
 
   implicit class ConditionalUpdateQueryAugmenter[
-    Table <: CassandraTable[Table, _],
+    T <: CassandraTable[T, _],
     Record,
     Limit <: LimitBound,
     Order <: OrderBound,
@@ -199,9 +199,9 @@ package object finagle extends TwitterQueryContext with DefaultImports {
     Chain <: WhereBound,
     PS <: HList,
     ModifiedPrepared <: HList
-  ](val query: ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifiedPrepared]) extends AnyVal {
+  ](val query: ConditionalQuery[T, Record, Limit, Order, Status, Chain, PS, ModifiedPrepared]) extends AnyVal {
 
-    def ttl(duration: TwitterDuration): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifiedPrepared] = {
+    def ttl(duration: TwitterDuration): ConditionalQuery[T, Record, Limit, Order, Status, Chain, PS, ModifiedPrepared] = {
       query.ttl(duration.inSeconds)
     }
   }
