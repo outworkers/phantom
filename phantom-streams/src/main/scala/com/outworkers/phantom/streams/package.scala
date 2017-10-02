@@ -19,6 +19,7 @@ import akka.actor.ActorSystem
 import com.datastax.driver.core.{Session, Statement}
 import com.outworkers.phantom.builder.batch.BatchType
 import com.outworkers.phantom.builder.query.execution.{FutureMonad, GuavaAdapter, ResultQueryInterface}
+import com.outworkers.phantom.builder.query.prepared.ExecutablePreparedSelectQuery
 import com.outworkers.phantom.builder.{ConsistencyBound, LimitBound, OrderBound, WhereBound}
 import com.outworkers.phantom.builder.query.{RootSelectBlock, SelectQuery}
 import com.outworkers.phantom.connectors.KeySpace
@@ -294,6 +295,86 @@ package object streams {
       PlayEnumerator.flatten {
         block.all().future(modifier) map { res =>
           Enumerator.enumerator(res) through Enumeratee.map(block.rowFunc)
+        }
+      }
+    }
+
+    /**
+      * Creates a Reactive Streams publisher from a root select block.
+      * Because this is a [[RootSelectBlock]], the default execution profile
+      * of this method will be to select all records in a table and stream them.
+      * @param session The database session in which to execute this.
+      * @param keySpace The keyspace in which to execute the query.
+      * @param ctx The execution context to use.
+      * @return A streams publisher interface clients can subscribe to.
+      */
+    def publisher()(
+      implicit session: Session,
+      keySpace: KeySpace,
+      ctx: ExecutionContextExecutor
+    ): Publisher[R] = enumeratorToPublisher(block.fetchEnumerator())
+
+    /**
+      * Creates a Reactive Streams publisher from a root select block but also
+      * allows passing through a query modifier.
+      * Because this is a [[RootSelectBlock]], the default execution profile
+      * of this method will be to select all records in a table and stream them.
+      * @param session The database session in which to execute this.
+      * @param keySpace The keyspace in which to execute the query.
+      * @param ctx The execution context to use.
+      * @return A streams publisher interface clients can subscribe to.
+      */
+    def publisher(modifier: Statement => Statement)(
+      implicit session: Session,
+      keySpace: KeySpace,
+      ctx: ExecutionContextExecutor
+    ): Publisher[R] = {
+      enumeratorToPublisher(block.fetchEnumerator(modifier))
+    }
+  }
+
+
+  implicit class PreparedSelectQueryStream[
+    T <: CassandraTable[T, _],
+    R,
+    Limit <: LimitBound
+  ](val block: ExecutablePreparedSelectQuery[T, R, Limit]) extends AnyVal {
+    /**
+      * Produces an Enumerator for [R]ows
+      * This enumerator can be consumed afterwards with an Iteratee
+      *
+      * @param session The Cassandra session in use.
+      * @param ctx The Execution Context.
+      * @return
+      */
+    def fetchEnumerator()(
+      implicit session: Session,
+      keySpace: KeySpace,
+      ctx: ExecutionContextExecutor
+    ): PlayEnumerator[R] = {
+      PlayEnumerator.flatten {
+        block.future() map { res =>
+          Enumerator.enumerator(res) through Enumeratee.map(block.fromRow)
+        }
+      }
+    }
+
+    /**
+      * Produces an Enumerator for [R]ows
+      * This enumerator can be consumed afterwards with an Iteratee
+      *
+      * @param session The Cassandra session in use.
+      * @param ctx The Execution Context.
+      * @return
+      */
+    def fetchEnumerator(modifier: Statement => Statement)(
+      implicit session: Session,
+      keySpace: KeySpace,
+      ctx: ExecutionContextExecutor
+    ): PlayEnumerator[R] = {
+      PlayEnumerator.flatten {
+        block.future(modifier) map { res =>
+          Enumerator.enumerator(res) through Enumeratee.map(block.fromRow)
         }
       }
     }

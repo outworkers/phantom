@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package com.outworkers.phantom.streams.suites
-
 import java.util.concurrent.atomic.{AtomicInteger, AtomicLong}
 
 import com.datastax.driver.core.utils.UUIDs
@@ -116,6 +115,76 @@ class PublisherIntegrationTest extends FlatSpec with StreamTest with TestImplici
     val chain = for {
       store <- TestDatabase.timeuuidTable.storeRecords(samples)
       pub = TestDatabase.timeuuidTable.select.where(_.user eqs user).publisher(_.setIdempotent(true))
+    } yield pub
+
+    whenReady(chain) { pub =>
+
+      pub.subscribe(new Subscriber[TimeUUIDRecord] {
+        override def onError(t: Throwable): Unit = fail(t)
+
+        override def onSubscribe(s: Subscription): Unit = s.request(Long.MaxValue)
+
+        override def onComplete(): Unit = {
+          info(s"Finished streaming, total count is ${counter.get()}")
+        }
+
+        override def onNext(t: TimeUUIDRecord): Unit = {
+          info(s"The current item is ${t.name}")
+          info(s"The current count is ${counter.incrementAndGet()}")
+        }
+      })
+
+      eventually {
+        counter.get() shouldEqual generationSize
+      }
+    }
+  }
+
+  it should "allow streaming from top level prepared statements" in {
+    val counter = new AtomicLong(0)
+    val generationSize = 100
+    val user = gen[UUID]
+    val samples = genList[TimeUUIDRecord](generationSize).map(_.copy(user = user, id = UUIDs.timeBased()))
+
+    val chain = for {
+      store <- TestDatabase.timeuuidTable.storeRecords(samples)
+      query <- TestDatabase.timeuuidTable.select.where(_.user eqs ?).prepareAsync()
+      pub = query.bind(user).publisher()
+    } yield pub
+
+    whenReady(chain) { pub =>
+
+      pub.subscribe(new Subscriber[TimeUUIDRecord] {
+        override def onError(t: Throwable): Unit = fail(t)
+
+        override def onSubscribe(s: Subscription): Unit = s.request(Long.MaxValue)
+
+        override def onComplete(): Unit = {
+          info(s"Finished streaming, total count is ${counter.get()}")
+        }
+
+        override def onNext(t: TimeUUIDRecord): Unit = {
+          info(s"The current item is ${t.name}")
+          info(s"The current count is ${counter.incrementAndGet()}")
+        }
+      })
+
+      eventually {
+        counter.get() shouldEqual generationSize
+      }
+    }
+  }
+
+  it should "allow streaming from prepared statements with a modifier" in {
+    val counter = new AtomicLong(0)
+    val generationSize = 100
+    val user = gen[UUID]
+    val samples = genList[TimeUUIDRecord](generationSize).map(_.copy(user = user, id = UUIDs.timeBased()))
+
+    val chain = for {
+      store <- TestDatabase.timeuuidTable.storeRecords(samples)
+      query <- TestDatabase.timeuuidTable.select.where(_.user eqs ?).prepareAsync()
+      pub = query.bind(user).publisher()
     } yield pub
 
     whenReady(chain) { pub =>

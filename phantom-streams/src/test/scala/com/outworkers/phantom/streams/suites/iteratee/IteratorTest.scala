@@ -21,8 +21,6 @@ import com.outworkers.phantom.tables.TimeUUIDRecord
 import com.outworkers.util.samplers._
 import org.scalatest.concurrent.ScalaFutures
 
-import scala.concurrent.Future
-
 class IteratorTest extends BigTest with ScalaFutures {
 
   override def beforeAll(): Unit = {
