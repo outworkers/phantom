@@ -96,10 +96,15 @@ case class InsertQuery[
     col: Table => AbstractColumn[RR],
     value: RR
   )(): InsertQuery[Table, Record, Status, PS] = {
-    copy(
-      columnsPart = columnsPart append CQLQuery(col(table).name),
-      valuePart = valuePart append CQLQuery(col(table).asCql(value))
-    )
+    val cql = col(table).asCql(value)
+    if (Option(cql).isDefined) {
+      copy(
+        columnsPart = columnsPart append CQLQuery(col(table).name),
+        valuePart = valuePart append CQLQuery(cql)
+      )
+    } else {
+      this
+    }
   }
 
   final def p_value[RR](
