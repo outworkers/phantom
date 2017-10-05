@@ -98,12 +98,12 @@ case class InsertQuery[
   )(): InsertQuery[Table, Record, Status, PS] = {
     val cql = col(table).asCql(value)
     if (Option(cql).isDefined) {
-      this
-    } else {
       copy(
         columnsPart = columnsPart append CQLQuery(col(table).name),
         valuePart = valuePart append CQLQuery(cql)
       )
+    } else {
+      this
     }
   }
 
