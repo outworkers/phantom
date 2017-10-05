@@ -97,7 +97,7 @@ case class InsertQuery[
     value: RR
   )(): InsertQuery[Table, Record, Status, PS] = {
     val cql = col(table).asCql(value)
-    if (cql == null) {
+    if (Option(cql).isDefined) {
       this
     } else {
       copy(
