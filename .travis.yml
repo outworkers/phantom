@@ -5,10 +5,6 @@ scala:
 - 2.10.6
 - 2.11.11
 
-
-services:
-  - cassandra
-
 cache:
   directories:
    - $HOME/.m2
@@ -49,6 +45,10 @@ addons:
     packages:
     - oracle-java8-installer
 before_install: unset SBT_OPTS JVM_OPTS
+
+install:
+  - ./build/install_cassandra.sh
+
 before_script:
 - mkdir -p $HOME/.sbt/launchers/0.13.15/
 - curl -L -o $HOME/.sbt/launchers/0.13.15/sbt-launch.jar https://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/sbt-launch/0.13.15/sbt-launch.jar
