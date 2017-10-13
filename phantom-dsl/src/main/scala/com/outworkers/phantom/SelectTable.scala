@@ -15,11 +15,8 @@
  */
 package com.outworkers.phantom
 
-import com.outworkers.phantom.builder.QueryBuilder
-import com.outworkers.phantom.builder.clauses.TypedClause
 import com.outworkers.phantom.builder.ops.SelectColumn
 import com.outworkers.phantom.builder.query._
-import com.outworkers.phantom.connectors.KeySpace
 
 trait SelectTable[T <: CassandraTable[T, R], R] {
   self: CassandraTable[T, R] =>

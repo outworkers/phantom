@@ -79,7 +79,7 @@ trait TableAliases[T <: CassandraTable[T, R], R] { self: CassandraTable[T, R] =>
   ) extends Col[Option[RR]] {
     override def parse(r: Row): Try[Option[RR]] = ev.fromRow(name, r) match {
       case Success(value) => Success(Some(value))
-      case Failure(err) => Success(None)
+      case Failure(_) => Success(None)
     }
   }
 
