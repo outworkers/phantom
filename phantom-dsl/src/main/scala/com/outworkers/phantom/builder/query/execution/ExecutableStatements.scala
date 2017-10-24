@@ -84,7 +84,7 @@ class ExecutableStatements[
     implicit cbf: CanBuildFrom[M[F[A]], A, M[A]],
     ctx: ExecutionContextExecutor
   ): F[M[A]] = {
-    (fMonad.pure(cbf(in)) /: in) { (fr, fa) => fr.zipWith(fa)(_ += _) }.map(_.result())
+    (fMonad.pure(cbf()) /: in) { (fr, fa) => fr.zipWith(fa)(_ += _) }.map(_.result())
   }
 
   /**
