@@ -41,7 +41,7 @@ lazy val Versions = new {
 
   val scala210 = "2.10.6"
   val scala211 = "2.11.11"
-  val scala212 = "2.12.3"
+  val scala212 = "2.12.4"
   val scalaAll = Seq(scala210, scala211, scala212)
 
   val scala = new {
