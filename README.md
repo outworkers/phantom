@@ -94,8 +94,8 @@ The latest versions are available here. The badges automatically update when a n
 <a id="learning-phantom">Tutorials on phantom and Cassandra</a>
 ======================================================================
 
-For ease of use and far better management of documentation, we have decided to export the `README.md` to a proper
-Wiki page, now available [here](https://github.com/outworkers/phantom/wiki/).
+For ease of use and far better management of documentation, we have decided to export the `README.md` to a
+compiled Wiki, now available [here](https://github.com/outworkers/phantom/tree/develop/docs).
 
 The following are the current resources available for learning phantom, outside of tests which are very useful in
 highlighting all the possible features in phantom and how to use them.
@@ -106,7 +106,7 @@ This is a list of resources to help you learn phantom and Cassandra:
 - [ ] [Official documentation](docs/README.md)
 - [ ] [Datastax Introduction to Cassandra](http://www.datastax.com/documentation/getting_started/doc/getting_started/gettingStartedIntro_r.html).
 - [ ] [The official Scala API docs for phantom](http://phantom-docs.s3-website-eu-west-1.amazonaws.com/)
-- [ ] [The main Wiki](https://github.com/outworkers/phantom/wiki)
+- [ ] [The main Wiki](https://github.com/outworkers/phantom/tree/develop/docs)
 - [ ] The StackOverflow [phantom-dsl](http://stackoverflow.com/questions/tagged/phantom-dsl) tag, which we always monitor!
 - [ ] Anything tagged phantom on our blog is a phantom tutorial: [phantom tutorials](http://outworkers.com/blog/tag/phantom)
 - [ ] [A series on Cassandra: Getting rid of the SQL mentality](http://outworkers.com/blog/post/a-series-on-cassandra-part-1-getting-rid-of-the-sql-mentality)
