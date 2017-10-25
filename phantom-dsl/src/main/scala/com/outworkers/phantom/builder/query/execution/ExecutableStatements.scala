@@ -67,7 +67,7 @@ class ExecutableStatements[
     implicit cbf: CanBuildFrom[M[A], B, M[B]],
     ctx: ExecutionContextExecutor
   ): F[M[B]] = {
-    in.foldLeft(fMonad.pure(cbf(in))) { (fr, a) =>
+    in.foldLeft(fMonad.pure(cbf())) { (fr, a) =>
       for (r <- fr; b <- fn(a)) yield r += b
     }.map(_.result())
   }
@@ -84,7 +84,7 @@ class ExecutableStatements[
     implicit cbf: CanBuildFrom[M[F[A]], A, M[A]],
     ctx: ExecutionContextExecutor
   ): F[M[A]] = {
-    (fMonad.pure(cbf(in)) /: in) { (fr, fa) => fr.zipWith(fa)(_ += _) }.map(_.result())
+    (fMonad.pure(cbf()) /: in) { (fr, fa) => fr.zipWith(fa)(_ += _) }.map(_.result())
   }
 
   /**
