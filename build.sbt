@@ -15,7 +15,6 @@
  */
 import sbt.Keys._
 import sbt._
-import com.twitter.sbt._
 
 lazy val Versions = new {
   val logback = "1.2.3"

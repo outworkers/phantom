@@ -67,9 +67,9 @@ then
         if [[ $COMMIT_MSG == *"$COMMIT_SKIP_MESSAGE"* ]]
         then
             echo "Skipping version bump and simply tagging"
-            sbt git-tag
+            sbt release with-defaults
         else
-            sbt version-bump-patch git-tag
+            sbt release with-defaults
         fi
 
         echo "Pushing tag to GitHub."

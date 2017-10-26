@@ -53,7 +53,7 @@ addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.7.0")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "0.8.5")
 
-addSbtPlugin("com.websudos" % "sbt-package-dist" % "1.2.0")
+addSbtPlugin("com.github.gseitz" % "sbt-release" % "1.0.5")
 
 addSbtPlugin("com.twitter" % "scrooge-sbt-plugin" % Versions.scrooge)
 

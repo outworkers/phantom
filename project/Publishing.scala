@@ -19,12 +19,10 @@ import sbt._
 import com.typesafe.sbt.pgp.PgpKeys._
 
 import scala.util.Properties
+import sbtrelease.ReleasePlugin.autoImport.{ReleaseStep, _}
+import sbtrelease.ReleaseStateTransformations._
 
 object Publishing {
-
-  val defaultPublishingSettings = Seq(
-    version := "2.15.3"
-  )
 
   lazy val noPublishSettings = Seq(
     publish := (),
@@ -72,7 +70,7 @@ object Publishing {
     publishArtifact in Test := false,
     pomIncludeRepository := { _ => true},
     licenses += ("Apache-2.0", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt"))
-  ) ++ defaultPublishingSettings
+  )
 
   lazy val pgpPass: Option[Array[Char]] = Properties.envOrNone("pgp_passphrase").map(_.toCharArray)
 
@@ -116,10 +114,31 @@ object Publishing {
             <url>http://github.com/alexflav23</url>
           </developer>
         </developers>
-  ) ++ defaultPublishingSettings
+  )
+
+
+  val publishCommand = if (publishingToMaven) "+publishSigned" else "+publish"
+
+  val releaseSettings = Seq(
+    releaseVersionBump := sbtrelease.Version.Bump.Minor,
+    releaseTagComment := s"Releasing ${(version in ThisBuild).value}",
+    releaseCommitMessage := s"Setting version to ${(version in ThisBuild).value}",
+    releaseProcess := Seq[ReleaseStep](
+      checkSnapshotDependencies,
+      inquireVersions,
+      setReleaseVersion,
+      commitReleaseVersion,
+      tagRelease,
+      releaseStepCommandAndRemaining(publishCommand),
+      setNextVersion,
+      commitNextVersion,
+      pushChanges
+    )
+  )
+
 
   def effectiveSettings: Seq[Def.Setting[_]] = {
-    if (publishingToMaven) mavenSettings else bintraySettings
+    releaseSettings ++ (if (publishingToMaven) mavenSettings else bintraySettings)
   }
 
   /**
@@ -140,8 +159,4 @@ object Publishing {
 
   lazy val addOnCondition: (Boolean, ProjectReference) => Seq[ProjectReference] = (bool, ref) =>
     if (bool) ref :: Nil else Nil
-
-  lazy val addRef: (Boolean, ClasspathDep[ProjectReference]) => Seq[ClasspathDep[ProjectReference]] = (bool, ref) =>
-    if (bool) Seq(ref) else Seq.empty
-
 }
