@@ -64,7 +64,7 @@ Modules marked with "x" are still in beta or pre-publishing mode.
 | phantom-udt           | <span>yes</span>    | <span>yes</span>  | <span>yes</span>  | Released       |
 | phantom-autotables    | <span>x</span>      | <span>x</span>    | <span>x</span>    | Released       |
 | phantom-monix         | <span>x</span>      | <span>x</span>    | <span>x</span>    | Released       |
-| phantom-docker          <span>x</span>      | <span>x</span>    | <span>x</span>    | Released       |
+| phantom-docker        |  <span>x</span>     | <span>x</span>    | <span>x</span>    | Released       |
 | phantom-graph         | <span>x</span>      | <span>x</span>    | <span>x</span>    | April 2017     |
 | phantom-spark         | <span>x</span>      | <span>x</span>    | <span>x</span>    | July 2017      |
 | phantom-solr          | <span>x</span>      | <span>x</span>    | <span>x</span>    | July 2017      |
