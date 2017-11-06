@@ -54,6 +54,6 @@ class ScalaQueryContext extends QueryContext[Promise, Future, Duration](10.secon
   ScalaPromiseInterface
 ) {
 
-  override def await[T](f: Future[T], timeout: Duration): T = Await.result(f, timeout)
+  override def blockAwait[T](f: Future[T], timeout: Duration): T = Await.result(f, timeout)
 
 }

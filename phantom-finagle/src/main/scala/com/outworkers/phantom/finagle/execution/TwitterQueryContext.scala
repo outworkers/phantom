@@ -58,6 +58,6 @@ class TwitterQueryContext extends QueryContext[Promise, Future, Duration](10.sec
   TwitterPromiseInterface
 ) {
 
-  override def await[T](f: Future[T], timeout: Duration): T = Await.result(f, timeout)
+  override def blockAwait[T](f: Future[T], timeout: Duration): T = Await.result(f, timeout)
 
 }
