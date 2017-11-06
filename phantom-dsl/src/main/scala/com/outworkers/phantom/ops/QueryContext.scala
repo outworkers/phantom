@@ -45,7 +45,16 @@ abstract class QueryContext[P[_], F[_], Timeout](
     new ExecutableStatements[F, M](col)
   }
 
-  def await[T](f: F[T], timeout: Timeout): T
+  /**
+    * An abstract implementation for blockingly waiting for future completion.
+    * We need this for synchronously prepared statements and other instances
+    * and a mechanism to abstract over the various future backends.
+    * @param f The underlying future to wait for.
+    * @param timeout The amount of time to wait for.
+    * @tparam T the type of the underlying future.
+    * @return The underlying value if the future is successfully completed, or an error thrown otherwise.
+    */
+  def blockAwait[T](f: F[T], timeout: Timeout): T
 
   implicit class BatchOps[Status <: ConsistencyBound](val query: BatchQuery[Status]) {
     def future()(implicit session: Session, ctx: ExecutionContextExecutor): F[ResultSet] = {
@@ -115,7 +124,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
 
     override def defaultTimeout: Timeout = outer.defaultTimeout
 
-    override def await[T](f: F[T], timeout: Timeout): T = outer.await(f, timeout)
+    override def await[T](f: F[T], timeout: Timeout): T = outer.blockAwait(f, timeout)
   }
 
   implicit class ExecutablePrepareQueryOps(query: ExecutablePreparedQuery) extends QueryInterface[F] {
@@ -255,7 +264,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
       keySpace: KeySpace,
       ec: ExecutionContextExecutor
     ): Seq[ResultSet] = {
-      await(table.autocreate(keySpace).future(), timeout)
+      blockAwait(table.autocreate(keySpace).future(), timeout)
     }
 
     def storeRecord[V1, Repr <: HList, HL <: HList, Out <: HList](input: V1)(
