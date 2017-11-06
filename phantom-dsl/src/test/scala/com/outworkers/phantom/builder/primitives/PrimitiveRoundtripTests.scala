@@ -29,7 +29,8 @@ import org.scalatest.{FlatSpec, Matchers, _}
   * meaning serializing and de-serialising the same input should produce the same result back
   * when retrieving it from Cassandra.
   */
-class PrimitiveRoundtripTests extends FlatSpec
+class PrimitiveRoundtripTests
+  extends FlatSpec
   with Matchers
   with GeneratorDrivenPropertyChecks {
 

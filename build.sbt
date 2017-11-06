@@ -17,9 +17,10 @@ import sbt.Keys._
 import sbt._
 import com.twitter.sbt._
 
-lazy val ScalacOptions =  Seq(
+lazy val ScalacOptions = Seq(
   "-deprecation", // Emit warning and location for usages of deprecated APIs.
   "-encoding",
+  "-feature",
   "utf-8", // Specify character encoding used by source files.
   "-explaintypes", // Explain type errors in more detail.
   "-feature", // Emit warning and location for usages of features that should be imported explicitly.
@@ -31,6 +32,11 @@ lazy val ScalacOptions =  Seq(
   "-Xcheckinit", // Wrap field accessors to throw an exception on uninitialized access.
   //"-Xfatal-warnings", // Fail the compilation if there are any warnings.
   "-Xfuture", // Turn on future language features.
+  "-Yno-adapted-args", // Do not adapt an argument list (either by inserting () or creating a tuple) to match the receiver.
+  "-Ypartial-unification" // Enable partial unification in type constructor inference
+)
+
+val XLintOptions = Seq(
   "-Xlint:adapted-args", // Warn if an argument list is modified to match the receiver.
   "-Xlint:by-name-right-associative", // By-name parameter of right associative operator.
   "-Xlint:constant", // Evaluation of a constant arithmetic expression results in an error.
@@ -47,9 +53,10 @@ lazy val ScalacOptions =  Seq(
   "-Xlint:private-shadow", // A private field (or class parameter) shadows a superclass field.
   "-Xlint:stars-align", // Pattern sequence wildcard must align with sequence component.
   "-Xlint:type-parameter-shadow", // A local type parameter shadows a type already in scope.
-  "-Xlint:unsound-match", // Pattern match may not be typesafe.
-  "-Yno-adapted-args", // Do not adapt an argument list (either by inserting () or creating a tuple) to match the receiver.
-  "-Ypartial-unification", // Enable partial unification in type constructor inference
+  "-Xlint:unsound-match" // Pattern match may not be typesafe.
+)
+
+val YWarnOptions = Seq(
   "-Ywarn-dead-code", // Warn when dead code is identified.
   "-Ywarn-extra-implicit", // Warn when more than one implicit parameter section is defined.
   "-Ywarn-inaccessible", // Warn about inaccessible types in method signatures.
@@ -65,6 +72,8 @@ lazy val ScalacOptions =  Seq(
   "-Ywarn-unused:privates", // Warn if a private member is unused.
   "-Ywarn-value-discard" // Warn when non-Unit expression results are unused.
 )
+
+scalacOptions in ThisBuild ++= ScalacOptions ++ YWarnOptions ++ XLintOptions
 
 lazy val Versions = new {
   val logback = "1.2.3"
@@ -141,19 +150,6 @@ lazy val Versions = new {
 }
 
 val defaultConcurrency = 4
-
-scalacOptions in ThisBuild ++= Seq(
-  "-language:experimental.macros",
-  "-language:postfixOps",
-  "-language:implicitConversions",
-  "-language:reflectiveCalls",
-  "-language:higherKinds",
-  "-language:existentials",
-  "-Xlint",
-  "-deprecation",
-  "-feature",
-  "-unchecked"
-)
 
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   organization := "com.outworkers",
