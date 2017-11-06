@@ -18,6 +18,7 @@ package com.outworkers.phantom.example.basics
 import java.util.UUID
 import scala.concurrent.{Future => ScalaFuture}
 import com.outworkers.phantom.dsl._
+import org.joda.time.DateTime
 
 /**
  * In this example we will create a simple table storing recipes.
