@@ -10,25 +10,28 @@ If you use phantom, please consider adding your company to our list of adopters.
 
 ![phantom](https://s3-eu-west-1.amazonaws.com/websudos/oss/logos/phantom.png "Outworkers Phantom")
 
-Migrating to phantom 2.14.0(phantom-finagle users)
-=================================
+Migrating to phantom 2.14.0 and using execution backends.
+=========================================================
 
 Please refer to the new docs on query execution to understand the breaking changes in phantom 2.14.0. They will
-affect users of `phantom-finagle`. Details [here](docs/querying/execution.md).
+affect all users of phantom, as we further optimise the internals for better performance and to gently prepare 3.0.
 
-Even if you do not use `phantom-finagle` but just the normal `phantom-dsl`, `import com.outworkers.phantom.dsl._` is
- now required in more places than before. The `future` method is no longer implementation by query classes, but
- rather added via implicit augmentation by `QueryContext`. The return type of the `future` method is now dependent
- on which `QueryContext` you use, so that's why importing is required, without it the necessary implicits will not
- be in scope.
+Details [here](docs/querying/execution.md). In short, query generation is no longer coupled with query execution within
+the framework. That means phantom can natively support different kind of concurrency frameworks in parallel, using
+different sub-modules. That includes Monix, Twitter Util, Scala Futures, and a few others, some of which only available
+via phantom-pro.
 
+`import com.outworkers.phantom.dsl._` is now required in more places than before. The `future` method is no longer implementation by query classes, but
+rather added via implicit augmentation by `QueryContext`. The return type of the `future` method is now dependent
+on which `QueryContext` you use, so that's why importing is required, without it the necessary implicits will not
+be in scope by default, or similarly, in some places new implicits are required to specify things specific to an execution backend.
 
 Migrating to phantom 2.x.x series
 =================================
 
 The new series of phantom introduces several key backwards incompatible changes with previous versions.
- This was done to obtain massive performance boosts and to thoroughly improve user experience with
- phantom.
+This was done to obtain massive performance boosts and to thoroughly improve user experience with
+phantom.
 
 Read the [MIGRATION GUIDE](docs/migrate.md) for more information on how to upgrade.
 
@@ -94,8 +97,8 @@ The latest versions are available here. The badges automatically update when a n
 <a id="learning-phantom">Tutorials on phantom and Cassandra</a>
 ======================================================================
 
-For ease of use and far better management of documentation, we have decided to export the `README.md` to a
-compiled Wiki, now available [here](https://github.com/outworkers/phantom/tree/develop/docs).
+For ease of use and far better management of documentation, we have decided to export the `README.md` to a compiled
+documentation page, now available [here](https://github.com/outworkers/phantom/tree/develop/docs).
 
 The following are the current resources available for learning phantom, outside of tests which are very useful in
 highlighting all the possible features in phantom and how to use them.
