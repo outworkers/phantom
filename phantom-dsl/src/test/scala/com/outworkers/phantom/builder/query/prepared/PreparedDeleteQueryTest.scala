@@ -25,7 +25,7 @@ class PreparedDeleteQueryTest extends PhantomSuite {
   override def beforeAll(): Unit = {
     super.beforeAll()
     val _ = database.recipes.createSchema()
-    val _ = database.articlesByAuthor.createSchema()
+    database.articlesByAuthor.createSchema()
   }
 
   it should "execute a prepared delete query" in {
@@ -34,9 +34,9 @@ class PreparedDeleteQueryTest extends PhantomSuite {
     val query = database.recipes.delete.where(_.url eqs ?).prepare()
 
     val chain = for {
-      store <- database.recipes.store(recipe).future()
+      _ <- database.recipes.store(recipe).future()
       get <- database.recipes.select.where(_.url eqs recipe.url).one()
-      delete <- query.bind(recipe.url).future()
+      _ <- query.bind(recipe.url).future()
       get2 <- database.recipes.select.where(_.url eqs recipe.url).one()
     } yield (get, get2)
 
