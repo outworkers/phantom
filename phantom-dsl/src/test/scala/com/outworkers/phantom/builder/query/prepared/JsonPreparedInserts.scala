@@ -24,7 +24,7 @@ class JsonPreparedInserts extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.jsonPreparedTable.createSchema()
+    val _ = database.jsonPreparedTable.createSchema()
   }
 
   it should "insert a record into cassandra using a prepared query" in {

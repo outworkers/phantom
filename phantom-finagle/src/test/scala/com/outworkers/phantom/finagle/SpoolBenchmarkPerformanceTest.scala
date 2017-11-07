@@ -49,4 +49,3 @@ class SpoolBenchmarkPerformanceTest extends Bench.LocalTime with TestDatabase.co
     }
   }
 }
-

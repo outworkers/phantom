@@ -467,16 +467,17 @@ object Primitives {
     }
   }
 
-  val DateTimeIsPrimitive = Primitive.manuallyDerive[DateTime, Long](
+  val DateTimeIsPrimitive: Primitive[DateTime] = Primitive.manuallyDerive[DateTime, Long](
     _.toDateTime(DateTimeZone.UTC).getMillis,
     new DateTime(_, DateTimeZone.UTC)
   )(LongPrimitive)(CQLSyntax.Types.Timestamp)
 
-  val JodaLocalDateIsPrimitive = Primitive.manuallyDerive[JodaLocalDate, DateTime](
-    jld => jld.toDateTimeAtCurrentTime(DateTimeZone.UTC), jld => jld.toLocalDate
+  val JodaLocalDateIsPrimitive: Primitive[JodaLocalDate] = Primitive.manuallyDerive[JodaLocalDate, DateTime](
+    jld => jld.toDateTimeAtCurrentTime(DateTimeZone.UTC), _.toLocalDate
   )(DateTimeIsPrimitive)(CQLSyntax.Types.Timestamp)
 
-  val DateIsPrimitive = Primitive.manuallyDerive[Date, Long](_.getTime, new Date(_))(LongPrimitive)(CQLSyntax.Types.Timestamp)
+  val DateIsPrimitive: Primitive[Date] = Primitive
+    .manuallyDerive[Date, Long](_.getTime, new Date(_))(LongPrimitive)(CQLSyntax.Types.Timestamp)
 
   private[this] def collectionPrimitive[M[X] <: TraversableOnce[X], RR](
     cType: String,
@@ -579,9 +580,7 @@ object Primitives {
       override def frozen: Boolean = true
       override def shouldFreeze: Boolean = true
 
-      override def dataType: String = {
-        QueryBuilder.Collections.mapType(kp.cassandraType, vp.cassandraType).queryString
-      }
+      override def dataType: String = QueryBuilder.Collections.mapType(kp, vp).queryString
 
       override def asCql(sourceMap: Map[K, V]): String = QueryBuilder.Utils.map(sourceMap.map {
         case (key, value) => kp.asCql(key) -> vp.asCql(value)
@@ -604,7 +603,7 @@ object Primitives {
         bytes match {
           case Primitive.nullValue => Map.empty[K, V]
           case b if b.remaining() == 0 => Map.empty[K, V]
-          case bt =>
+          case _ =>
             try {
               val input = bytes.duplicate()
               val n = CodecUtils.readSize(input, version)

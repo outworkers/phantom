@@ -80,15 +80,15 @@ sealed case class BatchQuery[Status <: ConsistencyBound](
     }
   }
 
-  def add(query: Batchable)(implicit session: Session): BatchQuery[Status] = {
+  def add(query: Batchable): BatchQuery[Status] = {
     copy(iterator = iterator ++ Iterator(query))
   }
 
-  def add(queries: Batchable*)(implicit session: Session): BatchQuery[Status] = {
+  def add(queries: Batchable*): BatchQuery[Status] = {
     copy(iterator = iterator ++ queries.iterator)
   }
 
-  def add(queries: Iterator[Batchable])(implicit session: Session): BatchQuery[Status] = {
+  def add(queries: Iterator[Batchable]): BatchQuery[Status] = {
     copy(iterator = iterator ++ queries)
   }
 

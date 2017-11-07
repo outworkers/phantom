@@ -17,7 +17,6 @@ package com.outworkers.phantom.thrift.columns
 
 import com.outworkers.phantom.{CassandraTable, Row}
 import com.outworkers.phantom.builder.QueryBuilder
-import com.outworkers.phantom.builder.QueryBuilder.Utils
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.primitives.Primitives.StringPrimitive
 import com.outworkers.phantom.builder.query.engine.CQLQuery

@@ -40,7 +40,7 @@ class DefaultSessionProvider(
 
   val cluster: Cluster = builder(Cluster.builder).build
 
-  def defaultKeyspaceCreationQuery(session: Session, keySpace: String): String = {
+  def defaultKeyspaceCreationQuery(keySpace: String): String = {
     s"CREATE KEYSPACE IF NOT EXISTS $keySpace WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};"
   }
 
@@ -50,7 +50,7 @@ class DefaultSessionProvider(
    */
   protected[this] def initKeySpace(session: Session, space: String): Session = blocking {
     blocking {
-      val query = keyspaceQuery.map(_.queryString).getOrElse(defaultKeyspaceCreationQuery(session, space))
+      val query = keyspaceQuery.map(_.queryString).getOrElse(defaultKeyspaceCreationQuery(space))
       logger.info(s"Automatically initialising keyspace $space with query $query")
       session.execute(query)
     }

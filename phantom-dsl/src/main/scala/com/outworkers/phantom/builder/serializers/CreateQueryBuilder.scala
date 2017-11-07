@@ -74,9 +74,9 @@ private[builder] class CreateTableBuilder {
 
   def partitionKey(keys: List[String]): CQLQuery = {
     keys match {
+      case Nil => CQLQuery.empty
       case head :: Nil => CQLQuery(head)
-      case head :: tail => CQLQuery.empty.wrapn(keys)
-      case _ => CQLQuery.empty
+      case _ :: _ => CQLQuery.empty.wrapn(keys)
     }
   }
 
@@ -90,8 +90,8 @@ private[builder] class CreateTableBuilder {
     */
   def clusteringKey(keys: List[String]): CQLQuery = {
     keys match {
-      case head :: tail => CQLQuery.empty.pad.append("WITH CLUSTERING ORDER BY").wrap(keys)
-      case _ => CQLQuery.empty
+      case _ :: _ => CQLQuery.empty.pad.append("WITH CLUSTERING ORDER BY").wrap(keys)
+      case Nil => CQLQuery.empty
     }
   }
 
