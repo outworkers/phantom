@@ -18,12 +18,10 @@ package com.outworkers.phantom
 import akka.actor.ActorSystem
 import com.datastax.driver.core.{Session, Statement}
 import com.outworkers.phantom.builder.batch.BatchType
-import com.outworkers.phantom.builder.query.execution.{FutureMonad, GuavaAdapter, ResultQueryInterface}
 import com.outworkers.phantom.builder.query.prepared.ExecutablePreparedSelectQuery
-import com.outworkers.phantom.builder.{ConsistencyBound, LimitBound, OrderBound, WhereBound}
 import com.outworkers.phantom.builder.query.{RootSelectBlock, SelectQuery}
+import com.outworkers.phantom.builder.{ConsistencyBound, LimitBound, OrderBound, WhereBound}
 import com.outworkers.phantom.connectors.KeySpace
-import com.outworkers.phantom.dsl.{context => _, _}
 import com.outworkers.phantom.streams.iteratee.{Enumerator, Iteratee => PhantomIteratee}
 import com.outworkers.phantom.streams.lib.EnumeratorPublisher
 import org.reactivestreams.Publisher

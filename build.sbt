@@ -35,7 +35,6 @@ lazy val ScalacOptions = Seq(
   //"-Xfatal-warnings", // Fail the compilation if there are any warnings.
   "-Xfuture" // Turn on future language features.
   //"-Yno-adapted-args" // Do not adapt an argument list (either by inserting () or creating a tuple) to match the receiver.
-
 )
 
 val XLintOptions = Seq(
@@ -77,6 +76,13 @@ val YWarnOptions = Seq(
   "-Ywarn-numeric-widen", // Warn when numerics are widened.
   "-Ywarn-value-discard" // Warn when non-Unit expression results are unused.
 )
+
+val scalacOptionsFn: String => Seq[String] = { s =>
+  CrossVersion.partialVersion(s) match {
+    case Some((_, minor)) if minor >= 12 => ScalacOptions ++ YWarnOptions ++ Scala212Options
+    case _ => ScalacOptions ++ YWarnOptions
+  }
+}
 
 scalacOptions in ThisBuild ++= ScalacOptions ++ YWarnOptions
 
@@ -173,7 +179,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   ),
   fork in Test := true,
 
-  scalacOptions ++= ScalacOptions,
+  scalacOptions ++= scalacOptionsFn(scalaVersion.value),
   scalacOptions in (Compile, console) := ScalacOptions.filterNot(
     Set(
       "-Ywarn-unused:imports",

@@ -45,11 +45,11 @@ trait PromiseInterface[P[_], F[_]] {
 
       val callback = new FutureCallback[T] {
         def onSuccess(result: T): Unit = {
-          become(promise, apply(result))
+          val _ = become(promise, apply(result))
         }
 
         def onFailure(err: Throwable): Unit = {
-          become(promise, failed(err))
+          val _ = become(promise, failed(err))
         }
       }
 

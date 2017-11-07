@@ -43,7 +43,7 @@ trait HListHelpers {
 
   def devarargify(tpe: Type): Type =
     tpe match {
-      case TypeRef(pre, _, args) if isVararg(tpe) =>
+      case TypeRef(_, _, args) if isVararg(tpe) =>
         appliedType(typeOf[scala.collection.Seq[_]].typeConstructor, args)
       case _ => tpe
     }

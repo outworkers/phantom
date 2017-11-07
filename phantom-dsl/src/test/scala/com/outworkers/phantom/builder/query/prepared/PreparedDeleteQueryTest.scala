@@ -24,8 +24,8 @@ class PreparedDeleteQueryTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.recipes.createSchema()
-    database.articlesByAuthor.createSchema()
+    val _ = database.recipes.createSchema()
+    val _ = database.articlesByAuthor.createSchema()
   }
 
   it should "execute a prepared delete query" in {
