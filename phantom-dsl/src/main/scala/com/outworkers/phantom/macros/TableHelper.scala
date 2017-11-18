@@ -502,6 +502,8 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
        new $clsName(): $macroPkg.TableHelper.Aux[$tableType, $recordType, $storeTpe]
     """
 
+    Console.println(s"Inferred store type ${showHList(storeTpe)}")
+
     if (showTrees) {
       echo(showCode(tree))
     }

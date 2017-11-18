@@ -38,7 +38,7 @@ import scala.reflect.macros.whitebox
   * }}}
   *
   * Unlike the traditional implementation of [[Generic]] we don't always need to destructure tuples, but because
-  * we cannot effectively distinguish, we are forced to duct-type and pick the appropiate implementation
+  * we cannot effectively distinguish, we are forced to duct-type and pick the appropriate implementation
   * based on which variation between [[GenR]] and [[Store]] matches the input type.
   *
   * @tparam T The source type of the record that is passed to the store method as an auto-tupling argument.
@@ -80,8 +80,10 @@ class SingleGenericMacro(val c: whitebox.Context) extends HListHelpers with Whit
   def mkGeneric(tpe: Type, store: Type, generic: Type): Tree = {
     val res = mkHListType(tpe :: Nil)
     val genTpe = genericTpe(tpe)
+    Console.println(s"Deriving single generic implementation for ${printType(tpe)} and ${printType(store)}")
 
     val tree = if (store =:= generic) {
+      Console.println(s"Generic implementation using Shapeless for ${printType(tpe)}")
       info(s"Generic implementation using Shapeless for ${printType(tpe)}")
       q"""
           new $macroPkg.SingleGeneric[$tpe, $store, $generic] {
@@ -95,6 +97,7 @@ class SingleGenericMacro(val c: whitebox.Context) extends HListHelpers with Whit
           }
       """
     } else if (res =:= store) {
+      println(s"Single generic implementation using coalesced HLists for ${printType(tpe)}")
       info(s"Single generic implementation using coalesced HLists for ${printType(tpe)}")
 
       q"""
@@ -107,8 +110,13 @@ class SingleGenericMacro(val c: whitebox.Context) extends HListHelpers with Whit
           }
       """
     } else {
+      Console.println("Error reached")
+      Console.println(showHList(generic))
+      Console.println(store)
+      Console.println(printType(store))
       val debugString = s"Unable to derive store type for ${printType(tpe)}, expected ${showHList(generic)} or ${showHList(store)}"
-      error(debugString)
+      Console.println(debugString)
+      c.error(c.enclosingPosition, debugString)
       abort(debugString)
     }
 
