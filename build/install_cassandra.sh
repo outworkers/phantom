@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+
+CASSANDRA_VERSION="3.10"
+DEFAULT_CASSANDRA_VERSION="2.2.9"
+
 function check_java_version {
   if type -p java; then
     echo found java executable in PATH
@@ -24,16 +28,25 @@ function check_java_version {
   fi
 }
 
+echo "Git status before checking java version"
+git status
+
 jdk_version_8_or_more=$(check_java_version)
 
-if [ "$jdk_version_8_or_more" > 1 ];
+
+if [ ${jdk_version_8_or_more} -gt 1 ];
   then
-    cassandra_version="3.7"
+    cassandra_version="$CASSANDRA_VERSION"
   else
-    cassandra_version="2.2.9"
+    cassandra_version="$DEFAULT_CASSANDRA_VERSION"
 fi
+
+echo "Git status after checking java version"
+git status
+
+echo "Git status before installing Cassandra"
+git status
 
 pip install --user 'requests[security]'
 pip install --user ccm
-ccm create test -v ${cassandra_version} -n 1 -s
-exit $?
+ccm create test -v ${CASSANDRA_VERSION} -n 1 -s
