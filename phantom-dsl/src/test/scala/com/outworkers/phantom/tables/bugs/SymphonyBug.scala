@@ -39,10 +39,6 @@ abstract class ShardModel extends Table[ShardModel, Shard] {
     select(_.data).where(_.id eqs id).and(_.shardNo eqs shardNo).one().map(_.get.array())
   }
 
-  def storeShard(shard: Shard): Future[ResultSet] = {
-    store(shard).future()
-  }
-
   def remove(id: String, accountId: String, shards: Int): Future[Boolean] = {
     val f = (1 to shards).map(x => delete.where(_.id eqs id).and(_.shardNo eqs x)
       .and(_.accountId eqs accountId)
