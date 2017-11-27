@@ -147,7 +147,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
     PS <: HList
   ](
     override val query: SelectQuery[Table, Record, Limit, Order, Status, Chain, PS]
-  ) extends SelectQueryOps(query)(promiseInterface.adapter, fMonad) {
+  ) extends SelectQueryOps(query) {
     override def executableQuery: ExecutableCqlQuery = query.executableQuery
   }
 

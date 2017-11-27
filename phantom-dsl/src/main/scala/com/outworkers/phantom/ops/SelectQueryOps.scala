@@ -40,7 +40,7 @@ class SelectQueryOps[
 ](
   val query: SelectQuery[Table, Record, Limit, Order, Status, Chain, PS]
 )(
-  implicit pf: PromiseInterface[P, F],
+  implicit adapter: GuavaAdapter[F],
   fMonad: FutureMonad[F]
 ) extends ResultQueryInterface[F, Table, Record, Limit] {
 
@@ -58,7 +58,7 @@ class SelectQueryOps[
     ec: ExecutionContextExecutor
   ): F[Option[Record]] = {
     val enforceLimit = if (query.count) LimitedPart.empty else query.limitedPart append QueryBuilder.limit(1.toString)
-    singleFetch(pf.adapter.fromGuava(query.copy(limitedPart = enforceLimit).executableQuery.statement()))
+    singleFetch(adapter.fromGuava(query.copy(limitedPart = enforceLimit).executableQuery.statement()))
   }
 
   /**
@@ -76,7 +76,7 @@ class SelectQueryOps[
     ec: ExecutionContextExecutor
   ): F[Option[Inner]] = {
     val enforceLimit = if (query.count) LimitedPart.empty else query.limitedPart append QueryBuilder.limit(1.toString)
-    optionalFetch(pf.adapter.fromGuava(query.copy(limitedPart = enforceLimit).executableQuery.statement()))
+    optionalFetch(adapter.fromGuava(query.copy(limitedPart = enforceLimit).executableQuery.statement()))
   }
 
   override def fromRow(r: Row): Record = query.fromRow(r)

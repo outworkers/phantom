@@ -15,8 +15,11 @@
  */
 package com.outworkers.phantom.ops
 
+import com.datastax.driver.core.Session
 import com.outworkers.phantom.builder.query.SetPart
 import com.outworkers.phantom.builder.query.execution._
+
+import scala.concurrent.ExecutionContextExecutor
 
 class UpdateIncompleteQueryOps[
   P[_],
@@ -27,7 +30,7 @@ class UpdateIncompleteQueryOps[
 )(
   implicit pf: PromiseInterface[P, F],
   fMonad: FutureMonad[F]
-) extends QueryInterface[F] { outer =>
+) extends QueryInterface[F]()(pf.adapter) { outer =>
   override def executableQuery: ExecutableCqlQuery = query
 
   /**
@@ -38,7 +41,10 @@ class UpdateIncompleteQueryOps[
     *         the set part of the query is incomplete at the point where this method is invoked, the result
     *         is a successful future of Unit.
     */
-  def successIfIncomplete(): F[Unit] = {
+  def successIfIncomplete()(
+    implicit session: Session,
+    ctx: ExecutionContextExecutor
+  ): F[Unit] = {
     if (setPart.nonEmpty) {
       fMonad.map(pf.adapter.fromGuava(query))(_ => ())
     } else {
