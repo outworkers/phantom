@@ -80,10 +80,8 @@ class SingleGenericMacro(val c: whitebox.Context) extends HListHelpers with Whit
   def mkGeneric(tpe: Type, store: Type, generic: Type): Tree = {
     val res = mkHListType(tpe :: Nil)
     val genTpe = genericTpe(tpe)
-    Console.println(s"Deriving single generic implementation for ${printType(tpe)} and ${printType(store)}")
 
     val tree = if (store =:= generic) {
-      Console.println(s"Generic implementation using Shapeless for ${printType(tpe)}")
       info(s"Generic implementation using Shapeless for ${printType(tpe)}")
       q"""
           new $macroPkg.SingleGeneric[$tpe, $store, $generic] {
@@ -110,12 +108,7 @@ class SingleGenericMacro(val c: whitebox.Context) extends HListHelpers with Whit
           }
       """
     } else {
-      Console.println("Error reached")
-      Console.println(showHList(generic))
-      Console.println(store)
-      Console.println(printType(store))
       val debugString = s"Unable to derive store type for ${printType(tpe)}, expected ${showHList(generic)} or ${showHList(store)}"
-      Console.println(debugString)
       c.error(c.enclosingPosition, debugString)
       abort(debugString)
     }
