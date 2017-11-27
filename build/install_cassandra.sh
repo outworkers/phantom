@@ -28,11 +28,7 @@ function check_java_version {
   fi
 }
 
-echo "Git status before checking java version"
-git status
-
 jdk_version_8_or_more=$(check_java_version)
-
 
 if [ ${jdk_version_8_or_more} -gt 1 ];
   then
@@ -40,12 +36,6 @@ if [ ${jdk_version_8_or_more} -gt 1 ];
   else
     cassandra_version="$DEFAULT_CASSANDRA_VERSION"
 fi
-
-echo "Git status after checking java version"
-git status
-
-echo "Git status before installing Cassandra"
-git status
 
 pip install --user 'requests[security]'
 pip install --user ccm
