@@ -70,11 +70,10 @@ then
             sbt git-tag
         else
             sbt version-bump-patch git-tag
+
+            echo "Pushing tag to GitHub."
+            git push --tags "https://${github_token}@${GH_REF}"
         fi
-
-        echo "Pushing tag to GitHub."
-        git push --tags "https://${github_token}@${GH_REF}"
-
 
         sbt "project readme" tut
 
@@ -84,9 +83,6 @@ then
         git checkout -b version_branch
         git checkout -B $TRAVIS_BRANCH version_branch
         git push "https://${github_token}@${GH_REF}" $TRAVIS_BRANCH
-
-        echo "Publishing new version to bintray"
-        sbt "such publish"
 
         if [ "$TRAVIS_BRANCH" == "develop" ];
         then
@@ -105,6 +101,14 @@ then
             exit $?
         else
             echo "Not deploying to Maven Central, branch is not develop, current branch is ${TRAVIS_BRANCH}"
+        fi
+
+        if [[ $COMMIT_MSG == *"$COMMIT_SKIP_MESSAGE"* ]];
+        then
+            echo "Not publishing to Bintray"
+        else
+            echo "Publishing new version to bintray"
+            sbt "such publish"
         fi
 
     else
