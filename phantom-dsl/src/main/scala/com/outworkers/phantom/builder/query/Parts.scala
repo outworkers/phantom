@@ -22,6 +22,9 @@ import com.outworkers.phantom.builder.syntax.CQLSyntax
 sealed abstract class CQLQueryPart[Part <: CQLQueryPart[Part]](
   override val queries: Seq[CQLQuery]
 ) extends QueryPart[Part](queries) {
+
+  def nonEmpty: Boolean = queries.nonEmpty
+
   override def mergeList(list: Seq[CQLQuery]): MergeList = new MergeList(list)
 }
 
