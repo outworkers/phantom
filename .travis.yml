@@ -38,7 +38,7 @@ jdk:
 - oraclejdk8
 matrix:
   include:
-  - scala: 2.12.3
+  - scala: 2.12.4
     jdk: oraclejdk8
 addons:
   apt:
