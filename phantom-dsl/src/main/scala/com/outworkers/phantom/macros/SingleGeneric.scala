@@ -95,7 +95,6 @@ class SingleGenericMacro(val c: whitebox.Context) extends HListHelpers with Whit
           }
       """
     } else if (res =:= store) {
-      println(s"Single generic implementation using coalesced HLists for ${printType(tpe)}")
       info(s"Single generic implementation using coalesced HLists for ${printType(tpe)}")
 
       q"""
