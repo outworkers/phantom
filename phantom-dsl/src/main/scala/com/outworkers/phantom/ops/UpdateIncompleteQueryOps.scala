@@ -30,8 +30,7 @@ class UpdateIncompleteQueryOps[
 )(
   implicit pf: PromiseInterface[P, F],
   fMonad: FutureMonad[F]
-) extends QueryInterface[F]()(pf.adapter) { outer =>
-  override def executableQuery: ExecutableCqlQuery = query
+) {
 
   /**
     * A method used to allow ignoring unset UPDATE clauses that can sometimes happen
