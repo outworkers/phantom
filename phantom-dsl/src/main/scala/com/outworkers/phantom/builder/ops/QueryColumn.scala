@@ -202,5 +202,5 @@ class MapKeyUpdateClause[K : Primitive, V : Primitive](val column: String, val k
   }
 }
 
-class QueryColumn[RR : Primitive](override val name: String) extends RootQueryColumn(name)
-class DeleteQueryColumn[RR : Primitive](override val name: String) extends RootQueryColumn(name)
+class QueryColumn[RR](override val name: String)(implicit pv: Primitive[RR]) extends RootQueryColumn(name)
+class DeleteQueryColumn[RR](override val name: String)(implicit pv: Primitive[RR]) extends RootQueryColumn(name)
