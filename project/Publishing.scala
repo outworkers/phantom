@@ -23,7 +23,7 @@ import scala.util.Properties
 object Publishing {
 
   val defaultPublishingSettings = Seq(
-    version := "2.16.1"
+    version := "2.16.2"
   )
 
   lazy val noPublishSettings = Seq(
