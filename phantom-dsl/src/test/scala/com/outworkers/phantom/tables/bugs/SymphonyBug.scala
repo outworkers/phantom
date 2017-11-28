@@ -36,7 +36,8 @@ abstract class ShardModel extends Table[ShardModel, Shard] {
   object data extends BlobColumn
 
   def find(id: String, shardNo: Int): Future[Array[Byte]] = {
-    select(_.data).where(_.id eqs id).and(_.shardNo eqs shardNo).one().map(_.get.array())
+    select(_.data).where(_.id eqs id).and(_.shardNo eqs shardNo).one()
+      .map(_.map(_.array()).getOrElse(Array.emptyByteArray))
   }
 
   def remove(id: String, accountId: String, shards: Int): Future[Boolean] = {
