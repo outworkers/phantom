@@ -98,6 +98,45 @@ abstract class QueryContext[P[_], F[_], Timeout](
     override def executableQuery: ExecutableCqlQuery = block.all().executableQuery
   }
 
+  implicit def updateOps[
+    T <: CassandraTable[T, _],
+    R,
+    L <: LimitBound,
+    O <: OrderBound,
+    S <: ConsistencyBound,
+    Chain <: WhereBound,
+    PS <: HList
+  ](query: UpdateQuery[T, R, L, O, S, Chain, PS]): UpdateIncompleteQueryOps[P, F] = {
+    new UpdateIncompleteQueryOps(query.executableQuery, query.setPart)
+  }
+
+  implicit def assignmentUpdateOps[
+    T <: CassandraTable[T, _],
+    R,
+    L <: LimitBound,
+    O <: OrderBound,
+    S <: ConsistencyBound,
+    Chain <: WhereBound,
+    PS <: HList,
+    MP <: HList
+  ](query: AssignmentsQuery[T, R, L, O, S, Chain, PS, MP]): UpdateIncompleteQueryOps[P, F] = {
+    new UpdateIncompleteQueryOps(query.executableQuery, query.setPart)
+  }
+
+  implicit def conditionalUpdateOps[
+    T <: CassandraTable[T, _],
+    R,
+    L <: LimitBound,
+    O <: OrderBound,
+    S <: ConsistencyBound,
+    Chain <: WhereBound,
+    PS <: HList,
+    MP <: HList
+  ](query: ConditionalQuery[T, R, L, O, S, Chain, PS, MP]): UpdateIncompleteQueryOps[P, F] = {
+    new UpdateIncompleteQueryOps(query.executableQuery, query.setPart)
+  }
+
+
   implicit class SelectOps[
     Table <: CassandraTable[Table, _],
     Record,
@@ -108,7 +147,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
     PS <: HList
   ](
     override val query: SelectQuery[Table, Record, Limit, Order, Status, Chain, PS]
-  ) extends SelectQueryOps(query)(promiseInterface.adapter, fMonad) {
+  ) extends SelectQueryOps(query) {
     override def executableQuery: ExecutableCqlQuery = query.executableQuery
   }
 

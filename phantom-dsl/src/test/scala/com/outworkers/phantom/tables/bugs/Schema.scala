@@ -17,12 +17,6 @@ package com.outworkers.phantom.tables.bugs
 
 import com.outworkers.phantom.dsl._
 
-case class SchemaBugModel(
-  id: Int,
-  quality: Int,
-  name: String
-)
-
 abstract class Schema extends Table[Schema, SchemaBugModel] {
   object id extends IntColumn with PartitionKey
   object quality extends IntColumn

@@ -62,7 +62,9 @@ trait HListHelpers {
     gTpe.prefix.asInstanceOf[Type]
   }
 
-  def showHList(tpe: Type): String = showCollection(unpackHListTpe(tpe))
+  def showHList(tpe: Type): String = {
+    s"HList(${showCollection(unpackHListTpe(tpe))})"
+  }
 
   def unpackHListTpe(tpe: Type): List[Type] = {
     @tailrec
@@ -75,7 +77,8 @@ trait HListHelpers {
       } else {
         u baseType HConsSym match {
           case TypeRef(pre, _, List(hd, tl)) if pre =:= HConsPre => unfold(tl, hd :: acc)
-          case _ => c.abort(c.enclosingPosition, s"$tpe is not an HList type")
+          case _ =>
+            c.abort(c.enclosingPosition, s"$tpe is not an HList type")
         }
       }
     }

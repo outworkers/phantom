@@ -28,7 +28,8 @@ import com.outworkers.phantom.builder.query.prepared.PrepareMark
  * @param name The name of the column.
  * @tparam RR The type of the value the column holds.
  */
-sealed class QueryColumn[RR](val name: String)(implicit p: Primitive[RR]) {
+abstract class RootQueryColumn[RR](val name: String)(implicit p: Primitive[RR]) {
+
 
   def eqs(value: RR): WhereClause.Condition = {
     new WhereClause.Condition(QueryBuilder.Where.eqs(name, p.asCql(value)))
@@ -200,3 +201,6 @@ class MapKeyUpdateClause[K : Primitive, V : Primitive](val column: String, val k
     )
   }
 }
+
+class QueryColumn[RR](override val name: String)(implicit pv: Primitive[RR]) extends RootQueryColumn[RR](name)
+class DeleteQueryColumn[RR](override val name: String)(implicit pv: Primitive[RR]) extends RootQueryColumn[RR](name)

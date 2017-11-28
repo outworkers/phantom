@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 echo "Pull request: ${TRAVIS_PULL_REQUEST}; Branch: ${TRAVIS_BRANCH}"
-TARGET_SCALA_VERSION="2.12.3"
+TARGET_SCALA_VERSION="2.12.4"
 
 if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "develop" ];
 then
@@ -70,11 +70,10 @@ then
             sbt git-tag
         else
             sbt version-bump-patch git-tag
+
+            echo "Pushing tag to GitHub."
+            git push --tags "https://${github_token}@${GH_REF}"
         fi
-
-        echo "Pushing tag to GitHub."
-        git push --tags "https://${github_token}@${GH_REF}"
-
 
         sbt "project readme" tut
 
@@ -85,26 +84,36 @@ then
         git checkout -B $TRAVIS_BRANCH version_branch
         git push "https://${github_token}@${GH_REF}" $TRAVIS_BRANCH
 
-        echo "Publishing new version to bintray"
-        sbt "such publish"
-
         if [ "$TRAVIS_BRANCH" == "develop" ];
         then
-            echo "Publishing new version to Maven Central"
-            echo "Creating GPG deploy key"
-            openssl aes-256-cbc -K $encrypted_759d2b7e5bb0_key -iv $encrypted_759d2b7e5bb0_iv -in build/deploy.asc.enc -out build/deploy.asc -d
+            if [[ $COMMIT_MSG == *"$COMMIT_SKIP_MESSAGE"* ]];
+            then
+                echo "Publishing new version to Maven Central"
+                echo "Creating GPG deploy key"
+                openssl aes-256-cbc -K $encrypted_759d2b7e5bb0_key -iv $encrypted_759d2b7e5bb0_iv -in build/deploy.asc.enc -out build/deploy.asc -d
 
-            echo "importing GPG key to local GBP repo"
-            gpg --fast-import build/deploy.asc
+                echo "importing GPG key to local GBP repo"
+                gpg --fast-import build/deploy.asc
 
-            echo "Setting MAVEN_PUBLISH mode to true"
-            export MAVEN_PUBLISH="true"
-            export pgp_passphrase=${maven_password}
-            sbt "such publishSigned"
-            sbt sonatypeReleaseAll
-            exit $?
+                echo "Setting MAVEN_PUBLISH mode to true"
+                export MAVEN_PUBLISH="true"
+                export pgp_passphrase=${maven_password}
+                sbt "such publishSigned"
+                sbt sonatypeReleaseAll
+                exit $?
+            else
+                echo "Skipping publication of a new Maven Artefact, the version was not bumped."
+            fi
         else
             echo "Not deploying to Maven Central, branch is not develop, current branch is ${TRAVIS_BRANCH}"
+        fi
+
+        if [[ $COMMIT_MSG == *"$COMMIT_SKIP_MESSAGE"* ]];
+        then
+            echo "Not publishing to Bintray"
+        else
+            echo "Publishing new version to bintray"
+            sbt "such publish"
         fi
 
     else

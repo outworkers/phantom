@@ -15,11 +15,21 @@
  */
 package com.outworkers.phantom.keys
 
+import com.outworkers.phantom.builder.ops.QueryColumn
+import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.column.AbstractColumn
 
 private[phantom] trait Undroppable
 private[phantom] trait Unmodifiable
 private[phantom] trait Indexed
+
+object Indexed {
+  implicit def indexedToQueryColumn[T : Primitive](col: AbstractColumn[T] with Indexed): QueryColumn[T] = {
+    new QueryColumn(col.name)
+  }
+
+  implicit def optionalIndexToQueryColumn[T : Primitive](col: AbstractColumn[Option[T]] with Indexed): QueryColumn[T] = new QueryColumn(col.name)
+}
 
 private[phantom] trait Key[KeyType <: Key[KeyType]] {
   self: AbstractColumn[_] =>

@@ -93,7 +93,12 @@ class SelectQueryOps[
     val flatten = new PreparedFlattener(executableQuery.qb)
 
     flatten.async map { ps =>
-      new PreparedSelectBlock[Table, Record, Limit, Rev](ps, flatten.protocolVersion, fromRow, executableQuery.options)
+      new PreparedSelectBlock[Table, Record, Limit, Rev](
+        ps,
+        flatten.protocolVersion,
+        fromRow,
+        executableQuery.options
+      )
     }
   }
 

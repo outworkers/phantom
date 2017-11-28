@@ -38,7 +38,7 @@ import scala.reflect.macros.whitebox
   * }}}
   *
   * Unlike the traditional implementation of [[Generic]] we don't always need to destructure tuples, but because
-  * we cannot effectively distinguish, we are forced to duct-type and pick the appropiate implementation
+  * we cannot effectively distinguish, we are forced to duct-type and pick the appropriate implementation
   * based on which variation between [[GenR]] and [[Store]] matches the input type.
   *
   * @tparam T The source type of the record that is passed to the store method as an auto-tupling argument.
@@ -108,7 +108,7 @@ class SingleGenericMacro(val c: whitebox.Context) extends HListHelpers with Whit
       """
     } else {
       val debugString = s"Unable to derive store type for ${printType(tpe)}, expected ${showHList(generic)} or ${showHList(store)}"
-      error(debugString)
+      c.error(c.enclosingPosition, debugString)
       abort(debugString)
     }
 

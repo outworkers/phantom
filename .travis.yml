@@ -38,7 +38,7 @@ jdk:
 - oraclejdk8
 matrix:
   include:
-  - scala: 2.12.3
+  - scala: 2.12.4
     jdk: oraclejdk8
 addons:
   apt:
@@ -56,3 +56,10 @@ before_script:
 
 script: ./build/run_tests.sh
 after_success: ./build/publish_develop.sh
+
+deploy:
+  provider: pages
+  skip_cleanup: true
+  github_token: $github_token # Set in travis-ci.org dashboard
+  on:
+    branch: develop
