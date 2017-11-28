@@ -86,19 +86,24 @@ then
 
         if [ "$TRAVIS_BRANCH" == "develop" ];
         then
-            echo "Publishing new version to Maven Central"
-            echo "Creating GPG deploy key"
-            openssl aes-256-cbc -K $encrypted_759d2b7e5bb0_key -iv $encrypted_759d2b7e5bb0_iv -in build/deploy.asc.enc -out build/deploy.asc -d
+            if [[ $COMMIT_MSG == *"$COMMIT_SKIP_MESSAGE"* ]];
+            then
+                echo "Publishing new version to Maven Central"
+                echo "Creating GPG deploy key"
+                openssl aes-256-cbc -K $encrypted_759d2b7e5bb0_key -iv $encrypted_759d2b7e5bb0_iv -in build/deploy.asc.enc -out build/deploy.asc -d
 
-            echo "importing GPG key to local GBP repo"
-            gpg --fast-import build/deploy.asc
+                echo "importing GPG key to local GBP repo"
+                gpg --fast-import build/deploy.asc
 
-            echo "Setting MAVEN_PUBLISH mode to true"
-            export MAVEN_PUBLISH="true"
-            export pgp_passphrase=${maven_password}
-            sbt "such publishSigned"
-            sbt sonatypeReleaseAll
-            exit $?
+                echo "Setting MAVEN_PUBLISH mode to true"
+                export MAVEN_PUBLISH="true"
+                export pgp_passphrase=${maven_password}
+                sbt "such publishSigned"
+                sbt sonatypeReleaseAll
+                exit $?
+            else
+                echo "Skipping publication of a new Maven Artefact, the version was not bumped."
+            fi
         else
             echo "Not deploying to Maven Central, branch is not develop, current branch is ${TRAVIS_BRANCH}"
         fi
