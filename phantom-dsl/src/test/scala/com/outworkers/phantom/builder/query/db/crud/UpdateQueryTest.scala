@@ -322,4 +322,64 @@ class UpdateQueryTest extends PhantomSuite with Matchers with Assertions with In
       res2.value shouldEqual updatedRow.copy(double = row.double)
     }
   }
+
+  it should "allow using succeedAnyway if the update query is empty" in {
+    //char is not supported
+    //https://github.com/datastax/java-driver/blob/2.0/driver-core/src/main/java/com/datastax/driver/core/DataType.java
+    val row = gen[PrimitiveRecord]
+
+    val chain = for {
+      store <- database.primitives.storeRecord(row)
+      a <- database.primitives.select.where(_.pkey eqs row.pkey).one
+      u <- database.primitives.update.where(_.pkey eqs row.pkey)
+        .modify(_.long setIfDefined None)
+        .and(_.boolean setIfDefined None)
+        .and(_.bDecimal setIfDefined None)
+        .and(_.double setIfDefined None)
+        .and(_.float setIfDefined None)
+        .and(_.inet setIfDefined None)
+        .and(_.int setIfDefined None)
+        .and(_.date setIfDefined None)
+        .and(_.uuid setIfDefined None)
+        .and(_.bi setIfDefined None)
+        .succeedAnyway()
+      a2 <- database.primitives.select.where(_.pkey eqs row.pkey).one
+    } yield (a, a2)
+
+    whenReady(chain) { case (res1, res2) =>
+      res1.value shouldEqual row
+      res2.value shouldEqual row
+    }
+  }
+
+  it should "allow using succeedAnyway if the update query has set clauses defined" in {
+    //char is not supported
+    //https://github.com/datastax/java-driver/blob/2.0/driver-core/src/main/java/com/datastax/driver/core/DataType.java
+    val row = gen[PrimitiveRecord]
+
+    val updatedRow = gen[PrimitiveRecord].copy(pkey = row.pkey)
+
+    val chain = for {
+      store <- database.primitives.store(row).future()
+      a <- database.primitives.select.where(_.pkey eqs row.pkey).one
+      u <- database.primitives.update.where(_.pkey eqs row.pkey)
+        .modify(_.long setIfDefined Some(updatedRow.long))
+        .and(_.boolean setTo updatedRow.boolean)
+        .and(_.bDecimal setTo updatedRow.bDecimal)
+        .and(_.double setIfDefined None)
+        .and(_.float setTo updatedRow.float)
+        .and(_.inet setTo updatedRow.inet)
+        .and(_.int setTo updatedRow.int)
+        .and(_.date setTo updatedRow.date)
+        .and(_.uuid setTo updatedRow.uuid)
+        .and(_.bi setTo updatedRow.bi)
+        .succeedAnyway()
+      a2 <- database.primitives.select.where(_.pkey eqs row.pkey).one
+    } yield (a, a2)
+
+    whenReady(chain) { case (res1, res2) =>
+      res1.value shouldEqual row
+      res2.value shouldEqual updatedRow.copy(double = row.double)
+    }
+  }
 }

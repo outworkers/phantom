@@ -40,7 +40,7 @@ class UpdateIncompleteQueryOps[
     *         the set part of the query is incomplete at the point where this method is invoked, the result
     *         is a successful future of Unit.
     */
-  def successIfIncomplete()(
+  def succeedAnyway()(
     implicit session: Session,
     ctx: ExecutionContextExecutor
   ): F[Unit] = {
