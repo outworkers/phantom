@@ -27,6 +27,8 @@ object Indexed {
   implicit def indexedToQueryColumn[T : Primitive](col: AbstractColumn[T] with Indexed): QueryColumn[T] = {
     new QueryColumn(col.name)
   }
+
+  implicit def optionalIndexToQueryColumn[T : Primitive](col: AbstractColumn[Option[T]] with Indexed): QueryColumn[T] = new QueryColumn(col.name)
 }
 
 private[phantom] trait Key[KeyType <: Key[KeyType]] {

@@ -51,6 +51,22 @@ class WhereClause extends Clause {
   class Condition(override val qb: CQLQuery) extends QueryCondition[HNil](qb)
 
   /**
+    * A path dependant type condition used explicitly for DELETE .. WHERE clauses.
+    * This is used to build and distinguish serialised queries that are used in primary index clauses.
+    * We need them to be distinguished because deletes on secondary indexes are not possible.
+    *
+    * The columns that form the condition of the where clause are always part of the primary key.
+    *
+    * {{{
+    *   SELECT WHERE id = 'test' LIMIT 1;
+    *   UPDATE WHERE name = 'your_name' SET city = 'London';
+    * }}}
+    *
+    * @param qb The underlying query builder of the condition.
+    */
+  class DeleteCondition(override val qb: CQLQuery) extends QueryCondition[HNil](qb)
+
+  /**
    *
    * @tparam T Type of argument
    */
