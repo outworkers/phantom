@@ -17,7 +17,6 @@ resolvers ++= Seq(
   "jgit-repo" at "http://download.eclipse.org/jgit/maven",
   "Twitter Repo" at "http://maven.twttr.com/",
   Resolver.sonatypeRepo("releases"),
-  Resolver.bintrayRepo("websudos", "oss-releases"),
   Resolver.bintrayIvyRepo("sksamuel", "sbt-plugins"),
   Resolver.bintrayIvyRepo("twittercsl-ivy", "sbt-plugins"),
   Resolver.bintrayRepo("twittercsl", "sbt-plugins")
@@ -53,8 +52,6 @@ addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.7.0")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "0.8.5")
 
-addSbtPlugin("com.websudos" % "sbt-package-dist" % "1.2.0")
-
 addSbtPlugin("com.twitter" % "scrooge-sbt-plugin" % Versions.scrooge)
 
 addSbtPlugin("org.tpolecat" % "tut-plugin" % "0.5.2")
@@ -64,3 +61,5 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-site" % "0.8.1")
 addSbtPlugin("com.eed3si9n" % "sbt-doge" % "0.1.5")
 
 libraryDependencies += "org.slf4j" % "slf4j-nop" % "1.7.22"
+
+addSbtPlugin("com.github.gseitz" % "sbt-release" % "1.0.5")

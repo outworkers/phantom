@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 import bintray.BintrayKeys._
+import com.typesafe.sbt.SbtGit.git
 import sbt.Keys._
 import sbt._
 import com.typesafe.sbt.pgp.PgpKeys._
+import sbtrelease.ReleasePlugin.autoImport.{ReleaseStep, _}
+import sbtrelease.ReleaseStateTransformations._
 
 import scala.util.Properties
 
@@ -30,6 +33,52 @@ object Publishing {
     publish := (),
     publishLocal := (),
     publishArtifact := false
+  )
+
+
+  val versionSkipSequence = "[version skip]"
+  val ciSkipSequence = "[ci skip]"
+
+  def skipStepConditionally(
+    state: State,
+    step: ReleaseStep,
+    condition: State => Boolean,
+    message: String = "Skipping current step"
+  ): State = {
+    if (condition(state)) {
+      state.log.info(message)
+      state
+    } else {
+      step(state)
+    }
+  }
+
+  def shouldSkipVersionCondition(state: State): Boolean = {
+    val settings = Project.extract(state)
+    val commitString = settings.get(git.gitHeadCommit)
+    commitString.exists(_.contains(versionSkipSequence))
+  }
+
+  def onlyIfVersionNotSkipped(step: ReleaseStep): ReleaseStep = { s: State =>
+    skipStepConditionally(s, step, shouldSkipVersionCondition)
+  }
+
+  val releaseSettings = Seq(
+    releaseIgnoreUntrackedFiles := true,
+    releaseVersionBump := sbtrelease.Version.Bump.Minor,
+    releaseTagComment := s"Releasing ${(version in ThisBuild).value}",
+    releaseCommitMessage := s"Setting version to ${(version in ThisBuild).value} $ciSkipSequence",
+    releaseProcess := Seq[ReleaseStep](
+      checkSnapshotDependencies,
+      inquireVersions,
+      onlyIfVersionNotSkipped(setReleaseVersion),
+      onlyIfVersionNotSkipped(commitReleaseVersion),
+      onlyIfVersionNotSkipped(tagRelease),
+      onlyIfVersionNotSkipped(releaseStepCommandAndRemaining("+publish")),
+      onlyIfVersionNotSkipped(setNextVersion),
+      onlyIfVersionNotSkipped(commitNextVersion),
+      onlyIfVersionNotSkipped(pushChanges)
+    )
   )
 
   lazy val defaultCredentials: Seq[Credentials] = {
