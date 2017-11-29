@@ -2,6 +2,43 @@
 
 echo "Pull request: ${TRAVIS_PULL_REQUEST}; Branch: ${TRAVIS_BRANCH}"
 
+
+function publish_to_maven {
+    if [ "$TRAVIS_BRANCH" == "develop" ];
+    then
+        if [[ $COMMIT_MSG == *"$COMMIT_SKIP_MESSAGE"* ]];
+        then
+          echo "Skipping publication of a new Maven Artefact, the version was not bumped."
+        else
+          echo "Publishing new version to Maven Central"
+          echo "Creating GPG deploy key"
+          openssl aes-256-cbc -K $encrypted_759d2b7e5bb0_key -iv $encrypted_759d2b7e5bb0_iv -in build/deploy.asc.enc -out build/deploy.asc -d
+
+          echo "importing GPG key to local GBP repo"
+          gpg --fast-import build/deploy.asc
+
+          echo "Setting MAVEN_PUBLISH mode to true"
+          export MAVEN_PUBLISH="true"
+          export pgp_passphrase=${maven_password}
+          sbt "such publishSigned"
+          sbt sonatypeReleaseAll
+          exit $?
+        fi
+    else
+        echo "Not deploying to Maven Central, branch is not develop, current branch is ${TRAVIS_BRANCH}"
+    fi
+}
+
+function publish_to_bintray {
+    if [[ $COMMIT_MSG == *"$COMMIT_SKIP_MESSAGE"* ]];
+    then
+        echo "Not publishing to Bintray"
+    else
+        echo "Publishing new version to bintray"
+        sbt "such publish"
+    fi
+}
+
 if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "develop" ];
 then
     if [ "${TRAVIS_SCALA_VERSION}" == "${TRIGGER_SCALA_VERSION}" ] && [ "${TRAVIS_JDK_VERSION}" == "oraclejdk8" ];
@@ -60,63 +97,14 @@ then
         COMMIT_MSG=$(git log -1 --pretty=%B 2>&1)
         COMMIT_SKIP_MESSAGE="[version skip]"
 
-        echo "Last commit message $COMMIT_MSG"
-        echo "Commit skip message $COMMIT_SKIP_MESSAGE"
-
-        if [[ $COMMIT_MSG == *"$COMMIT_SKIP_MESSAGE"* ]]
-        then
-            echo "Skipping version bump and simply tagging"
-            sbt git-tag
-        else
-            sbt version-bump-patch git-tag
-
-            echo "Pushing tag to GitHub."
-            git push --tags "https://${github_token}@${GH_REF}"
-        fi
-
         sbt "project readme" tut
+        sbt release with-defaults
 
-        echo "Publishing version bump information and tut docs to GitHub"
-        git add .
-        git commit -m "TravisCI: Bumping version to match CI definition and pushing compiled documentation [ci skip]"
-        git checkout -b version_branch
-        git checkout -B $TRAVIS_BRANCH version_branch
-        git push "https://${github_token}@${GH_REF}" $TRAVIS_BRANCH
-
-        if [ "$TRAVIS_BRANCH" == "develop" ];
-        then
-            if [[ $COMMIT_MSG == *"$COMMIT_SKIP_MESSAGE"* ]];
-            then
-              echo "Skipping publication of a new Maven Artefact, the version was not bumped."
-            else
-              echo "Publishing new version to Maven Central"
-              echo "Creating GPG deploy key"
-              openssl aes-256-cbc -K $encrypted_759d2b7e5bb0_key -iv $encrypted_759d2b7e5bb0_iv -in build/deploy.asc.enc -out build/deploy.asc -d
-
-              echo "importing GPG key to local GBP repo"
-              gpg --fast-import build/deploy.asc
-
-              echo "Setting MAVEN_PUBLISH mode to true"
-              export MAVEN_PUBLISH="true"
-              export pgp_passphrase=${maven_password}
-              sbt "release with-defaults"
-              sbt sonatypeReleaseAll
-              exit $?
-            fi
-        else
-            echo "Not deploying to Maven Central, branch is not develop, current branch is ${TRAVIS_BRANCH}"
-        fi
-
-        if [[ $COMMIT_MSG == *"$COMMIT_SKIP_MESSAGE"* ]];
-        then
-            echo "Not publishing to Bintray"
-        else
-            echo "Publishing new version to bintray"
-            sbt "such publish"
-        fi
+        publish_to_maven
+        publish_to_bintray
 
     else
-        echo "Only publishing version for Scala $TRIGGER_SCALA_VERSION and Oracle JDK 8 to prevent multiple artifacts"
+        echo "Only publishing version for Scala $TARGET_SCALA_VERSION and Oracle JDK 8 to prevent multiple artifacts"
     fi
 else
     echo "This is either a pull request or the branch is not develop, deployment not necessary"

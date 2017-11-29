@@ -15,7 +15,6 @@
  */
 import sbt.Keys._
 import sbt._
-import com.twitter.sbt._
 
 lazy val ScalacOptions = Seq(
   "-deprecation", // Emit warning and location for usages of deprecated APIs.
@@ -192,11 +191,8 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     "-Dio.netty.resourceLeakDetection"
   ),
   envVars := Map("SCALACTIC_FILL_FILE_PATHNAMES" -> "yes"),
-  gitTagName in ThisBuild := s"version=${scalaVersion.value}",
   parallelExecution in ThisBuild := false
-) ++ VersionManagement.newSettings ++
-  GitProject.gitSettings ++
-  Publishing.effectiveSettings
+) ++ Publishing.effectiveSettings
 
 lazy val baseProjectList: Seq[ProjectReference] = Seq(
   phantomDsl,
@@ -319,7 +315,7 @@ lazy val phantomConnectors = (project in file("phantom-connectors"))
       "com.outworkers"               %% "util-testing"                      % Versions.util % Test
     )
   ).enablePlugins(
-   CrossPerProjectPlugin
+    CrossPerProjectPlugin
   )
 
 lazy val phantomFinagle = (project in file("phantom-finagle"))

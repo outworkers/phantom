@@ -55,6 +55,7 @@ object Publishing {
 
   def shouldSkipVersionCondition(state: State): Boolean = {
     val settings = Project.extract(state)
+
     val commitString = settings.get(git.gitHeadCommit)
     commitString.exists(_.contains(versionSkipSequence))
   }
@@ -74,7 +75,6 @@ object Publishing {
       onlyIfVersionNotSkipped(setReleaseVersion),
       onlyIfVersionNotSkipped(commitReleaseVersion),
       onlyIfVersionNotSkipped(tagRelease),
-      onlyIfVersionNotSkipped(releaseStepCommandAndRemaining("+publish")),
       onlyIfVersionNotSkipped(setNextVersion),
       onlyIfVersionNotSkipped(commitNextVersion),
       onlyIfVersionNotSkipped(pushChanges)
