@@ -14,9 +14,13 @@
  * limitations under the License.
  */
 import bintray.BintrayKeys._
+import com.typesafe.sbt.SbtGit.git
 import sbt.Keys._
 import sbt._
 import com.typesafe.sbt.pgp.PgpKeys._
+import sbtrelease.ReleasePlugin.autoImport.{ReleaseStep, _}
+import sbtrelease.ReleaseStateTransformations._
+import sbtrelease.Vcs
 
 import scala.util.Properties
 
@@ -30,6 +34,101 @@ object Publishing {
     publish := (),
     publishLocal := (),
     publishArtifact := false
+  )
+
+
+  val versionSkipSequence = "[version skip]"
+  val ciSkipSequence = "[ci skip]"
+
+  def skipStepConditionally(
+    state: State,
+    step: ReleaseStep,
+    condition: State => Boolean,
+    message: String = "Skipping current step"
+  ): State = {
+    if (condition(state)) {
+      state.log.info(message)
+      state
+    } else {
+      step(state)
+    }
+  }
+
+  def shouldSkipVersionCondition(state: State): Boolean = {
+    val settings = Project.extract(state)
+
+    val commitString = settings.get(git.gitHeadCommit)
+    commitString.exists(_.contains(versionSkipSequence))
+  }
+
+  def onlyIfVersionNotSkipped(step: ReleaseStep): ReleaseStep = { s: State =>
+    skipStepConditionally(s, step, shouldSkipVersionCondition)
+  }
+
+  private def toProcessLogger(st: State): ProcessLogger = new ProcessLogger {
+    override def error(s: => String): Unit = st.log.error(s)
+    override def info(s: => String): Unit = st.log.info(s)
+    override def buffer[T](f: => T): T = st.log.buffer(f)
+  }
+
+  def vcs(state: State): Vcs = {
+    Project.extract(state).get(releaseVcs)
+      .getOrElse(sys.error("Aborting release. Working directory is not a repository of a recognized VCS."))
+  }
+
+
+  val releaseTutFolder = settingKey[File]("The file to write the version to")
+
+  def commitTutFilesAndVersion: ReleaseStep = ReleaseStep { st: State =>
+    val settings = Project.extract(st)
+    val log = toProcessLogger(st)
+    val versionsFile = settings.get(releaseVersionFile).getCanonicalFile
+    val docsFolder = settings.get(releaseTutFolder).getCanonicalFile
+    val base = vcs(st).baseDir.getCanonicalFile
+    val sign = settings.get(releaseVcsSign)
+
+    val relativePath = IO.relativize(
+      base,
+      versionsFile
+    ).getOrElse("Version file [%s] is outside of this VCS repository with base directory [%s]!" format(versionsFile, base))
+
+    val relativeDocsPath = IO.relativize(
+      base,
+      docsFolder
+    ).getOrElse("Docs folder [%s] is outside of this VCS repository with base directory [%s]!" format(docsFolder, base))
+
+
+    vcs(st).add(relativePath) !! log
+    vcs(st).add(relativeDocsPath) !! log
+    val status = (vcs(st).status !!) trim
+
+    val newState = if (status.nonEmpty) {
+      val (state, msg) = settings.runTask(releaseCommitMessage, st)
+      vcs(state).commit(msg, sign) ! log
+      state
+    } else {
+      // nothing to commit. this happens if the version.sbt file hasn't changed.
+      st
+    }
+    newState
+  }
+
+  val releaseSettings = Seq(
+    releaseTutFolder in ThisBuild := baseDirectory.value / "docs",
+    releaseIgnoreUntrackedFiles := true,
+    releaseVersionBump := sbtrelease.Version.Bump.Minor,
+    releaseTagComment := s"Releasing ${(version in ThisBuild).value}",
+    releaseCommitMessage := s"Setting version to ${(version in ThisBuild).value} $ciSkipSequence",
+    releaseProcess := Seq[ReleaseStep](
+      checkSnapshotDependencies,
+      inquireVersions,
+      onlyIfVersionNotSkipped(setReleaseVersion),
+      onlyIfVersionNotSkipped(commitReleaseVersion),
+      onlyIfVersionNotSkipped(tagRelease),
+      onlyIfVersionNotSkipped(setNextVersion),
+      onlyIfVersionNotSkipped(commitTutFilesAndVersion),
+      onlyIfVersionNotSkipped(pushChanges)
+    )
   )
 
   lazy val defaultCredentials: Seq[Credentials] = {

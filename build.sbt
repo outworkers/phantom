@@ -15,7 +15,6 @@
  */
 import sbt.Keys._
 import sbt._
-import com.twitter.sbt._
 
 lazy val ScalacOptions = Seq(
   "-deprecation", // Emit warning and location for usages of deprecated APIs.
@@ -90,8 +89,8 @@ lazy val Versions = new {
   val logback = "1.2.3"
   val util = "0.38.0"
   val json4s = "3.5.1"
-  val datastax = "3.3.0"
-  val scalatest = "3.0.1"
+  val datastax = "3.3.1"
+  val scalatest = "3.0.4"
   val shapeless = "2.3.2"
   val thrift = "0.8.0"
   val finagle = "6.45.0"
@@ -99,7 +98,7 @@ lazy val Versions = new {
   val scalacheck = "1.13.5"
   val slf4j = "1.7.25"
   val reactivestreams = "1.0.0"
-  val cassandraUnit = "3.1.3.2"
+  val cassandraUnit = "3.3.0.2"
   val javaxServlet = "3.0.1"
   val joda = "2.9.9"
   val jodaConvert = "1.8.1"
@@ -192,11 +191,8 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     "-Dio.netty.resourceLeakDetection"
   ),
   envVars := Map("SCALACTIC_FILL_FILE_PATHNAMES" -> "yes"),
-  gitTagName in ThisBuild := s"version=${scalaVersion.value}",
   parallelExecution in ThisBuild := false
-) ++ VersionManagement.newSettings ++
-  GitProject.gitSettings ++
-  Publishing.effectiveSettings
+) ++ Publishing.effectiveSettings
 
 lazy val baseProjectList: Seq[ProjectReference] = Seq(
   phantomDsl,
@@ -319,7 +315,7 @@ lazy val phantomConnectors = (project in file("phantom-connectors"))
       "com.outworkers"               %% "util-testing"                      % Versions.util % Test
     )
   ).enablePlugins(
-   CrossPerProjectPlugin
+    CrossPerProjectPlugin
   )
 
 lazy val phantomFinagle = (project in file("phantom-finagle"))

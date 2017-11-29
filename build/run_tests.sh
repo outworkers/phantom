@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 function run_test_suite {
-    if [ "${TRAVIS_SCALA_VERSION}" == "${TRIGGER_SCALA_VERSION}" ] && [ "${TRAVIS_JDK_VERSION}" == "oraclejdk8" ];
+    if [ "${TRAVIS_SCALA_VERSION}" == "${TARGET_SCALA_VERSION}" ] && [ "${TRAVIS_JDK_VERSION}" == "oraclejdk8" ];
     then
         echo "Running tests with coverage and report submission"
         sbt ++$TRAVIS_SCALA_VERSION coverage test coverageReport coverageAggregate coveralls
