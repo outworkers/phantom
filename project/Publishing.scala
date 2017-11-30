@@ -26,10 +26,6 @@ import scala.util.Properties
 
 object Publishing {
 
-  val defaultPublishingSettings = Seq(
-    version := "2.16.4"
-  )
-
   lazy val noPublishSettings = Seq(
     publish := (),
     publishLocal := (),
@@ -171,7 +167,7 @@ object Publishing {
     publishArtifact in Test := false,
     pomIncludeRepository := { _ => true},
     licenses += ("Apache-2.0", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt"))
-  ) ++ defaultPublishingSettings
+  )
 
   lazy val pgpPass: Option[Array[Char]] = Properties.envOrNone("pgp_passphrase").map(_.toCharArray)
 
@@ -215,7 +211,7 @@ object Publishing {
             <url>http://github.com/alexflav23</url>
           </developer>
         </developers>
-  ) ++ defaultPublishingSettings
+  )
 
   def effectiveSettings: Seq[Def.Setting[_]] = {
     if (publishingToMaven) mavenSettings else bintraySettings
