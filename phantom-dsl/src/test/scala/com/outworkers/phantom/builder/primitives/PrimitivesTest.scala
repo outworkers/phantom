@@ -19,6 +19,7 @@ package com.outworkers.phantom.builder.primitives
 import java.nio.ByteBuffer
 
 import com.datastax.driver.core.ProtocolVersion
+import com.datastax.driver.core.exceptions.DriverInternalError
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import org.joda.time.{DateTime, DateTimeZone}
@@ -50,6 +51,12 @@ class PrimitivesTest extends FlatSpec with Matchers with GeneratorDrivenProperty
     val colGen = Gen.buildableOf[M[T], T](arb)
     forAll(colGen) { (col: M[T]) =>
       ev2.asCql(col) shouldEqual fn(col)
+    }
+  }
+
+  it should "throw an supported version error when neccessary" in {
+    intercept[DriverInternalError] {
+      throw Utils.unsupported(ProtocolVersion.V5)
     }
   }
 
