@@ -2,6 +2,14 @@
 
 echo "Pull request: ${TRAVIS_PULL_REQUEST}; Branch: ${TRAVIS_BRANCH}"
 
+#!/usr/bin/env bash
+function fix_git {
+    echo "Fixing git setup for $TRAVIS_BRANCH"
+    git checkout ${TRAVIS_BRANCH}
+    git branch -u origin/${TRAVIS_BRANCH}
+    git config branch.${TRAVIS_BRANCH}.remote origin
+    git config branch.${TRAVIS_BRANCH}.merge refs/heads/${TRAVIS_BRANCH}
+}
 
 function publish_to_maven {
     if [ "$TRAVIS_BRANCH" == "develop" ];
@@ -93,6 +101,8 @@ then
         else
             echo "Bintray credentials still not found"
         fi
+
+        fix_git
 
         COMMIT_MSG=$(git log -1 --pretty=%B 2>&1)
         COMMIT_SKIP_MESSAGE="[version skip]"
