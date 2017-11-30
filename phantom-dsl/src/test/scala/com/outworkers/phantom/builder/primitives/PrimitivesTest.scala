@@ -55,7 +55,9 @@ class PrimitivesTest extends FlatSpec with Matchers with GeneratorDrivenProperty
   }
 
   it should "throw an supported version error when neccessary" in {
-    intercept[DriverInternalError](Utils.unsupported(ProtocolVersion.V5))
+    intercept[DriverInternalError] {
+      throw Utils.unsupported(ProtocolVersion.V5)
+    }
   }
 
   it should "coerce a DateTime into a valid timezone string" in {
