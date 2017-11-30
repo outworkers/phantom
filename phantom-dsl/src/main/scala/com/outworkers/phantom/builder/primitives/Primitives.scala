@@ -33,7 +33,7 @@ import scala.collection.generic.CanBuildFrom
 import scala.util.Try
 
 object Utils {
-  private[this] def unsupported(version: ProtocolVersion): DriverInternalError = {
+  private[phantom] def unsupported(version: ProtocolVersion): DriverInternalError = {
     new DriverInternalError(s"Unsupported protocol version $version")
   }
 
