@@ -113,7 +113,7 @@ object Publishing {
     releaseTutFolder in ThisBuild := baseDirectory.value / "docs",
     releaseIgnoreUntrackedFiles := true,
     releaseVersionBump := sbtrelease.Version.Bump.Minor,
-    releaseTagComment := s"Releasing ${(version in ThisBuild).value}",
+    releaseTagComment := s"Releasing ${(version in ThisBuild).value} $ciSkipSequence",
     releaseCommitMessage := s"Setting version to ${(version in ThisBuild).value} $ciSkipSequence",
     releaseProcess := Seq[ReleaseStep](
       checkSnapshotDependencies,
@@ -214,7 +214,7 @@ object Publishing {
   )
 
   def effectiveSettings: Seq[Def.Setting[_]] = {
-    if (publishingToMaven) mavenSettings else bintraySettings
+    releaseSettings ++ { if (publishingToMaven) mavenSettings else bintraySettings }
   }
 
   /**
