@@ -108,7 +108,7 @@ then
         COMMIT_SKIP_MESSAGE="[version skip]"
 
         sbt "project readme" tut
-        sbt release with-defaults
+        sbt "release with-defaults"
 
         publish_to_maven
         publish_to_bintray
