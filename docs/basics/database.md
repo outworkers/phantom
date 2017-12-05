@@ -208,3 +208,111 @@ And this is how you would use that provider trait now. We're going to assume Sca
 import com.outworkers.phantom.dsl._
 
 import org.scalatest.{BeforeAndAfterAll, OptionValues, Matchers, FlatSpec}
+import org.scalatest.concurrent.ScalaFutures
+import com.outworkers.util.samplers._
+
+class UserServiceTest extends FlatSpec with Matchers with ScalaFutures with BeforeAndAfterAll with OptionValues {
+
+  val userService = new UserService with TestDatabaseProvider {}
+
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    // all our tables will now be initialised automatically against the target keyspace.
+    userService.database.create()
+  }
+
+  it should "store a user using the user service and retrieve it by id and email" in {
+    val user = gen[User]
+
+    val chain = for {
+      store <- userService.store(user)
+      byId <- userService.findById(user.id)
+      byEmail <- userService.findByEmail(user.email)
+    } yield (byId, byEmail)
+
+    whenReady(chain) { case (byId, byEmail) =>
+      byId shouldBe defined
+      byId.value shouldEqual user
+
+      byEmail shouldBe defined
+      byEmail.value shouldEqual user
+    }
+  }
+}
+
+```
+
+
+#### Automated schema generation using Database
+
+One of the coolest things you can do in phantom is automatically derive the schema for a table from its DSL definition. This is useful as you can basically forget about ever typing manual CQL or worrying about where your CQL scripts are stored and how to load them in time via bash or anything funky like that.
+
+As far as we are concerned, that was of doing things is old school and deprecated and we don't want to be looking backwards, so auto-generation to the rescue. There isn't really much to it, continuing on the above examples, it's just a question of the `create.ifNotExists()` method being available "for free".
+
+For example:
+
+```scala
+database.users.create.ifNotExists()
+```
+
+Now obviously that's the super simplistic example, so let's look at how you might implement more advanced scenarios. Phantom provides a full schema DSL including all alter and create query options so it should be quite trivial to implement any kind of query no matter how complex.
+
+Without respect to how effective these settings would be in a production environment(no do not try at home), this is meant to illustrate that you could create very complex queries with the existing DSL.
+
+```scala
+database.users
+  .create.ifNotExists()
+  .`with`(compaction eqs LeveledCompactionStrategy.sstable_size_in_mb(50))
+  .and(compression eqs LZ4Compressor.crc_check_chance(0.5))
+  .and(comment eqs "testing")
+  .and(read_repair_chance eqs 5D)
+  .and(dclocal_read_repair_chance eqs 5D)
+```
+
+To override the settings that will be used during schema auto-generation at `Database` level, phantom provides the `autocreate` method inside every table which can be easily overriden. This is again an example of chaining numerous DSL methods and doesn't attempt to demonstrate any kind of effective production settings.
+
+When you later call `database.create` or `database.createAsync` or any other flavour of auto-generation on a `Database`, the `autocreate` overriden below will be respected.
+
+```scala
+
+import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.builder.query.CreateQuery
+
+class UserDatabase(
+  override val connector: CassandraConnection
+) extends Database[UserDatabase](connector) {
+
+  object users extends Users with Connector {
+    override def autocreate(keySpace: KeySpace): CreateQuery.Default[Users, User] = {
+      create.ifNotExists()(keySpace)
+        .`with`(compaction eqs LeveledCompactionStrategy.sstable_size_in_mb(50))
+        .and(compression eqs LZ4Compressor.crc_check_chance(0.5))
+        .and(comment eqs "testing")
+        .and(read_repair_chance eqs 5D)
+        .and(dclocal_read_repair_chance eqs 5D)
+    }
+  }
+  object usersByEmail extends UsersByEmail with Connector
+}
+
+```
+
+By default, `autocreate` will simply try and perform a lightweight create query, as follows, which in the final CQL query will look very familiar. This is a simple example not related to any of the above examples.
+
+```scala
+def autocreate(keySpace: KeySpace): CreateQuery.Default[T, R] = {
+  create.ifNotExists()(keySpace)
+}
+```
+
+The result will look like the below.
+
+```sql
+CREATE TABLE IF NOT EXISTS $keyspace.$table (
+  id uuid,
+  name text,
+  unixTimestamp timestamp,
+  PRIMARY KEY (id, unixTimestamp)
+)
+```
+

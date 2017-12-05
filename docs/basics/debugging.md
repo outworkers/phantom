@@ -128,39 +128,46 @@ This flag will cause all macros in phantom to print the full tree they produce. 
 
 
 ```scala
-
+scala> import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.dsl._
+
+scala> import com.outworkers.phantom.macros.debug.Options.ShowTrees
 import com.outworkers.phantom.macros.debug.Options.ShowTrees
+
+scala> import org.joda.time.DateTime
 import org.joda.time.DateTime
 
-case class Recipe(
-  url: String,
-  description: Option[String],
-  ingredients: List[String],
-  servings: Option[Int],
-  lastCheckedAt: DateTime,
-  props: Map[String, String],
-  uid: UUID
-)
+scala> case class Recipe(
+     |   url: String,
+     |   description: Option[String],
+     |   ingredients: List[String],
+     |   servings: Option[Int],
+     |   lastCheckedAt: DateTime,
+     |   props: Map[String, String],
+     |   uid: UUID
+     | )
+defined class Recipe
 
-abstract class Recipes extends Table[Recipes, Recipe] {
+scala> abstract class Recipes extends Table[Recipes, Recipe] {
+     | 
+     |   object url extends StringColumn with PartitionKey
+     | 
+     |   object description extends OptionalStringColumn
+     | 
+     |   object ingredients extends ListColumn[String]
+     | 
+     |   object servings extends OptionalIntColumn
+     | 
+     |   object lastcheckedat extends DateTimeColumn
+     | 
+     |   object props extends MapColumn[String, String]
+     | 
+     |   object uid extends UUIDColumn
+     | }
+defined class Recipes
 
-  object url extends StringColumn with PartitionKey
-
-  object description extends OptionalStringColumn
-
-  object ingredients extends ListColumn[String]
-
-  object servings extends OptionalIntColumn
-
-  object lastcheckedat extends DateTimeColumn
-
-  object props extends MapColumn[String, String]
-
-  object uid extends UUIDColumn
-}
-
-class MyDb(override val connector: CassandraConnection) extends Database[MyDb](connector) {
-  object recipes extends Recipes with Connector
-}
+scala> class MyDb(override val connector: CassandraConnection) extends Database[MyDb](connector) {
+     |   object recipes extends Recipes with Connector
+     | }
+defined class MyDb
 ```
