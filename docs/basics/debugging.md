@@ -120,3 +120,47 @@ All flags are available under the following package:
 
 ```scala
 com.outworkers.phantom.macros.debug.Options
+```
+
+### `ShowTrees` flag
+
+This flag will cause all macros in phantom to print the full tree they produce. The output looks like the below:
+
+
+```scala
+
+import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.macros.debug.Options.ShowTrees
+import org.joda.time.DateTime
+
+case class Recipe(
+  url: String,
+  description: Option[String],
+  ingredients: List[String],
+  servings: Option[Int],
+  lastCheckedAt: DateTime,
+  props: Map[String, String],
+  uid: UUID
+)
+
+abstract class Recipes extends Table[Recipes, Recipe] {
+
+  object url extends StringColumn with PartitionKey
+
+  object description extends OptionalStringColumn
+
+  object ingredients extends ListColumn[String]
+
+  object servings extends OptionalIntColumn
+
+  object lastcheckedat extends DateTimeColumn
+
+  object props extends MapColumn[String, String]
+
+  object uid extends UUIDColumn
+}
+
+class MyDb(override val connector: CassandraConnection) extends Database[MyDb](connector) {
+  object recipes extends Recipes with Connector
+}
+```
