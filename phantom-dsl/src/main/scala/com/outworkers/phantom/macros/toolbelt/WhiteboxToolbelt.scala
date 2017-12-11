@@ -46,20 +46,20 @@ private[phantom] trait WhiteboxToolbelt {
 
   def abort(msg: String): Nothing = c.abort(c.enclosingPosition, msg)
 
-  lazy val showAll =
-    !c.inferImplicitValue(typeOf[debug.optionTypes.ShowAll], silent = true).isEmpty
+  def showAll: Boolean =
+    c.inferImplicitValue(typeOf[debug.optionTypes.ShowAll], silent = true).nonEmpty
 
-  lazy val showLogs =
-    !c.inferImplicitValue(typeOf[debug.optionTypes.ShowCompileLog], silent = true).isEmpty || showAll
+  def showLogs: Boolean =
+    c.inferImplicitValue(typeOf[debug.optionTypes.ShowCompileLog], silent = true).nonEmpty || showAll
 
-  lazy val showAborts =
-    !c.inferImplicitValue(typeOf[debug.optionTypes.ShowAborts], silent = true).isEmpty || showAll
+  def showAborts: Boolean =
+    c.inferImplicitValue(typeOf[debug.optionTypes.ShowAborts], silent = true).nonEmpty || showAll
 
-  lazy val showCache =
-    !c.inferImplicitValue(typeOf[debug.optionTypes.ShowCache], silent = true).isEmpty || showAll
+  def showCache: Boolean =
+    c.inferImplicitValue(typeOf[debug.optionTypes.ShowCache], silent = true).nonEmpty || showAll
 
-  lazy val showTrees =
-    !c.inferImplicitValue(typeOf[debug.optionTypes.ShowTrees], silent = true).isEmpty || showAll
+  def showTrees: Boolean =
+    c.inferImplicitValue(typeOf[debug.optionTypes.ShowTrees], silent = true).nonEmpty || showAll
 
 
   def memoize[A, B](cache: WhiteboxToolbelt.Cache)(

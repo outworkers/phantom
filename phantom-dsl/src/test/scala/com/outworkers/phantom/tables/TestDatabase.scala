@@ -23,6 +23,7 @@ import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.bugs.{JsonPreparedTable, SchemaBug656Table, SchemaBug663Table}
 import com.outworkers.phantom.tables.sasi.{MultiSASITable, SASIIndexedArticles}
+import com.outworkers.phantom.macros.debug.Options.ShowTrees
 
 class TestDatabase(
   override val connector: CassandraConnection
