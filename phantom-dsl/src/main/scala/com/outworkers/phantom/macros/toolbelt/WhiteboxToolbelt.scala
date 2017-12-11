@@ -46,17 +46,21 @@ private[phantom] trait WhiteboxToolbelt {
 
   def abort(msg: String): Nothing = c.abort(c.enclosingPosition, msg)
 
+  lazy val showAll =
+    !c.inferImplicitValue(typeOf[debug.optionTypes.ShowAll], silent = true).isEmpty
+
   lazy val showLogs =
-    !c.inferImplicitValue(typeOf[debug.optionTypes.ShowCompileLog], silent = true).isEmpty
+    !c.inferImplicitValue(typeOf[debug.optionTypes.ShowCompileLog], silent = true).isEmpty || showAll
 
   lazy val showAborts =
-    !c.inferImplicitValue(typeOf[debug.optionTypes.ShowAborts], silent = true).isEmpty
+    !c.inferImplicitValue(typeOf[debug.optionTypes.ShowAborts], silent = true).isEmpty || showAll
 
   lazy val showCache =
-    !c.inferImplicitValue(typeOf[debug.optionTypes.ShowCache], silent = true).isEmpty
+    !c.inferImplicitValue(typeOf[debug.optionTypes.ShowCache], silent = true).isEmpty || showAll
 
   lazy val showTrees =
-    !c.inferImplicitValue(typeOf[debug.optionTypes.ShowTrees], silent = true).isEmpty
+    !c.inferImplicitValue(typeOf[debug.optionTypes.ShowTrees], silent = true).isEmpty || showAll
+
 
   def memoize[A, B](cache: WhiteboxToolbelt.Cache)(
     a: A, f: A => B

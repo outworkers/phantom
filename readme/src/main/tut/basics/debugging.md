@@ -127,7 +127,7 @@ com.outworkers.phantom.macros.debug.Options
 This flag will cause all macros in phantom to print the full tree they produce. The output looks like the below:
 
 
-```tut
+```tut:passthrough
 
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.macros.debug.Options.ShowTrees

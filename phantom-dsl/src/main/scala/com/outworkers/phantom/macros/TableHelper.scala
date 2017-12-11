@@ -502,7 +502,12 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
        new $clsName(): $macroPkg.TableHelper.Aux[$tableType, $recordType, $storeTpe]
     """
 
+
+    Console.println("Show da fucking tree")
+    Console.println(s"Should you show trees for ${printType(tableType)} $showTrees")
+
     if (showTrees) {
+      Console.println(showCode(tree))
       echo(showCode(tree))
     }
 
