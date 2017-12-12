@@ -282,10 +282,16 @@ causes different code to be produced behind the scenes, and when binding we gene
 the default code produced by the macros will call `.toString` on a statement which will not produce any information about the values
 that were bound. All logs are available under `com.outworkers.phantom`, using SLF4J.
 
-```scala
+They will look like this:
+
+```
+Executing query: INSERT INTO phantom.derivedPrimitivesTable (id, description, rec, complex) VALUES(?, ?, ?, ?) | a015b806-4271-495a-af71-c07199d6f2ce, '3fef15552052713e', '903e44aa-01e0-4ced-b7ac-06ec34b8a21e', ('736e0001-c81c-40da-920f-e04a5e73aa60', 7275279891071387799)
 
 ```
 
+It's a more useful way to peak in to what values are passed to a bind. The order of the arguments should always match
+the column definition order. Prepared statements in phantom are typechecked, but you can still mix up values of the same type,
+if you have more than one text column for instance.
 
 ### `com.outworkers.phantom.macros.debug.Options.ShowAll` flag
 
