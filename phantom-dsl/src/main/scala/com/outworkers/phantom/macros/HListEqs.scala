@@ -52,12 +52,10 @@ class EqsMacro(val c: whitebox.Context) extends WhiteboxToolbelt with HListHelpe
 
   def mkEqs(left: Type, right: Type): Tree = {
     if (left =:= right) {
-      val tree = q"""new $macroPkg.==:==[$left, $right] {}"""
-      if (showTrees) {
-        echo(showCode(tree))
+      evalTree {
+        q"""new $macroPkg.==:==[$left, $right] {}"""
       }
 
-      tree
     } else {
       val debugString = s"Types ${showHList(left)} did not equal ${showHList(right)}"
       error(debugString)

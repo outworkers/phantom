@@ -89,13 +89,24 @@ private[phantom] trait WhiteboxToolbelt {
     }
   }
 
+  def evalTree(tree: => Tree): Tree = {
+    if (showTrees) {
+      c.echo(c.enclosingPosition, showCode(tree))
+    }
+    tree
+  }
+
   def echo(msg: String): Unit = {
     if (showLogs) {
       c.echo(c.enclosingPosition, msg)
     }
   }
 
-  def error(msg: String): Unit = c.error(c.enclosingPosition, msg)
+  def error(msg: String): Unit = {
+    if (showAborts) c.echo(c.enclosingPosition, s"ERROR: $msg")
+
+    c.error(c.enclosingPosition, msg)
+  }
 
 
   def warning(msg: String): Unit = c.warning(c.enclosingPosition, msg)

@@ -116,14 +116,78 @@ these flags are not global, they are just normal implicits. You need to make sur
 you want to get logging information, otherwise the macros will not find the implicit triggers and will skip printing
 debug information.
 
-All flags are available under the following package:
+All flags are available under the following object import:
 
 ```scala
 com.outworkers.phantom.macros.debug.Options
 ```
 
-### `ShowTrees` flag
+### `com.outworkers.phantom.macros.debug.Options.ShowTrees` flag
 
-This flag will cause all macros in phantom to print the full tree they produce. The output looks like the below:
+Let's assume the following schema DSL. All you have to do is to import the implicit at the top level, into the
+same file as the table is defined. If you define more than one table per file, you will see information printed
+out for every single tree.
+
+```scala
+
+import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.macros.debug.Options.ShowTrees
+import org.joda.time.DateTime
+
+case class Recipe(
+  url: String,
+  description: Option[String],
+  ingredients: List[String],
+  servings: Option[Int],
+  lastCheckedAt: DateTime,
+  props: Map[String, String],
+  uid: UUID
+)
+
+abstract class Recipes extends Table[Recipes, Recipe] {
+
+  object url extends StringColumn with PartitionKey
+ 
+   object description extends OptionalStringColumn
+ 
+   object ingredients extends ListColumn[String]
+ 
+   object servings extends OptionalIntColumn
+ 
+   object lastcheckedat extends DateTimeColumn
+ 
+   object props extends MapColumn[String, String]
+ 
+   object uid extends UUIDColumn
+ }
+ 
+ class MyDb(override val connector: CassandraConnection) extends Database[MyDb](connector) {
+   object recipes extends Recipes with Connector
+ }
+```
 
 
+The debug output in the console looks like this. It's not easily readable, but it does show store type computed by the macro
+is ```Recipe```
+
+```scala
+{
+    import shapeless.::
+    final class anon$macro$1 extends _root_.com.outworkers.phantom.macros.TableHelper[Recipes, Recipe] {
+      type Repr = Recipe :: shapeless.HNil;
+      def tableName: _root_.java.lang.String = com.outworkers.phantom.NamingStrategy.identityStrategy.inferName("recipes");
+      def store(table: Recipes, input: Recipe :: shapeless.HNil)(implicit space: com.outworkers.phantom.connectors.KeySpace): _root_.com.outworkers.phantom.builder.query.InsertQuery.Default[Recipes, Recipe] = table.insert.values(_root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.url.name).->(_root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.url.asCql(input.apply(_root_.shapeless.Nat._0).url))), _root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.description.name).->(_root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.description.asCql(input.apply(_root_.shapeless.Nat._0).description))), _root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.ingredients.name).->(_root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.ingredients.asCql(input.apply(_root_.shapeless.Nat._0).ingredients))), _root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.servings.name).->(_root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.servings.asCql(input.apply(_root_.shapeless.Nat._0).servings))), _root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.lastcheckedat.name).->(_root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.lastcheckedat.asCql(input.apply(_root_.shapeless.Nat._0).lastCheckedAt))), _root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.props.name).->(_root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.props.asCql(input.apply(_root_.shapeless.Nat._0).props))), _root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.uid.name).->(_root_.com.outworkers.phantom.builder.query.engine.CQLQuery(table.uid.asCql(input.apply(_root_.shapeless.Nat._0).uid))));
+      def tableKey(table: Recipes): _root_.java.lang.String = _root_.com.outworkers.phantom.builder.QueryBuilder.Create.primaryKey(_root_.scala.collection.immutable.List[com.outworkers.phantom.column.AbstractColumn[_]](table.url).map(((x$2) => x$2.name)), _root_.scala.collection.immutable.List[com.outworkers.phantom.column.AbstractColumn[_]]().map(((x$3) => x$3.name))).queryString;
+      def fromRow(table: Recipes, row: _root_.com.outworkers.phantom.Row): Recipe = new Recipe(table.url.apply(row), table.description.apply(row), table.ingredients.apply(row), table.servings.apply(row), table.lastcheckedat.apply(row), table.props.apply(row), table.uid.apply(row));
+      def fields(table: Recipes): scala.collection.immutable.Seq[com.outworkers.phantom.column.AbstractColumn[_]] = scala.collection.immutable.Seq.apply[com.outworkers.phantom.column.AbstractColumn[_]](table.instance.url, table.instance.description, table.instance.ingredients, table.instance.servings, table.instance.lastcheckedat, table.instance.props, table.instance.uid);
+      def sasiIndexes(table: Recipes): scala.collection.immutable.Seq[com.outworkers.phantom.keys.SASIIndex[_ <: com.outworkers.phantom.builder.query.sasi.Mode]] = scala.collection.immutable.Seq.apply[com.outworkers.phantom.keys.SASIIndex[_ <: com.outworkers.phantom.builder.query.sasi.Mode]]()
+    };
+    ((new anon$macro$1()): _root_.com.outworkers.phantom.macros.TableHelper.Aux[Recipes, Recipe, Recipe :: shapeless.HNil])
+}
+
+```
+
+### `com.outworkers.phantom.macros.debug.Options.ShowLog` flag
+
+This flag will cause a lot of the internal compilation log to be revealed, and this is also sometimes useful when
+trying to debug. It will mostly reveal how the match is computed between table fields and case class fields for `CassandraTable`.

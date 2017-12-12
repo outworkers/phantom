@@ -427,11 +427,8 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
     } else {
       info(s"Altering table name with strategy ${showCode(strategy)}")
       val tree = q"$strategy.inferName($table)"
-      if (showTrees) {
-        echo(showCode(tree))
-      }
 
-      tree
+      evalTree(tree)
     }
   }
 
@@ -502,19 +499,10 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
        new $clsName(): $macroPkg.TableHelper.Aux[$tableType, $recordType, $storeTpe]
     """
 
-
-    Console.println("Show da fucking tree")
-    Console.println(s"Should you show trees for ${printType(tableType)} $showTrees")
-
-    if (showTrees) {
-      Console.println(showCode(tree))
-      echo(showCode(tree))
-    }
-
     if (showCache) {
       echo(WhiteboxToolbelt.tableHelperCache.show)
     }
 
-    tree
+    evalTree(tree)
   }
 }
