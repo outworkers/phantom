@@ -31,17 +31,6 @@ class InOperatorTest extends PhantomSuite {
     database.recipes.createSchema()
   }
 
-  def test[T, Out](
-
-  )(
-    implicit ev: Tupler.Aux[(List[String]), T],
-    rev: Reverse.Aux[T, Out],
-    ax: Out =:= shapeless.::[List[String], HNil]
-  ): Unit = {
-
-  }
-
-
   it should "find a record with a in operator if the record exists" in {
     val recipe = gen[Recipe]
 
@@ -63,7 +52,7 @@ class InOperatorTest extends PhantomSuite {
     val chain = for {
       done <- database.recipes.store(recipe).future()
       select <- database.recipes.select.where(_.url in ?).prepareAsync()
-      binded <- select.bindOne(arg).one()
+      binded <- select.bind(Tuple1(arg)).one()
     } yield binded
 
     whenReady(chain) { res =>

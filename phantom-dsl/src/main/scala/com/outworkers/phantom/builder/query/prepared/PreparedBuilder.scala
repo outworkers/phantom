@@ -25,7 +25,7 @@ import com.outworkers.phantom.connectors.{KeySpace, SessionAugmenterImplicits}
 import com.outworkers.phantom.macros.BindHelper
 import com.outworkers.phantom.{CassandraTable, Row}
 import shapeless.ops.hlist.Tupler
-import shapeless.{Generic, HList, Lazy}
+import shapeless.{Generic, HList}
 
 import scala.concurrent.{ExecutionContextExecutor, blocking}
 
@@ -148,11 +148,11 @@ class PreparedSelectBlock[
     * @return An final form prepared select query that can be asynchronously executed.
     */
   def bind[V1 <: Product, Out <: Product](v1: V1)(
-    implicit tp: Lazy[Tupler.Aux[PS, Out]],
-    binder: Lazy[BindHelper[V1]],
+    implicit tp: Tupler.Aux[PS, Out],
+    binder: BindHelper[V1],
     ev: V1 =:= Out
   ): ExecutablePreparedSelectQuery[T, R, Limit] = {
-    val bb = binder.value.bind(
+    val bb = binder.bind(
       query,
       v1,
       protocolVersion
@@ -170,14 +170,8 @@ class PreparedSelectBlock[
     */
   def bindOne[V](v: V)(
     implicit ev: Primitive[V],
-    binder: Lazy[BindHelper[V]]
-  ): ExecutablePreparedSelectQuery[T, R, Limit] = {
-    new ExecutablePreparedSelectQuery(
-      binder.value.bind(query, v, protocolVersion),
-      fn,
-      options
-    )
-  }
+    binder: BindHelper[V]
+  ): ExecutablePreparedSelectQuery[T, R, Limit] = bind(v)(ev, binder)
 
   /**
     * Method used to bind a single argument to a prepared statement.
@@ -188,10 +182,10 @@ class PreparedSelectBlock[
     */
   def bind[V](v: V)(
     implicit ev: Primitive[V],
-    binder: Lazy[BindHelper[V]]
+    binder: BindHelper[V]
   ): ExecutablePreparedSelectQuery[T, R, Limit] = {
     new ExecutablePreparedSelectQuery(
-      binder.value.bind(query, v, protocolVersion),
+      binder.bind(query, v, protocolVersion),
       fn,
       options
     )
