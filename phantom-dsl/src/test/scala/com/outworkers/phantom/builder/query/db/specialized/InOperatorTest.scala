@@ -19,6 +19,10 @@ import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.Recipe
 import com.outworkers.util.samplers._
+import com.outworkers.phantom.macros.debug.Options.ShowLog
+import com.outworkers.phantom.macros.debug.Options.ShowTrees
+import shapeless.HNil
+import shapeless.ops.hlist.{Reverse, Tupler}
 
 class InOperatorTest extends PhantomSuite {
 
@@ -27,6 +31,17 @@ class InOperatorTest extends PhantomSuite {
     database.recipes.createSchema()
   }
 
+  def test[T, Out](
+
+  )(
+    implicit ev: Tupler.Aux[(List[String]), T],
+    rev: Reverse.Aux[T, Out],
+    ax: Out =:= shapeless.::[List[String], HNil]
+  ): Unit = {
+
+  }
+
+
   it should "find a record with a in operator if the record exists" in {
     val recipe = gen[Recipe]
 
@@ -34,6 +49,22 @@ class InOperatorTest extends PhantomSuite {
       done <- database.recipes.store(recipe).future()
       select <- database.recipes.select.where(_.url in List(recipe.url, gen[EmailAddress].value)).one()
     } yield select
+
+    whenReady(chain) { res =>
+      res.value.url shouldEqual recipe.url
+    }
+  }
+
+  it should "find a record with a in operator if the record exists using a prepared clause" in {
+    val recipe = gen[Recipe]
+
+    val arg = List(recipe.url, gen[EmailAddress].value)
+
+    val chain = for {
+      done <- database.recipes.store(recipe).future()
+      select <- database.recipes.select.where(_.url in ?).prepareAsync()
+      binded <- select.bind(arg).one()
+    } yield binded
 
     whenReady(chain) { res =>
       res.value.url shouldEqual recipe.url

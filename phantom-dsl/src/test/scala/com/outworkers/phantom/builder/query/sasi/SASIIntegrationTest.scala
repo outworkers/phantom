@@ -94,6 +94,22 @@ class SASIIntegrationTest extends PhantomSuite {
     }
   }
 
+  it should "allow retrieving contains results using a like operator in Mode.Contains and prepared statements" in {
+    val pre = gen[ShortString].value
+    val samples = genList[MultiSASIRecord]().map(item => item.copy(name = item.name + pre + item.name))
+
+    if (cassandraVersion.value >= Version.`3.4.0`) {
+      val chain = for {
+        stored <- db.multiSasiTable.storeRecords(samples)
+        query <- db.multiSasiTable.select.where(_.name like contains(?)).prepareAsync()
+        select <- query.bind(pre).fetch()
+      } yield query
+
+      whenReady(chain) { results =>
+        results should contain theSameElementsAs samples
+      }
+    }
+  }
 
   it should "allow retrieving gte results using a normal operator in Mode.Sparse" in {
     val pre = 55

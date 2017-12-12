@@ -70,21 +70,10 @@ class WhereClause extends Clause {
    *
    * @tparam T Type of argument
    */
-  class ParametricCondition[T <: HList](override val qb: CQLQuery) extends QueryCondition[T](qb)
-}
-
-object WhereClause extends WhereClause
-
-class PreparedWhereClause extends Clause {
-
-  /**
-   *
-   * @tparam T Type of argument
-   */
   class ParametricCondition[T](override val qb: CQLQuery) extends QueryCondition[T :: HNil](qb)
 }
 
-object PreparedWhereClause extends PreparedWhereClause
+object WhereClause extends WhereClause
 
 /**
  * Object enclosing a path dependant definition for compare-and-set operations.

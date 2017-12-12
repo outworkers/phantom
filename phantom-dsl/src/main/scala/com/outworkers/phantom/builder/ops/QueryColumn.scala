@@ -107,6 +107,10 @@ abstract class RootQueryColumn[RR](val name: String)(implicit p: Primitive[RR]) 
     new WhereClause.Condition(QueryBuilder.Where.in(name, values.map(p.asCql)))
   }
 
+  final def in(value: PrepareMark): WhereClause.ParametricCondition[List[RR]] = {
+    new WhereClause.ParametricCondition[List[RR]](QueryBuilder.Where.in(name, value.symbol))
+  }
+
   /**
    * Equals clause defined for the prepared statement.
    * When this prepared clause is applied, the value specified in the WHERE clause can be binded at a later stage.
@@ -126,33 +130,33 @@ abstract class RootQueryColumn[RR](val name: String)(implicit p: Primitive[RR]) 
    * @param value The prepare mark value to use, the "?" singleton.
    * @return A where clause with a parametric condition specified.
    */
-  final def eqs(value: PrepareMark): PreparedWhereClause.ParametricCondition[RR] = {
-    new PreparedWhereClause.ParametricCondition[RR](QueryBuilder.Where.eqs(name, value.symbol))
+  final def eqs(value: PrepareMark): WhereClause.ParametricCondition[RR] = {
+    new WhereClause.ParametricCondition[RR](QueryBuilder.Where.eqs(name, value.symbol))
   }
 
-  final def lt(value: PrepareMark): PreparedWhereClause.ParametricCondition[RR] = {
-    new PreparedWhereClause.ParametricCondition[RR](QueryBuilder.Where.lt(name, value.symbol))
+  final def lt(value: PrepareMark): WhereClause.ParametricCondition[RR] = {
+    new WhereClause.ParametricCondition[RR](QueryBuilder.Where.lt(name, value.symbol))
   }
 
-  final def <(value: PrepareMark): PreparedWhereClause.ParametricCondition[RR] = lt(value)
+  final def <(value: PrepareMark): WhereClause.ParametricCondition[RR] = lt(value)
 
-  final def lte(value: PrepareMark): PreparedWhereClause.ParametricCondition[RR] = {
-    new PreparedWhereClause.ParametricCondition[RR](QueryBuilder.Where.lte(name, value.symbol))
+  final def lte(value: PrepareMark): WhereClause.ParametricCondition[RR] = {
+    new WhereClause.ParametricCondition[RR](QueryBuilder.Where.lte(name, value.symbol))
   }
 
-  final def <=(value: PrepareMark): PreparedWhereClause.ParametricCondition[RR] = lte(value)
+  final def <=(value: PrepareMark): WhereClause.ParametricCondition[RR] = lte(value)
 
-  final def gt(value: PrepareMark): PreparedWhereClause.ParametricCondition[RR] = {
-    new PreparedWhereClause.ParametricCondition[RR](QueryBuilder.Where.gt(name, value.symbol))
+  final def gt(value: PrepareMark): WhereClause.ParametricCondition[RR] = {
+    new WhereClause.ParametricCondition[RR](QueryBuilder.Where.gt(name, value.symbol))
   }
 
-  final def >(value: PrepareMark): PreparedWhereClause.ParametricCondition[RR] = gt(value)
+  final def >(value: PrepareMark): WhereClause.ParametricCondition[RR] = gt(value)
 
-  final def gte(value: PrepareMark): PreparedWhereClause.ParametricCondition[RR] = {
-    new PreparedWhereClause.ParametricCondition[RR](QueryBuilder.Where.gte(name, value.symbol))
+  final def gte(value: PrepareMark): WhereClause.ParametricCondition[RR] = {
+    new WhereClause.ParametricCondition[RR](QueryBuilder.Where.gte(name, value.symbol))
   }
 
-  final def >=(value: PrepareMark): PreparedWhereClause.ParametricCondition[RR] = gte(value)
+  final def >=(value: PrepareMark): WhereClause.ParametricCondition[RR] = gte(value)
 }
 
 /**
@@ -191,8 +195,8 @@ class MapKeyUpdateClause[K : Primitive, V : Primitive](val column: String, val k
     * @param mark The value of the prepared mark used.
     * @return A parametric condition on the value type of the map.
     */
-  final def setTo(mark: PrepareMark): PreparedWhereClause.ParametricCondition[V] = {
-    new PreparedWhereClause.ParametricCondition[V](
+  final def setTo(mark: PrepareMark): WhereClause.ParametricCondition[V] = {
+    new WhereClause.ParametricCondition[V](
       QueryBuilder.Update.updateMapColumn(
         column,
         Primitive[K].asCql(key),

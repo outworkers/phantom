@@ -94,7 +94,6 @@ case class SelectQuery[
     ev: PS =:!= HNil,
     rev: Reverse.Aux[PS, Rev],
     fMonad: FutureMonad[F],
-    adapter: GuavaAdapter[F],
     interface: PromiseInterface[P, F]
   ): F[PreparedSelectBlock[Table, Record, Limit, Rev]] = {
     val flatten = new PreparedFlattener(qb)

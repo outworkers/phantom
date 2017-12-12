@@ -77,7 +77,11 @@ trait TestDatabaseProvider extends DatabaseProvider[TestDatabase] {
 }
 
 trait PhantomSuite extends FlatSpec with PhantomBaseSuite with TestDatabaseProvider {
-  def requireVersion[T](v: VersionNumber)(fn: => T): Unit = if (cassandraVersion.value.compareTo(v) >= 0) fn else ()
+  def requireVersion[T](v: VersionNumber)(fn: => T): Unit = if (cassandraVersion.value.compareTo(v) >= 0) {
+    val _ = fn
+  } else {
+    ()
+  }
 }
 
 

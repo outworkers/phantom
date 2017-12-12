@@ -102,6 +102,30 @@ class IndexedCollectionsTest extends PhantomSuite {
     }
   }
 
+  it should "store a record and retrieve it with a CONTAINS KEY query on the MAP and prepared statements" in {
+    val record = gen[TestRow]
+
+    val chain = for {
+      store <- database.indexedCollectionsTable.store(record).future()
+      get <- database.indexedCollectionsTable
+        .select
+        .where(_.mapIntToText containsKey ?)
+        .prepareAsync()
+      select <- get.bind(record.mapIntToText.keys.headOption.value).fetch()
+    } yield get
+
+    if (cassandraVersion.value > Version.`2.3.0`) {
+      whenReady(chain) { res =>
+        res.nonEmpty shouldEqual true
+        res should contain (record)
+      }
+    } else {
+      whenReady(chain.failed) { r =>
+        r shouldBe an [InvalidQueryException]
+      }
+    }
+  }
+
   it should "store a record and retrieve it with a CONTAINS ENTRY equals query on the map" in {
     val record = gen[TestRow].copy(mapIntToInt = Map(5 -> 10, 10 -> 15, 20 -> 25))
 

@@ -402,6 +402,23 @@ trait DefaultImports extends ImplicitMechanism
         QueryBuilder.Where.containsKey(col.name, col.keyAsCql(elem))
       )
     }
+
+    /**
+      * Generates a Map CONTAINS KEY clause that can be used inside a CQL Where condition.
+      * This allows users to lookup records by a KEY inside a map column of a table.
+      *
+      * Key support is not yet enabled in phantom because index generation has to be done differently.
+      * Otherwise, there is no support for simultaneous indexing on both KEYS and VALUES of a MAP column.
+      * This limitation will be lifted in the future.
+      *
+      * @param mark The prepared query mark.
+      * @return A Where clause.
+      */
+    final def containsKey(mark: PrepareMark): WhereClause.ParametricCondition[V] = {
+      new WhereClause.ParametricCondition[V](
+        QueryBuilder.Where.containsKey(col.name, mark.qb.queryString)
+      )
+    }
   }
 
   implicit val context: ExecutionContextExecutor = Manager.scalaExecutor
