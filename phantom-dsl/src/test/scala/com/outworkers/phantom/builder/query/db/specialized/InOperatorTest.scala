@@ -63,7 +63,7 @@ class InOperatorTest extends PhantomSuite {
     val chain = for {
       done <- database.recipes.store(recipe).future()
       select <- database.recipes.select.where(_.url in ?).prepareAsync()
-      binded <- select.bind(arg).one()
+      binded <- select.bindOne(arg).one()
     } yield binded
 
     whenReady(chain) { res =>

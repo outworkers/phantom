@@ -112,7 +112,7 @@ class IndexedCollectionsTest extends PhantomSuite {
         .where(_.mapIntToText containsKey ?)
         .prepareAsync()
       select <- get.bind(record.mapIntToText.keys.headOption.value).fetch()
-    } yield get
+    } yield select
 
     if (cassandraVersion.value > Version.`2.3.0`) {
       whenReady(chain) { res =>
@@ -132,6 +132,28 @@ class IndexedCollectionsTest extends PhantomSuite {
     val chain = for {
       store <- database.indexedEntriesTable.store(record).future()
       result <- database.indexedEntriesTable.select.where(_.mapIntToInt(20) eqs 25).fetch()
+    } yield result
+
+    if (cassandraVersion.value > Version.`2.3.0`) {
+      whenReady(chain) { res =>
+        res.nonEmpty shouldEqual true
+        res should contain (record)
+      }
+    } else {
+      whenReady(chain.failed) { r =>
+        r shouldBe an [InvalidQueryException]
+      }
+    }
+  }
+
+  it should "store a record and retrieve it with a prepared CONTAINS ENTRY equals query on the map" in {
+    val record = gen[TestRow].copy(mapIntToInt = Map(5 -> 10, 10 -> 15, 20 -> 25))
+
+    val query = database.indexedEntriesTable.select.where(_.mapIntToInt(20) eqs ?).prepareAsync()
+
+    val chain = for {
+      store <- database.indexedEntriesTable.store(record).future()
+      result <- query.flatMap(_.bind(25).fetch())
     } yield result
 
     if (cassandraVersion.value > Version.`2.3.0`) {

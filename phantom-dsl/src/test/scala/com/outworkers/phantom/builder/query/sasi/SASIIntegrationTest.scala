@@ -103,7 +103,7 @@ class SASIIntegrationTest extends PhantomSuite {
         stored <- db.multiSasiTable.storeRecords(samples)
         query <- db.multiSasiTable.select.where(_.name like contains(?)).prepareAsync()
         select <- query.bind(pre).fetch()
-      } yield query
+      } yield select
 
       whenReady(chain) { results =>
         results should contain theSameElementsAs samples

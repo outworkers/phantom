@@ -20,7 +20,7 @@ import com.outworkers.phantom.builder.LimitBound
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
-import com.outworkers.phantom.builder.query.execution.{ExactlyOncePromise, ExecutableCqlQuery, FutureMonad, GuavaAdapter, PromiseInterface}
+import com.outworkers.phantom.builder.query.execution.{ExactlyOncePromise, ExecutableCqlQuery, FutureMonad, PromiseInterface}
 import com.outworkers.phantom.connectors.{KeySpace, SessionAugmenterImplicits}
 import com.outworkers.phantom.macros.BindHelper
 import com.outworkers.phantom.{CassandraTable, Row}
@@ -159,6 +159,24 @@ class PreparedSelectBlock[
     )
 
     new ExecutablePreparedSelectQuery(bb, fn, options)
+  }
+
+  /**
+    * Method used to bind a single argument to a prepared statement.
+    *
+    * @param v A single argument that will be interpreted as a sequence of 1 for binding.
+    * @tparam V The type of the argument.
+    * @return An final form prepared select query that can be asynchronously executed.
+    */
+  def bindOne[V](v: V)(
+    implicit ev: Primitive[V],
+    binder: Lazy[BindHelper[V]]
+  ): ExecutablePreparedSelectQuery[T, R, Limit] = {
+    new ExecutablePreparedSelectQuery(
+      binder.value.bind(query, v, protocolVersion),
+      fn,
+      options
+    )
   }
 
   /**

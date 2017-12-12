@@ -26,7 +26,7 @@ class TimeSeriesTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.timeSeriesTable.createSchema()
+    val _ = database.timeSeriesTable.createSchema()
   }
 
   def genSequentialRecords(number: Int, ref: UUID = gen[UUID]): Seq[TimeSeriesRecord] = {
