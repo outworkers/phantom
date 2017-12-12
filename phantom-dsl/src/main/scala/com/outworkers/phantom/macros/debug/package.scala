@@ -22,6 +22,7 @@ package object debug {
     sealed trait ShowAborts
     sealed trait ShowBoundStatements
     sealed trait ShowCompileLog
+    sealed trait ShowAll
   }
 
 

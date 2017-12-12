@@ -76,10 +76,10 @@ class DatabaseHelperMacro(override val c: whitebox.Context) extends WhiteboxTool
          }
        }
      """
-    if (showTrees) {
-      echo(s"Generating type tree for ${showCode(q"$macroPkg.DatabaseHelper[$tpe]")}")
-    }
 
-    tree
+    evalTree {
+      echo(s"Generating type tree for ${showCode(q"$macroPkg.DatabaseHelper[$tpe]")}")
+      tree
+    }
   }
 }

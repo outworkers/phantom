@@ -46,17 +46,21 @@ private[phantom] trait WhiteboxToolbelt {
 
   def abort(msg: String): Nothing = c.abort(c.enclosingPosition, msg)
 
-  lazy val showLogs =
-    !c.inferImplicitValue(typeOf[debug.optionTypes.ShowCompileLog], silent = true).isEmpty
+  def showAll: Boolean =
+    c.inferImplicitValue(typeOf[debug.optionTypes.ShowAll], silent = true).nonEmpty
 
-  lazy val showAborts =
-    !c.inferImplicitValue(typeOf[debug.optionTypes.ShowAborts], silent = true).isEmpty
+  def showLogs: Boolean =
+    c.inferImplicitValue(typeOf[debug.optionTypes.ShowCompileLog], silent = true).nonEmpty || showAll
 
-  lazy val showCache =
-    !c.inferImplicitValue(typeOf[debug.optionTypes.ShowCache], silent = true).isEmpty
+  def showAborts: Boolean =
+    c.inferImplicitValue(typeOf[debug.optionTypes.ShowAborts], silent = true).nonEmpty || showAll
 
-  lazy val showTrees =
-    !c.inferImplicitValue(typeOf[debug.optionTypes.ShowTrees], silent = true).isEmpty
+  def showCache: Boolean =
+    c.inferImplicitValue(typeOf[debug.optionTypes.ShowCache], silent = true).nonEmpty || showAll
+
+  def showTrees: Boolean =
+    c.inferImplicitValue(typeOf[debug.optionTypes.ShowTrees], silent = true).nonEmpty || showAll
+
 
   def memoize[A, B](cache: WhiteboxToolbelt.Cache)(
     a: A, f: A => B
@@ -85,13 +89,24 @@ private[phantom] trait WhiteboxToolbelt {
     }
   }
 
+  def evalTree(tree: => Tree): Tree = {
+    if (showTrees) {
+      c.echo(c.enclosingPosition, showCode(tree))
+    }
+    tree
+  }
+
   def echo(msg: String): Unit = {
     if (showLogs) {
       c.echo(c.enclosingPosition, msg)
     }
   }
 
-  def error(msg: String): Unit = c.error(c.enclosingPosition, msg)
+  def error(msg: String): Unit = {
+    if (showAborts) c.echo(c.enclosingPosition, s"ERROR: $msg")
+
+    c.error(c.enclosingPosition, msg)
+  }
 
 
   def warning(msg: String): Unit = c.warning(c.enclosingPosition, msg)

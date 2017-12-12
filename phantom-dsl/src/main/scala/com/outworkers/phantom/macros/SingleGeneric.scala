@@ -108,15 +108,11 @@ class SingleGenericMacro(val c: whitebox.Context) extends HListHelpers with Whit
       """
     } else {
       val debugString = s"Unable to derive store type for ${printType(tpe)}, expected ${showHList(generic)} or ${showHList(store)}"
-      c.error(c.enclosingPosition, debugString)
+      error(debugString)
       abort(debugString)
     }
 
-    if (showTrees) {
-      echo(showCode(tree))
-    }
-
-    tree
+    evalTree(tree)
   }
 
   def materialize[T : c.WeakTypeTag, Store : c.WeakTypeTag, HL : c.WeakTypeTag]: Tree = {

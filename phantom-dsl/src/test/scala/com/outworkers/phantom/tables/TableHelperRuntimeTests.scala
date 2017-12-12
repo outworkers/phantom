@@ -26,7 +26,7 @@ class TableHelperRuntimeTests extends PhantomSuite {
   override def beforeAll(): Unit = {
     super.beforeAll()
     database.tableTypeTuple.createSchema()
-    database.sessionsByUser.createSchema()
+    val _ = database.sessionsByUser.createSchema()
   }
 
   it should "automatically generate an extractor for a tuple type" in {
