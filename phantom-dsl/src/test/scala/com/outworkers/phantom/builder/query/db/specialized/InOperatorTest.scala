@@ -19,16 +19,13 @@ import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.Recipe
 import com.outworkers.util.samplers._
-import com.outworkers.phantom.macros.debug.Options.ShowLog
-import com.outworkers.phantom.macros.debug.Options.ShowTrees
-import shapeless.HNil
-import shapeless.ops.hlist.{Reverse, Tupler}
+import com.outworkers.phantom.macros.debug.Options.ShowBoundStatements
 
 class InOperatorTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.recipes.createSchema()
+    val _ = database.recipes.createSchema()
   }
 
   it should "find a record with a in operator if the record exists" in {
@@ -47,16 +44,19 @@ class InOperatorTest extends PhantomSuite {
   it should "find a record with a in operator if the record exists using a prepared clause" in {
     val recipe = gen[Recipe]
 
-    val arg = List(recipe.url, gen[EmailAddress].value)
+    val arg = List(recipe.url)
 
     val chain = for {
       done <- database.recipes.store(recipe).future()
-      select <- database.recipes.select.where(_.url in ?).prepareAsync()
-      binded <- select.bind(Tuple1(arg)).one()
-    } yield binded
+      selectIn <- database.recipes.select.where(_.url in ?).prepareAsync()
+      selectWhere <- database.recipes.select.where(_.url eqs ?).prepareAsync()
+      bindedIn <- selectIn.bindOne(arg).one()
+      bindedWhere <- selectWhere.bind(recipe.url).one()
+    } yield bindedIn -> bindedWhere
 
-    whenReady(chain) { res =>
-      res.value.url shouldEqual recipe.url
+    whenReady(chain) { case (resIn, resWhere) =>
+      resWhere.value.url shouldEqual recipe.url
+      //resIn.value.url shouldEqual recipe.url
     }
   }
 
