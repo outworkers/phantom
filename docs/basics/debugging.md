@@ -190,4 +190,103 @@ is ```Recipe```
 ### `com.outworkers.phantom.macros.debug.Options.ShowLog` flag
 
 This flag will cause a lot of the internal compilation log to be revealed, and this is also sometimes useful when
-trying to debug. It will mostly reveal how the match is computed between table fields and case class fields for `CassandraTable`.
+trying to debug.
+
+
+It will reveal how the match is computed between table fields and case class fields for `CassandraTable`. The first
+lines that our printed show `rec.$fieldName -> table.$fieldName` associations, so you can see which case class field
+will be extracted fom which table column, according to phantom.
+
+It looks like this:
+
+```
+[info] rec.description -> table.description | Option[String]
+[info] rec.ingredients -> table.ingredients | List[String]
+[info] rec.servings -> table.servings | Option[Int]
+[info] rec.lastCheckedAt -> table.lastcheckedat | org.joda.time.DateTime
+[info] rec.props -> table.props | scala.collection.immutable.Map[String,String]
+[info] rec.uid -> table.uid | java.util.UUID
+[info] abstract class Recipes extends Table[Recipes, Recipe] {
+[info]                                ^
+[info] /Users/../phantom-dsl/src/test/scala/com/outworkers/phantom/tables/Recipes.scala:34: Inferred store input type: com.outworkers.phantom.tables.Recipe :: shapeless.HNil for com.outworkers.phantom.tables.Recipes
+[info] abstract class Recipes extends Table[Recipes, Recipe] {
+[info]                                ^
+[info] /Users/../phantom-dsl/src/test/scala/com/outworkers/phantom/tables/Recipes.scala:34: Altering table name with strategy com.outworkers.phantom.NamingStrategy.identityStrategy
+[info] abstract class Recipes extends Table[Recipes, Recipe] {
+```
+
+### `com.outworkers.phantom.macros.debug.Options.ShowCache` flag
+
+This is mostly an internal flag, but it allows you to peak in to the implicit resolution mechanism in phantom. The various
+macros are not always trivial, and we cache intermediary results to make sure we don't try to workout the same thing twice.
+
+
+This is again triggered, like all other options, by importing the relevant implicit in the scope where you want to see the 
+cache.
+
+```scala
+import com.outworkers.phantom.macros.debug.Options.ShowCache
+```
+If you want to see everything for an entire file, import it at the top of the file, and it will trigger for every table.
+
+Reading the log it's easy to tell if a request from the same implicit evidence was retrieved from cache or had to be computed.
+
+```
+[info] /Users/../phantom/phantom-dsl/src/test/scala/com/outworkers/phantom/tables/Recipes.scala:54: ShowCache: _root_.com.outworkers.phantom.builder.primitives.Primitives.UUIDPrimitive cached result _root_.com.outworkers.phantom.builder.primitives.Primitives.UUIDPrimitive
+[info]   object id extends UUIDColumn with PartitionKey
+[info]                     ^
+[info] /Users/../phantom/phantom-dsl/src/test/scala/com/outworkers/phantom/tables/Recipes.scala:55: ShowCache: Long computed result _root_.com.outworkers.phantom.builder.primitives.Primitives.LongPrimitive
+[info]   object map extends MapColumn[Long, DateTime]
+[info]                      ^
+[info] /Users/../phantom/phantom-dsl/src/test/scala/com/outworkers/phantom/tables/Recipes.scala:55: ShowCache: _root_.com.outworkers.phantom.builder.primitives.Primitives.DateTimeIsPrimitive cached result _root_.com.outworkers.phantom.builder.primitives.Primitives.DateTimeIsPrimitive
+[info]   object map extends MapColumn[Long, DateTime]
+[info]                      ^
+[info] /Users/../phantom/phantom-dsl/src/test/scala/com/outworkers/phantom/tables/Recipes.scala:55: ShowCache: Map[Long,org.joda.time.DateTime] computed result _root_.com.outworkers.phantom.builder.primitives.Primitives.map[Long, org.joda.time.DateTime]
+[info]   object map extends MapColumn[Long, DateTime]
+[info]                      ^
+[info] /Users/../phantom/phantom-dsl/src/test/scala/com/outworkers/phantom/tables/Recipes.scala:55: ShowCache: _root_.com.outworkers.phantom.builder.primitives.Primitives.LongPrimitive cached result _root_.com.outworkers.phantom.builder.primitives.Primitives.LongPrimitive
+[info]   object map extends MapColumn[Long, DateTime]
+[info]                      ^
+[info] /Users/../phantom/phantom-dsl/src/test/scala/com/outworkers/phantom/tables/Recipes.scala:55: ShowCache: _root_.com.outworkers.phantom.builder.primitives.Primitives.DateTimeIsPrimitive cached result _root_.com.outworkers.phantom.builder.primitives.Primitives.DateTimeIsPrimitive
+[info]   object map extends MapColumn[Long, DateTime]
+[info]                      ^
+[info] /Users/../phantom/phantom-dsl/src/test/scala/com/outworkers/phantom/tables/Recipes.scala:58: ShowCache: _root_.com.outworkers.phantom.builder.primitives.Primitives.UUIDPrimitive cached result _root_.com.outworkers.phantom.builder.primitives.Primitives.UUIDPrimitive
+[info]     select.where(_.id eqs id).one()
+
+```
+
+This is used to optimise compilation times and make sure they stay within normal bounds, and you can use this mechanism
+to check if macros in phantom ever become a problem.
+
+### `com.outworkers.phantom.macros.debug.Options.ShowAborts` flag
+
+This is a flag used to force printing aborted implicit resolutions, for when things go wrong. The problem often encountered
+is that the compiler is not reliable enough to print its own logs.
+
+Even in very specific scenarios, where we know excatly why certain implicits fail to be found, the compiler still manages to drop the error message,
+and you end up receiving a generic `implicit not found`, which is almost never helpful in the case of complex macro derived implicits.
+
+The aborts are force printed using different API methods the compiler seems to like more.
+
+### `com.outworkers.phantom.macros.debug.Options.ShowBoundStatements` flag
+
+By default, prepared statements are not shown in the log. This is because the original query is sent separately to the
+database, and after the query is prepared we only send values from the client to Cassandra. This performance
+optimisation is the very reason why we use prepared statements.
+
+For debugging reasons however, we can leverage `ShowBoundStatements` to force phantom to produce useful debug output
+from prepared statements and all queries we execute against a prepared statement.
+
+**Note**: Unlike all other flags in here, this will influence the runtime logging, not the compile time. Using this
+causes different code to be produced behind the scenes, and when binding we generate meaningful logs. Without this flag,
+the default code produced by the macros will call `.toString` on a statement which will not produce any information about the values
+that were bound. All logs are available under `com.outworkers.phantom`, using SLF4J.
+
+```scala
+
+```
+
+
+### `com.outworkers.phantom.macros.debug.Options.ShowAll` flag
+
+This flag will trigger all of the above for all of its implicit scope, so wherever you import it it will print everything.
