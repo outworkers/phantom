@@ -25,7 +25,7 @@ class SkipRecordsByToken extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Articles.createSchema()
+    val _ = Articles.createSchema()
   }
 
   it should "allow skipping records using gtToken" in {

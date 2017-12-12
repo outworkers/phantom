@@ -38,7 +38,7 @@ object TwitterGuavaAdapter extends GuavaAdapter[Future] with SessionAugmenterImp
     implicit session: Session,
     executor: ExecutionContextExecutor
   ): Promise[ResultSet] = {
-    Manager.logger.debug(s"Executing query: ${batch.debugString}")
+    Manager.logger.debug(s"Executing query {}", batch.debugString)
     statementToPromise(batch.statement)
   }
 
@@ -65,7 +65,7 @@ object TwitterGuavaAdapter extends GuavaAdapter[Future] with SessionAugmenterImp
     implicit session: Session,
     executor: ExecutionContextExecutor
   ): Promise[ResultSet] = {
-    Manager.logger.debug(s"Executing query: $st")
+    Manager.logger.debug(s"Executing query {}", st)
 
     val promise = Promise[ResultSet]()
 

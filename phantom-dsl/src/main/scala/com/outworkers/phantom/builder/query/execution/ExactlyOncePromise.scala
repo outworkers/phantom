@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 import com.datastax.driver.core.{Session, Statement}
 import com.google.common.util.concurrent.{FutureCallback, Futures, ListenableFuture}
-import com.outworkers.phantom.ResultSet
+import com.outworkers.phantom.{Manager, ResultSet}
 import com.outworkers.phantom.connectors.SessionAugmenterImplicits
 
 import scala.concurrent.ExecutionContextExecutor
@@ -60,7 +60,10 @@ trait PromiseInterface[P[_], F[_]] {
     override def fromGuava(in: Statement)(
       implicit session: Session,
       ctx: ExecutionContextExecutor
-    ): F[ResultSet] = fromGuava(session.executeAsync(in)).map(res => ResultSet(res, session.protocolVersion))
+    ): F[ResultSet] = {
+      Manager.logger.info("Executing query: {}", in)
+      fromGuava(session.executeAsync(in)).map(res => ResultSet(res, session.protocolVersion))
+    }
   }
 }
 
