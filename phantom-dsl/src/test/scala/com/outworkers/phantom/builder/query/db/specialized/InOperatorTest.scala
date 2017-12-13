@@ -15,6 +15,8 @@
  */
 package com.outworkers.phantom.builder.query.db.specialized
 
+import java.util
+
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.Recipe
@@ -42,6 +44,11 @@ class InOperatorTest extends PhantomSuite {
   }
 
   it should "find a record with a in operator if the record exists using a prepared clause" in {
+
+    val prepared = session.prepare(database.recipes.select.where(_.url in ?).queryString)
+
+    val edgeIds = util.Arrays.asList(1L, 2L, 3L)
+
     val recipe = gen[Recipe]
 
     val arg = List(recipe.url)
@@ -52,11 +59,12 @@ class InOperatorTest extends PhantomSuite {
       selectWhere <- database.recipes.select.where(_.url eqs ?).prepareAsync()
       bindedIn <- selectIn.bindOne(arg).one()
       bindedWhere <- selectWhere.bind(recipe.url).one()
-    } yield bindedIn -> bindedWhere
+      res = session.execute(prepared.bind(edgeIds))
+    } yield res -> bindedWhere
 
     whenReady(chain) { case (resIn, resWhere) =>
       resWhere.value.url shouldEqual recipe.url
-      //resIn.value.url shouldEqual recipe.url
+      Console.println(resIn)
     }
   }
 
