@@ -54,6 +54,31 @@ class IndexedCollectionsTest extends PhantomSuite {
         r shouldBe an [InvalidQueryException]
       }
     }
+  }
+
+  it should "store a record and retrieve it with a prepared CONTAINS query on the SET" in {
+    val record = gen[TestRow]
+
+    val query = database.indexedCollectionsTable.select
+      .where(_.setText contains ?)
+      .prepareAsync()
+
+    val chain = for {
+      store <- database.indexedCollectionsTable.store(record).future()
+      prep <- query
+      list <- prep.bind(record.setText.headOption.value).fetch()
+    } yield list
+
+    if (cassandraVersion.value > Version.`2.3.0`) {
+      whenReady(chain) { res =>
+        res.nonEmpty shouldEqual true
+        res should contain (record)
+      }
+    } else {
+      whenReady(chain.failed) { r =>
+        r shouldBe an [InvalidQueryException]
+      }
+    }
 
   }
 

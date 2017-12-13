@@ -45,10 +45,6 @@ class InOperatorTest extends PhantomSuite {
 
   it should "find a record with a in operator if the record exists using a prepared clause" in {
 
-    val prepared = session.prepare(database.recipes.select.where(_.url in ?).queryString)
-
-    val edgeIds = util.Arrays.asList(1L, 2L, 3L)
-
     val recipe = gen[Recipe]
 
     val arg = List(recipe.url)
@@ -59,12 +55,10 @@ class InOperatorTest extends PhantomSuite {
       selectWhere <- database.recipes.select.where(_.url eqs ?).prepareAsync()
       bindedIn <- selectIn.bindOne(arg).one()
       bindedWhere <- selectWhere.bind(recipe.url).one()
-      res = session.execute(prepared.bind(edgeIds))
-    } yield res -> bindedWhere
+    } yield bindedWhere
 
-    whenReady(chain) { case (resIn, resWhere) =>
+    whenReady(chain) { case (resWhere) =>
       resWhere.value.url shouldEqual recipe.url
-      Console.println(resIn)
     }
   }
 

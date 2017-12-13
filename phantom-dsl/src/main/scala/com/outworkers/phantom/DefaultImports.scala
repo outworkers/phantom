@@ -366,6 +366,17 @@ trait DefaultImports extends ImplicitMechanism
         QueryBuilder.Where.contains(col.name, col.valueAsCql(elem))
       )
     }
+
+    /**
+      * Generates a Set CONTAINS clause that can be used inside a CQL Where condition.
+      * @param mark The prepared statements mark.
+      * @return A Where clause.
+      */
+    final def contains(mark: PrepareMark): WhereClause.ParametricCondition[RR] = {
+      new WhereClause.ParametricCondition[RR](
+        QueryBuilder.Where.contains(col.name, mark.qb.queryString)
+      )
+    }
   }
 
   /**
