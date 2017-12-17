@@ -43,7 +43,11 @@ private[phantom] trait DefaultSASIOps {
   object prefix {
     def apply(value: String): PrefixOp[String, HNil] = new PrefixOp(value)
 
-    def apply(mark: PrepareMark): PrefixOp[String, String :: HNil] = new PrefixOp(mark.qb.queryString)
+    def apply(mark: PrepareMark): PrefixOp[String, String :: HNil] = {
+      new PrefixOp[String, String :: HNil](mark.qb.queryString) {
+        override def qb: CQLQuery = mark.qb
+      }
+    }
 
     def apply[RR : Numeric](value: RR): PrefixOp[RR, HNil] = new PrefixOp(value.toString)
   }
@@ -51,7 +55,11 @@ private[phantom] trait DefaultSASIOps {
   object suffix {
     def apply(value: String): SuffixOp[String, HNil] = new SuffixOp(value)
 
-    def apply(mark: PrepareMark): SuffixOp[String, String :: HNil] = new SuffixOp(mark.qb.queryString)
+    def apply(mark: PrepareMark): SuffixOp[String, String :: HNil] = {
+      new SuffixOp[String, String :: HNil](mark.qb.queryString) {
+        override def qb: CQLQuery = mark.qb
+      }
+    }
 
     def apply[RR : Numeric](value: RR): SuffixOp[RR, HNil] = new SuffixOp(value.toString)
   }
@@ -59,7 +67,11 @@ private[phantom] trait DefaultSASIOps {
   object contains {
     def apply(value: String): ContainsOp[String, HNil] = new ContainsOp(value)
 
-    def apply(mark: PrepareMark): ContainsOp[String, String :: HNil] = new ContainsOp(mark.qb.queryString)
+    def apply(mark: PrepareMark): ContainsOp[String, String :: HNil] = {
+      new ContainsOp[String, String :: HNil](mark.qb.queryString) {
+        override def qb: CQLQuery = mark.qb
+      }
+    }
 
     def apply[RR : Numeric](value: RR): ContainsOp[RR, HNil] = new ContainsOp(value.toString)
   }

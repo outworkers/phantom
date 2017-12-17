@@ -46,6 +46,25 @@ class SASIIntegrationTest extends PhantomSuite {
     }
   }
 
+  it should "allow retrieving suffix results using a like operator in Mode.Contains and PS" in {
+    val pre = gen[ShortString].value
+    val samples = genList[MultiSASIRecord]().map(item => item.copy(name = item.name + pre))
+
+    val ps = db.multiSasiTable.select.where(_.name like suffix(?)).prepareAsync()
+
+    if (cassandraVersion.value >= Version.`3.4.0`) {
+      val chain = for {
+        stored <- db.multiSasiTable.storeRecords(samples)
+        query <- ps.flatMap(_.bind(pre).fetch())
+      } yield query
+
+      whenReady(chain) { results =>
+        results should contain theSameElementsAs samples
+      }
+    }
+  }
+
+
   it should "allow retrieving suffix results using a like operator in Mode.Contains" in {
     val pre = gen[ShortString].value
     val samples = genList[MultiSASIRecord]().map(item => item.copy(name = item.name + pre))
@@ -101,7 +120,8 @@ class SASIIntegrationTest extends PhantomSuite {
     if (cassandraVersion.value >= Version.`3.4.0`) {
       val chain = for {
         stored <- db.multiSasiTable.storeRecords(samples)
-        query <- db.multiSasiTable.select.where(_.name like contains(?)).prepareAsync()
+        source = db.multiSasiTable.select.where(_.name like contains(?))
+        query <- source.prepareAsync()
         select <- query.bind(pre).fetch()
       } yield select
 
@@ -128,6 +148,26 @@ class SASIIntegrationTest extends PhantomSuite {
     }
   }
 
+  it should "allow retrieving gte results using a normal operator in Mode.Sparse using prepared statements" in {
+    val pre = 55
+    val samples = genList[MultiSASIRecord]().map(item => item.copy(customers = pre))
+
+    val query = db.multiSasiTable.select.where(_.customers >= ?).prepareAsync()
+
+    if (cassandraVersion.value >= Version.`3.4.0`) {
+      val chain = for {
+        stored <- db.multiSasiTable.truncate().future()
+        stored <- db.multiSasiTable.storeRecords(samples)
+        bindable <- query
+        query <- bindable.bind(pre).fetch()
+      } yield query
+
+      whenReady(chain) { results =>
+        results should contain theSameElementsAs samples
+      }
+    }
+  }
+
   it should "allow retrieving lte results using a normal operator in Mode.Sparse" in {
     val pre = 55
     val samples = genList[MultiSASIRecord]().map(item => item.copy(customers = pre))
@@ -146,6 +186,26 @@ class SASIIntegrationTest extends PhantomSuite {
   }
 
 
+
+  it should "allow retrieving lte results using a normal operator in Mode.Sparse and PS" in {
+    val pre = 55
+    val samples = genList[MultiSASIRecord]().map(item => item.copy(customers = pre))
+
+    val ps = db.multiSasiTable.select.where(_.customers <= ?).prepareAsync()
+
+    if (cassandraVersion.value >= Version.`3.4.0`) {
+      val chain = for {
+        stored <- db.multiSasiTable.truncate().future()
+        stored <- db.multiSasiTable.storeRecords(samples)
+        query <- ps.flatMap(_.bind(pre).fetch())
+      } yield query
+
+      whenReady(chain) { results =>
+        results should contain theSameElementsAs samples
+      }
+    }
+  }
+
   it should "allow retrieving == results using a normal operator in Mode.Sparse" in {
     val pre = 55
     val samples = genList[MultiSASIRecord]().map(item => item.copy(customers = pre))
@@ -163,6 +223,25 @@ class SASIIntegrationTest extends PhantomSuite {
     }
   }
 
+
+  it should "allow retrieving == results using a normal operator in Mode.Sparse and PS" in {
+    val pre = 55
+    val samples = genList[MultiSASIRecord]().map(item => item.copy(customers = pre))
+    val ps = db.multiSasiTable.select.where(_.customers eqs ?).prepareAsync()
+
+    if (cassandraVersion.value >= Version.`3.4.0`) {
+      val chain = for {
+        stored <- db.multiSasiTable.truncate().future()
+        stored <- db.multiSasiTable.storeRecords(samples)
+        query <- ps.flatMap(_.bind(pre).fetch())
+      } yield query
+
+      whenReady(chain) { results =>
+        results should contain theSameElementsAs samples
+      }
+    }
+  }
+
   it should "retrieve no results for an invalid clause in Mode.Sparse" in {
     val pre = 55
     val samples = genList[MultiSASIRecord]().map(item => item.copy(customers = pre))
@@ -172,6 +251,24 @@ class SASIIntegrationTest extends PhantomSuite {
         stored <- db.multiSasiTable.truncate().future()
         stored <- db.multiSasiTable.storeRecords(samples)
         query <- db.multiSasiTable.select.where(_.customers > pre).fetch()
+      } yield query
+
+      whenReady(chain) { results =>
+        results.size shouldEqual 0
+      }
+    }
+  }
+
+  it should "retrieve no results for an invalid clause in Mode.Sparse and PS" in {
+    val pre = 55
+    val samples = genList[MultiSASIRecord]().map(item => item.copy(customers = pre))
+    val ps = db.multiSasiTable.select.where(_.customers > ?).prepareAsync()
+
+    if (cassandraVersion.value >= Version.`3.4.0`) {
+      val chain = for {
+        stored <- db.multiSasiTable.truncate().future()
+        stored <- db.multiSasiTable.storeRecords(samples)
+        query <- ps.flatMap(_.bind(pre).fetch())
       } yield query
 
       whenReady(chain) { results =>

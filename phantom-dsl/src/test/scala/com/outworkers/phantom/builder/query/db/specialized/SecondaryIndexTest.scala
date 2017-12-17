@@ -47,10 +47,14 @@ class SecondaryIndexTest extends PhantomSuite {
 
   it should "allow fetching a record by its secondary index using prepared statements" in {
     val sample = gen[SecondaryIndexRecord]
+
+    val query = database.secondaryIndexTable.select.where(_.secondary eqs ?).allowFiltering()
+
     val chain = for {
       _ <- database.secondaryIndexTable.store(sample).future()
       select <- database.secondaryIndexTable.select.where(_.id eqs sample.primary).one
-      select2 <- database.secondaryIndexTable.select.where(_.secondary eqs ?).allowFiltering().one()
+      bindable <- query.prepareAsync()
+      select2 <- bindable.bind(sample.primary).one()
     } yield (select, select2)
 
     whenReady(chain) { case (primary, secondary) =>
