@@ -16,9 +16,7 @@
 package com.outworkers.phantom
 
 import java.util.concurrent.Executors
-
-import org.slf4j.LoggerFactory
-
+import org.slf4j.{Logger, LoggerFactory}
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
 object Manager {
@@ -27,7 +25,7 @@ object Manager {
 
   implicit lazy val scalaExecutor: ExecutionContextExecutor = ExecutionContext.fromExecutor(taskExecutor)
 
-  val logger = LoggerFactory.getLogger("com.outworkers.phantom")
+  val logger: Logger = LoggerFactory.getLogger("com.outworkers.phantom")
 
   /**
     * Shuts down the default task executors for Guava ListenableFutures and for Scala Futures.
