@@ -24,7 +24,7 @@ class CounterColumnTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.counterTableTest.createSchema()
+    val _ = database.counterTableTest.createSchema()
   }
 
   it should "+= counter values by 1" in {

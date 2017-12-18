@@ -19,7 +19,6 @@ import com.outworkers.phantom.dsl._
 import org.joda.time.DateTime
 
 import scala.concurrent.Future
-import com.outworkers.phantom.macros.debug.Options.ShowCache
 
 case class Recipe(
   url: String,

@@ -21,7 +21,6 @@ import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.Recipe
 import com.outworkers.util.samplers._
-import com.outworkers.phantom.macros.debug.Options.ShowBoundStatements
 
 class InOperatorTest extends PhantomSuite {
 
