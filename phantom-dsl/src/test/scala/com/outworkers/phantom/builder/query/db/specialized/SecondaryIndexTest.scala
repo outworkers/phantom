@@ -25,7 +25,7 @@ class SecondaryIndexTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.secondaryIndexTable.create.ifNotExists().future.block(defaultScalaTimeout)
+    val _ = database.secondaryIndexTable.create.ifNotExists().future.block(defaultScalaTimeout)
   }
 
   it should "allow fetching a record by its secondary index" in {
@@ -54,7 +54,7 @@ class SecondaryIndexTest extends PhantomSuite {
       _ <- database.secondaryIndexTable.store(sample).future()
       select <- database.secondaryIndexTable.select.where(_.id eqs sample.primary).one
       bindable <- query.prepareAsync()
-      select2 <- bindable.bind(sample.primary).one()
+      select2 <- bindable.bind(sample.secondary).one()
     } yield (select, select2)
 
     whenReady(chain) { case (primary, secondary) =>

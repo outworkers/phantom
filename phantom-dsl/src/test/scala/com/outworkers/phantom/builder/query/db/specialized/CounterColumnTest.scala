@@ -103,14 +103,13 @@ class CounterColumnTest extends PhantomSuite {
 
     val chain = for {
       incr <-  database.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += initial).future()
-      select <- database.counterTableTest.select.where(_.id eqs sample.id).one
       incr <- database.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries -= diff).future()
       select2 <- database.counterTableTest.select.where(_.id eqs sample.id).one
-    } yield (select, select2)
+    } yield select2
 
 
-    whenReady(chain) { case (res1, res2) =>
-      res2.value.count shouldEqual (initial - diff)
+    whenReady(chain) { res =>
+      res.value.count shouldEqual (initial - diff)
     }
   }
 }

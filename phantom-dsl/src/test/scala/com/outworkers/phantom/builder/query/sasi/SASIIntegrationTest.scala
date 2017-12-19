@@ -46,11 +46,11 @@ class SASIIntegrationTest extends PhantomSuite {
     }
   }
 
-  it should "allow retrieving suffix results using a like operator in Mode.Contains and PS" in {
+  ignore should "allow retrieving prefix results using a like operator in Mode.Prefix with prepared statements" in {
     val pre = gen[ShortString].value
-    val samples = genList[MultiSASIRecord]().map(item => item.copy(name = item.name + pre))
+    val samples = genList[MultiSASIRecord]().map(item => item.copy(phoneNumber = pre + item.phoneNumber))
 
-    val ps = db.multiSasiTable.select.where(_.name like suffix(?)).prepareAsync()
+    val ps = db.multiSasiTable.select.where(_.phoneNumber like prefix(?)).prepareAsync()
 
     if (cassandraVersion.value >= Version.`3.4.0`) {
       val chain = for {
@@ -64,7 +64,6 @@ class SASIIntegrationTest extends PhantomSuite {
     }
   }
 
-
   it should "allow retrieving suffix results using a like operator in Mode.Contains" in {
     val pre = gen[ShortString].value
     val samples = genList[MultiSASIRecord]().map(item => item.copy(name = item.name + pre))
@@ -73,6 +72,25 @@ class SASIIntegrationTest extends PhantomSuite {
       val chain = for {
         stored <- db.multiSasiTable.storeRecords(samples)
         query <- db.multiSasiTable.select.where(_.name like suffix(pre)).fetch()
+      } yield query
+
+      whenReady(chain) { results =>
+        results should contain theSameElementsAs samples
+      }
+    }
+  }
+
+
+  ignore should "allow retrieving suffix results using a like operator in Mode.Contains and PS" in {
+    val pre = gen[ShortString].value
+    val samples = genList[MultiSASIRecord]().map(item => item.copy(name = item.name + pre))
+
+    val ps = db.multiSasiTable.select.where(_.name like suffix(?)).prepareAsync()
+
+    if (cassandraVersion.value >= Version.`3.4.0`) {
+      val chain = for {
+        stored <- db.multiSasiTable.storeRecords(samples)
+        query <- ps.flatMap(_.bind(pre).fetch())
       } yield query
 
       whenReady(chain) { results =>
@@ -113,7 +131,7 @@ class SASIIntegrationTest extends PhantomSuite {
     }
   }
 
-  it should "allow retrieving contains results using a like operator in Mode.Contains and prepared statements" in {
+  ignore should "allow retrieving contains results using a like operator in Mode.Contains and prepared statements" in {
     val pre = gen[ShortString].value
     val samples = genList[MultiSASIRecord]().map(item => item.copy(name = item.name + pre + item.name))
 

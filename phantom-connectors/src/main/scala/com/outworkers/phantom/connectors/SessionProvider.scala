@@ -15,7 +15,8 @@
  */
 package com.outworkers.phantom.connectors
 
-import com.datastax.driver.core.{ Cluster, Session }
+import com.datastax.driver.core.{Cluster, Session}
+import org.slf4j.{Logger, LoggerFactory}
 
 /**
  * Responsible for providing Session instances of the
@@ -23,6 +24,17 @@ import com.datastax.driver.core.{ Cluster, Session }
  * in the same cluster.
  */
 trait SessionProvider {
+
+  lazy val logger: Logger = LoggerFactory.getLogger(this.getClass)
+
+  def defaultKeyspaceCreationQuery(keySpace: String): String = {
+    s"""
+      |CREATE KEYSPACE IF NOT EXISTS $keySpace WITH replication = {
+      | 'class': 'SimpleStrategy',
+      | 'replication_factor' : 1
+      |};
+     """.stripMargin
+  }
 
   /**
    * The Cassandra driver's Cluster instance
