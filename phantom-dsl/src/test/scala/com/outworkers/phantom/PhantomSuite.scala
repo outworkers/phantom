@@ -27,7 +27,7 @@ import org.scalatest._
 import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
 import org.scalatest.time.{Millis, Seconds, Span}
 
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration.{Duration, FiniteDuration}
 import scala.concurrent.{Await, Future}
 
 trait PhantomBaseSuite extends Suite with Matchers
@@ -42,7 +42,9 @@ trait PhantomBaseSuite extends Suite with Matchers
 
   private[this] val defaultScalaInterval = 50L
 
-  implicit val defaultScalaTimeout = scala.concurrent.duration.Duration(defaultScalaTimeoutSeconds, TimeUnit.SECONDS)
+  implicit val defaultScalaTimeout: FiniteDuration = {
+    scala.concurrent.duration.Duration(defaultScalaTimeoutSeconds, TimeUnit.SECONDS)
+  }
 
   private[this] val defaultTimeoutSpan = Span(defaultScalaTimeoutSeconds, Seconds)
 

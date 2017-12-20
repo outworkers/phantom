@@ -25,8 +25,7 @@ import com.outworkers.phantom.connectors.{KeySpace, SessionAugmenterImplicits}
 import com.outworkers.phantom.macros.BindHelper
 import com.outworkers.phantom.{CassandraTable, Row}
 import shapeless.ops.hlist.Tupler
-import shapeless.{Generic, HList}
-
+import shapeless.{Generic, HList, HNil, ::}
 import scala.concurrent.{ExecutionContextExecutor, blocking}
 
 private[phantom] trait PrepareMark {
@@ -170,8 +169,9 @@ class PreparedSelectBlock[
     */
   def bindOne[V](v: V)(
     implicit ev: Primitive[V],
-    binder: BindHelper[V]
-  ): ExecutablePreparedSelectQuery[T, R, Limit] = bind(v)(ev, binder)
+    binder: BindHelper[V],
+    eqs: ({type µ = V :: HNil})#µ =:= PS
+  ): ExecutablePreparedSelectQuery[T, R, Limit] = bind(v)(ev, binder, eqs)
 
   /**
     * Method used to bind a single argument to a prepared statement.
@@ -182,7 +182,8 @@ class PreparedSelectBlock[
     */
   def bind[V](v: V)(
     implicit ev: Primitive[V],
-    binder: BindHelper[V]
+    binder: BindHelper[V],
+    eqs: ({type µ = V :: HNil})#µ =:= PS
   ): ExecutablePreparedSelectQuery[T, R, Limit] = {
     new ExecutablePreparedSelectQuery(
       binder.bind(query, v, protocolVersion),

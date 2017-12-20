@@ -15,8 +15,8 @@
  */
 package com.outworkers.phantom.builder.query.sasi
 
-import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.primitives.Primitive
+import com.outworkers.phantom.builder.syntax.CQLSyntax
 
 trait SASIWrapperType {
   def value: String
@@ -31,11 +31,9 @@ object PrefixValue {
   }
 
   implicit def prefixEv(implicit ev: Primitive[String]): Primitive[PrefixValue] = {
-    Primitive.derive[PrefixValue, String](_.value.dropRight(1)) { str =>
-      new PrefixValue {
-        override def value: String = QueryBuilder.SASI.prefixValue(str).queryString
-      }
-    }
+    Primitive.derive[PrefixValue, String](
+      t => t.value + CQLSyntax.Symbols.percent
+    )(PrefixValue.apply)
   }
 }
 
@@ -48,11 +46,9 @@ object SuffixValue {
   }
 
   implicit def suffixEv(implicit ev: Primitive[String]): Primitive[SuffixValue] = {
-    Primitive.derive[SuffixValue, String](_.value.drop(1)) { str =>
-      new SuffixValue {
-        override def value: String = QueryBuilder.SASI.suffixValue(str).queryString
-      }
-    }
+    Primitive.derive[SuffixValue, String](
+      t => CQLSyntax.Symbols.percent + t.value
+    )(SuffixValue.apply)
   }
 }
 
@@ -65,10 +61,8 @@ object ContainsValue {
   }
 
   implicit def containsEv(implicit ev: Primitive[String]): Primitive[ContainsValue] = {
-    Primitive.derive[ContainsValue, String](source => source.value.slice(1, source.value.length - 1)) { str =>
-      new ContainsValue {
-        override def value: String = QueryBuilder.SASI.containsValue(str).queryString
-      }
-    }
+    Primitive.derive[ContainsValue, String](
+      t => CQLSyntax.Symbols.percent + t.value + CQLSyntax.Symbols.percent
+    )(ContainsValue.apply)
   }
 }

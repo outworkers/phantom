@@ -425,8 +425,8 @@ trait DefaultImports extends ImplicitMechanism
       * @param mark The prepared query mark.
       * @return A Where clause.
       */
-    final def containsKey(mark: PrepareMark): WhereClause.ParametricCondition[V] = {
-      new WhereClause.ParametricCondition[V](
+    final def containsKey(mark: PrepareMark): WhereClause.ParametricCondition[K] = {
+      new WhereClause.ParametricCondition[K](
         QueryBuilder.Where.containsKey(col.name, mark.qb.queryString)
       )
     }

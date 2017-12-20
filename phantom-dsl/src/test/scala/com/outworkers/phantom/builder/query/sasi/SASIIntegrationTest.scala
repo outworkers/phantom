@@ -19,6 +19,7 @@ import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.tables.sasi.MultiSASIRecord
 import com.outworkers.phantom.dsl._
 import com.outworkers.util.samplers._
+import com.outworkers.phantom.macros.debug.Options.ShowBoundStatements
 
 class SASIIntegrationTest extends PhantomSuite {
 
@@ -26,7 +27,7 @@ class SASIIntegrationTest extends PhantomSuite {
     super.beforeAll()
 
     if (cassandraVersion.value >= Version.`3.4.0`) {
-      db.multiSasiTable.createSchema()
+      val _ = db.multiSasiTable.createSchema()
     }
   }
 
@@ -36,8 +37,26 @@ class SASIIntegrationTest extends PhantomSuite {
 
     if (cassandraVersion.value >= Version.`3.4.0`) {
       val chain = for {
-        stored <- db.multiSasiTable.storeRecords(samples)
+        _ <- db.multiSasiTable.storeRecords(samples)
         query <- db.multiSasiTable.select.where(_.phoneNumber like prefix(pre)).fetch()
+      } yield query
+
+      whenReady(chain) { results =>
+        results should contain theSameElementsAs samples
+      }
+    }
+  }
+
+  it should "shouldn't allow mixing incorrect bind value types" in {
+    val pre = gen[ShortString].value
+    val samples = genList[MultiSASIRecord]().map(item => item.copy(phoneNumber = pre + item.phoneNumber))
+
+    val ps = db.multiSasiTable.select.where(_.phoneNumber like prefix(?)).prepareAsync()
+
+    if (cassandraVersion.value >= Version.`3.4.0`) {
+      val chain = for {
+        _ <- db.multiSasiTable.storeRecords(samples)
+        query <- ps.flatMap(_.bind(ContainsValue(pre)).fetch())
       } yield query
 
       whenReady(chain) { results =>
