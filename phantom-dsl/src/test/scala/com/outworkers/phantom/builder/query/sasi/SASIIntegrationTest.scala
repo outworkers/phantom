@@ -49,19 +49,11 @@ class SASIIntegrationTest extends PhantomSuite {
 
   it should "shouldn't allow mixing incorrect bind value types" in {
     val pre = gen[ShortString].value
-    val samples = genList[MultiSASIRecord]().map(item => item.copy(phoneNumber = pre + item.phoneNumber))
-
-    val ps = db.multiSasiTable.select.where(_.phoneNumber like prefix(?)).prepareAsync()
 
     if (cassandraVersion.value >= Version.`3.4.0`) {
-      val chain = for {
-        _ <- db.multiSasiTable.storeRecords(samples)
-        query <- ps.flatMap(_.bind(ContainsValue(pre)).fetch())
-      } yield query
+      val ps = db.multiSasiTable.select.where(_.phoneNumber like prefix(?)).prepareAsync()
 
-      whenReady(chain) { results =>
-        results should contain theSameElementsAs samples
-      }
+      "ps.flatMap(_.bind(ContainsValue(pre)).fetch())" shouldNot compile
     }
   }
 
@@ -69,9 +61,8 @@ class SASIIntegrationTest extends PhantomSuite {
     val pre = gen[ShortString].value
     val samples = genList[MultiSASIRecord]().map(item => item.copy(phoneNumber = pre + item.phoneNumber))
 
-    val ps = db.multiSasiTable.select.where(_.phoneNumber like prefix(?)).prepareAsync()
-
     if (cassandraVersion.value >= Version.`3.4.0`) {
+      val ps = db.multiSasiTable.select.where(_.phoneNumber like prefix(?)).prepareAsync()
       val chain = for {
         _ <- db.multiSasiTable.storeRecords(samples)
         query <- ps.flatMap(_.bind(PrefixValue(pre)).fetch())
@@ -102,11 +93,11 @@ class SASIIntegrationTest extends PhantomSuite {
 
   it should "allow retrieving suffix results using a like operator in Mode.Contains and PS" in {
     val suf = gen[ShortString].value
-    val samples = genList[MultiSASIRecord]().map(item => item.copy(name = item.name + suffix))
-
-    val ps = db.multiSasiTable.select.where(_.name like suffix(?)).prepareAsync()
+    val samples = genList[MultiSASIRecord]().map(item => item.copy(name = item.name + suf))
 
     if (cassandraVersion.value >= Version.`3.4.0`) {
+
+      val ps = db.multiSasiTable.select.where(_.name like suffix(?)).prepareAsync()
       val chain = for {
         _ <- db.multiSasiTable.storeRecords(samples)
         query <- ps.flatMap(_.bind(SuffixValue(suf)).fetch())
@@ -189,9 +180,10 @@ class SASIIntegrationTest extends PhantomSuite {
     val pre = 55
     val samples = genList[MultiSASIRecord]().map(item => item.copy(customers = pre))
 
-    val query = db.multiSasiTable.select.where(_.customers >= ?).prepareAsync()
-
     if (cassandraVersion.value >= Version.`3.4.0`) {
+
+      val query = db.multiSasiTable.select.where(_.customers >= ?).prepareAsync()
+
       val chain = for {
         _ <- db.multiSasiTable.truncate().future()
         _ <- db.multiSasiTable.storeRecords(samples)
@@ -228,9 +220,10 @@ class SASIIntegrationTest extends PhantomSuite {
     val pre = 55
     val samples = genList[MultiSASIRecord]().map(item => item.copy(customers = pre))
 
-    val ps = db.multiSasiTable.select.where(_.customers <= ?).prepareAsync()
-
     if (cassandraVersion.value >= Version.`3.4.0`) {
+
+      val ps = db.multiSasiTable.select.where(_.customers <= ?).prepareAsync()
+
       val chain = for {
         _ <- db.multiSasiTable.truncate().future()
         _ <- db.multiSasiTable.storeRecords(samples)
@@ -264,9 +257,11 @@ class SASIIntegrationTest extends PhantomSuite {
   it should "allow retrieving == results using a normal operator in Mode.Sparse and PS" in {
     val pre = 55
     val samples = genList[MultiSASIRecord]().map(item => item.copy(customers = pre))
-    val ps = db.multiSasiTable.select.where(_.customers eqs ?).prepareAsync()
 
     if (cassandraVersion.value >= Version.`3.4.0`) {
+
+      val ps = db.multiSasiTable.select.where(_.customers eqs ?).prepareAsync()
+
       val chain = for {
         _ <- db.multiSasiTable.truncate().future()
         _ <- db.multiSasiTable.storeRecords(samples)
@@ -299,9 +294,10 @@ class SASIIntegrationTest extends PhantomSuite {
   it should "retrieve no results for an invalid clause in Mode.Sparse and PS" in {
     val pre = 55
     val samples = genList[MultiSASIRecord]().map(item => item.copy(customers = pre))
-    val ps = db.multiSasiTable.select.where(_.customers > ?).prepareAsync()
 
     if (cassandraVersion.value >= Version.`3.4.0`) {
+      val ps = db.multiSasiTable.select.where(_.customers > ?).prepareAsync()
+
       val chain = for {
         _ <- db.multiSasiTable.truncate().future()
         _ <- db.multiSasiTable.storeRecords(samples)
