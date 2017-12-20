@@ -153,7 +153,7 @@ class BindMacros(override val c: whitebox.Context) extends WhiteboxToolbelt with
     """
   }
 
-  protected[this] def deriveHelper(tpe: Type) = {
+  protected[this] def deriveHelper(tpe: Type): Tree = {
     if (isTuple(tpe)) {
       bindTuple(tpe)
     } else if (isCaseClass(tpe)) {

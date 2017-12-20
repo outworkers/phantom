@@ -39,12 +39,13 @@ sealed class ContainsOp[RR, PS <: HList](value: String) extends SASIOp[RR, PS] {
   override def qb: CQLQuery = QueryBuilder.SASI.containsValue(value)
 }
 
+
 private[phantom] trait DefaultSASIOps {
   object prefix {
     def apply(value: String): PrefixOp[String, HNil] = new PrefixOp(value)
 
-    def apply(mark: PrepareMark): PrefixOp[String, String :: HNil] = {
-      new PrefixOp[String, String :: HNil](mark.qb.queryString) {
+    def apply(mark: PrepareMark): PrefixOp[String, PrefixValue :: HNil] = {
+      new PrefixOp[String, PrefixValue :: HNil](mark.qb.queryString) {
         override def qb: CQLQuery = mark.qb
       }
     }
@@ -55,8 +56,8 @@ private[phantom] trait DefaultSASIOps {
   object suffix {
     def apply(value: String): SuffixOp[String, HNil] = new SuffixOp(value)
 
-    def apply(mark: PrepareMark): SuffixOp[String, String :: HNil] = {
-      new SuffixOp[String, String :: HNil](mark.qb.queryString) {
+    def apply(mark: PrepareMark): SuffixOp[String, SuffixValue :: HNil] = {
+      new SuffixOp[String, SuffixValue :: HNil](mark.qb.queryString) {
         override def qb: CQLQuery = mark.qb
       }
     }
@@ -67,8 +68,8 @@ private[phantom] trait DefaultSASIOps {
   object contains {
     def apply(value: String): ContainsOp[String, HNil] = new ContainsOp(value)
 
-    def apply(mark: PrepareMark): ContainsOp[String, String :: HNil] = {
-      new ContainsOp[String, String :: HNil](mark.qb.queryString) {
+    def apply(mark: PrepareMark): ContainsOp[String, ContainsValue :: HNil] = {
+      new ContainsOp[String, ContainsValue :: HNil](mark.qb.queryString) {
         override def qb: CQLQuery = mark.qb
       }
     }

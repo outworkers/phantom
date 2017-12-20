@@ -46,7 +46,7 @@ class SASIIntegrationTest extends PhantomSuite {
     }
   }
 
-  ignore should "allow retrieving prefix results using a like operator in Mode.Prefix with prepared statements" in {
+  it should "allow retrieving prefix results using a like operator in Mode.Prefix with prepared statements" in {
     val pre = gen[ShortString].value
     val samples = genList[MultiSASIRecord]().map(item => item.copy(phoneNumber = pre + item.phoneNumber))
 
@@ -54,8 +54,8 @@ class SASIIntegrationTest extends PhantomSuite {
 
     if (cassandraVersion.value >= Version.`3.4.0`) {
       val chain = for {
-        stored <- db.multiSasiTable.storeRecords(samples)
-        query <- ps.flatMap(_.bind(pre).fetch())
+        _ <- db.multiSasiTable.storeRecords(samples)
+        query <- ps.flatMap(_.bind(PrefixValue(pre)).fetch())
       } yield query
 
       whenReady(chain) { results =>
@@ -70,7 +70,7 @@ class SASIIntegrationTest extends PhantomSuite {
 
     if (cassandraVersion.value >= Version.`3.4.0`) {
       val chain = for {
-        stored <- db.multiSasiTable.storeRecords(samples)
+        _ <- db.multiSasiTable.storeRecords(samples)
         query <- db.multiSasiTable.select.where(_.name like suffix(pre)).fetch()
       } yield query
 
@@ -81,16 +81,16 @@ class SASIIntegrationTest extends PhantomSuite {
   }
 
 
-  ignore should "allow retrieving suffix results using a like operator in Mode.Contains and PS" in {
-    val pre = gen[ShortString].value
-    val samples = genList[MultiSASIRecord]().map(item => item.copy(name = item.name + pre))
+  it should "allow retrieving suffix results using a like operator in Mode.Contains and PS" in {
+    val suf = gen[ShortString].value
+    val samples = genList[MultiSASIRecord]().map(item => item.copy(name = item.name + suffix))
 
     val ps = db.multiSasiTable.select.where(_.name like suffix(?)).prepareAsync()
 
     if (cassandraVersion.value >= Version.`3.4.0`) {
       val chain = for {
-        stored <- db.multiSasiTable.storeRecords(samples)
-        query <- ps.flatMap(_.bind(pre).fetch())
+        _ <- db.multiSasiTable.storeRecords(samples)
+        query <- ps.flatMap(_.bind(SuffixValue(suf)).fetch())
       } yield query
 
       whenReady(chain) { results =>
@@ -105,7 +105,7 @@ class SASIIntegrationTest extends PhantomSuite {
 
     if (cassandraVersion.value >= Version.`3.4.0`) {
       val chain = for {
-        stored <- db.multiSasiTable.storeRecords(samples)
+        _ <- db.multiSasiTable.storeRecords(samples)
         query <- db.multiSasiTable.select.where(_.name like prefix(pre)).fetch()
       } yield query
 
@@ -121,7 +121,7 @@ class SASIIntegrationTest extends PhantomSuite {
 
     if (cassandraVersion.value >= Version.`3.4.0`) {
       val chain = for {
-        stored <- db.multiSasiTable.storeRecords(samples)
+        _ <- db.multiSasiTable.storeRecords(samples)
         query <- db.multiSasiTable.select.where(_.name like contains(pre)).fetch()
       } yield query
 
@@ -131,16 +131,16 @@ class SASIIntegrationTest extends PhantomSuite {
     }
   }
 
-  ignore should "allow retrieving contains results using a like operator in Mode.Contains and prepared statements" in {
+  it should "allow retrieving contains results using a like operator in Mode.Contains and prepared statements" in {
     val pre = gen[ShortString].value
     val samples = genList[MultiSASIRecord]().map(item => item.copy(name = item.name + pre + item.name))
 
     if (cassandraVersion.value >= Version.`3.4.0`) {
       val chain = for {
-        stored <- db.multiSasiTable.storeRecords(samples)
+        _ <- db.multiSasiTable.storeRecords(samples)
         source = db.multiSasiTable.select.where(_.name like contains(?))
         query <- source.prepareAsync()
-        select <- query.bind(pre).fetch()
+        select <- query.bind(ContainsValue(pre)).fetch()
       } yield select
 
       whenReady(chain) { results =>
@@ -155,8 +155,8 @@ class SASIIntegrationTest extends PhantomSuite {
 
     if (cassandraVersion.value >= Version.`3.4.0`) {
       val chain = for {
-        stored <- db.multiSasiTable.truncate().future()
-        stored <- db.multiSasiTable.storeRecords(samples)
+        _ <- db.multiSasiTable.truncate().future()
+        _ <- db.multiSasiTable.storeRecords(samples)
         query <- db.multiSasiTable.select.where(_.customers >= pre).fetch()
       } yield query
 
@@ -174,8 +174,8 @@ class SASIIntegrationTest extends PhantomSuite {
 
     if (cassandraVersion.value >= Version.`3.4.0`) {
       val chain = for {
-        stored <- db.multiSasiTable.truncate().future()
-        stored <- db.multiSasiTable.storeRecords(samples)
+        _ <- db.multiSasiTable.truncate().future()
+        _ <- db.multiSasiTable.storeRecords(samples)
         bindable <- query
         query <- bindable.bind(pre).fetch()
       } yield query
@@ -192,8 +192,8 @@ class SASIIntegrationTest extends PhantomSuite {
 
     if (cassandraVersion.value >= Version.`3.4.0`) {
       val chain = for {
-        stored <- db.multiSasiTable.truncate().future()
-        stored <- db.multiSasiTable.storeRecords(samples)
+        _ <- db.multiSasiTable.truncate().future()
+        _ <- db.multiSasiTable.storeRecords(samples)
         query <- db.multiSasiTable.select.where(_.customers <= pre).fetch()
       } yield query
 
@@ -213,8 +213,8 @@ class SASIIntegrationTest extends PhantomSuite {
 
     if (cassandraVersion.value >= Version.`3.4.0`) {
       val chain = for {
-        stored <- db.multiSasiTable.truncate().future()
-        stored <- db.multiSasiTable.storeRecords(samples)
+        _ <- db.multiSasiTable.truncate().future()
+        _ <- db.multiSasiTable.storeRecords(samples)
         query <- ps.flatMap(_.bind(pre).fetch())
       } yield query
 
@@ -230,8 +230,8 @@ class SASIIntegrationTest extends PhantomSuite {
 
     if (cassandraVersion.value >= Version.`3.4.0`) {
       val chain = for {
-        stored <- db.multiSasiTable.truncate().future()
-        stored <- db.multiSasiTable.storeRecords(samples)
+        _ <- db.multiSasiTable.truncate().future()
+        _ <- db.multiSasiTable.storeRecords(samples)
         query <- db.multiSasiTable.select.where(_.customers eqs pre).fetch()
       } yield query
 
@@ -249,8 +249,8 @@ class SASIIntegrationTest extends PhantomSuite {
 
     if (cassandraVersion.value >= Version.`3.4.0`) {
       val chain = for {
-        stored <- db.multiSasiTable.truncate().future()
-        stored <- db.multiSasiTable.storeRecords(samples)
+        _ <- db.multiSasiTable.truncate().future()
+        _ <- db.multiSasiTable.storeRecords(samples)
         query <- ps.flatMap(_.bind(pre).fetch())
       } yield query
 
@@ -266,8 +266,8 @@ class SASIIntegrationTest extends PhantomSuite {
 
     if (cassandraVersion.value >= Version.`3.4.0`) {
       val chain = for {
-        stored <- db.multiSasiTable.truncate().future()
-        stored <- db.multiSasiTable.storeRecords(samples)
+        _ <- db.multiSasiTable.truncate().future()
+        _ <- db.multiSasiTable.storeRecords(samples)
         query <- db.multiSasiTable.select.where(_.customers > pre).fetch()
       } yield query
 
@@ -284,8 +284,8 @@ class SASIIntegrationTest extends PhantomSuite {
 
     if (cassandraVersion.value >= Version.`3.4.0`) {
       val chain = for {
-        stored <- db.multiSasiTable.truncate().future()
-        stored <- db.multiSasiTable.storeRecords(samples)
+        _ <- db.multiSasiTable.truncate().future()
+        _ <- db.multiSasiTable.storeRecords(samples)
         query <- ps.flatMap(_.bind(pre).fetch())
       } yield query
 
