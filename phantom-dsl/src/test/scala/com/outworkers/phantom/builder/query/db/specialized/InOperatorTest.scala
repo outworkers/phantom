@@ -15,12 +15,12 @@
  */
 package com.outworkers.phantom.builder.query.db.specialized
 
-import java.util
-
 import com.outworkers.phantom.PhantomSuite
+import com.outworkers.phantom.builder.query.prepared.ListValue
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.Recipe
 import com.outworkers.util.samplers._
+import com.outworkers.phantom.macros.debug.Options.ShowBoundStatements
 
 class InOperatorTest extends PhantomSuite {
 
@@ -46,18 +46,19 @@ class InOperatorTest extends PhantomSuite {
 
     val recipe = gen[Recipe]
 
-    val arg = List(recipe.url)
+    val arg = recipe.url
 
     val chain = for {
       done <- database.recipes.store(recipe).future()
       selectIn <- database.recipes.select.where(_.url in ?).prepareAsync()
       selectWhere <- database.recipes.select.where(_.url eqs ?).prepareAsync()
-      bindedIn <- selectIn.bindOne(arg).one()
+      bindedIn <- selectIn.bind(ListValue(arg, gen[ShortString].value)).one()
       bindedWhere <- selectWhere.bind(recipe.url).one()
-    } yield bindedWhere
+    } yield bindedIn -> bindedIn
 
-    whenReady(chain) { case (resWhere) =>
+    whenReady(chain) { case (resIn, resWhere) =>
       resWhere.value.url shouldEqual recipe.url
+      resIn.value.url shouldEqual recipe.url
     }
   }
 

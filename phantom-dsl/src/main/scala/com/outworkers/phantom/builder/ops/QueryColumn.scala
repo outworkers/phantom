@@ -18,7 +18,7 @@ package com.outworkers.phantom.builder.ops
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses._
 import com.outworkers.phantom.builder.primitives.Primitive
-import com.outworkers.phantom.builder.query.prepared.PrepareMark
+import com.outworkers.phantom.builder.query.prepared.{ListValue, PrepareMark}
 
 /**
  * A class enforcing columns used in where clauses to be indexed.
@@ -108,8 +108,8 @@ abstract class RootQueryColumn[RR](val name: String)(implicit p: Primitive[RR]) 
     new WhereClause.Condition(QueryBuilder.Where.in(name, values.map(p.asCql)))
   }
 
-  final def in(value: PrepareMark): WhereClause.ParametricCondition[List[RR]] = {
-    new WhereClause.ParametricCondition[List[RR]](QueryBuilder.Where.in(name, value.symbol))
+  final def in(value: PrepareMark): WhereClause.ParametricCondition[ListValue[RR]] = {
+    new WhereClause.ParametricCondition[ListValue[RR]](QueryBuilder.Where.in(name, value.symbol))
   }
 
   /**
