@@ -21,9 +21,6 @@ import scala.collection.mutable.{Map => MutableMap}
 import scala.reflect.macros.whitebox
 
 private[phantom] object WhiteboxToolbelt {
-  def apply(ctx: whitebox.Context): WhiteboxToolbelt = new WhiteboxToolbelt {
-    override val c: whitebox.Context = ctx
-  }
 
   final class Cache {
     val underlying: MutableMap[Any, Any] = MutableMap.empty

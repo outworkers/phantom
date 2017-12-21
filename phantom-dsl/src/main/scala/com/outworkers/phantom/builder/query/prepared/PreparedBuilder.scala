@@ -167,19 +167,6 @@ class PreparedSelectBlock[
     * @tparam V The type of the argument.
     * @return An final form prepared select query that can be asynchronously executed.
     */
-  def bindOne[V](v: V)(
-    implicit ev: Primitive[V],
-    binder: BindHelper[V],
-    eqs: ({type µ = V :: HNil})#µ =:= PS
-  ): ExecutablePreparedSelectQuery[T, R, Limit] = bind(v)(ev, binder, eqs)
-
-  /**
-    * Method used to bind a single argument to a prepared statement.
-    *
-    * @param v A single argument that will be interpreted as a sequence of 1 for binding.
-    * @tparam V The type of the argument.
-    * @return An final form prepared select query that can be asynchronously executed.
-    */
   def bind[V](v: V)(
     implicit ev: Primitive[V],
     binder: BindHelper[V],
