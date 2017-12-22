@@ -160,6 +160,8 @@ class PreparedSelectBlock[
     new ExecutablePreparedSelectQuery(bb, fn, options)
   }
 
+  type HList1[H] = H :: HNil
+
   /**
     * Method used to bind a single argument to a prepared statement.
     *
@@ -170,7 +172,7 @@ class PreparedSelectBlock[
   def bind[V](v: V)(
     implicit ev: Primitive[V],
     binder: BindHelper[V],
-    eqs: ({type µ = V :: HNil})#µ =:= PS
+    eqs: HList1[V] =:= PS
   ): ExecutablePreparedSelectQuery[T, R, Limit] = {
     new ExecutablePreparedSelectQuery(
       binder.bind(query, v, protocolVersion),

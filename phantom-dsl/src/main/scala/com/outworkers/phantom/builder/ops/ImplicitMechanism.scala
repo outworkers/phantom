@@ -109,43 +109,6 @@ sealed class MapEntriesConditionals[K : Primitive, V : Primitive](val col: MapKe
   }
 }
 
-sealed class MapKeyConditionals[T <: CassandraTable[T, R], R, K, V](val col: AbstractMapColumn[T, R, K, V]) {
-
-  /**
-   * Generates a Map CONTAINS KEY clause that can be used inside a CQL Where condition.
-   * This allows users to lookup records by a KEY inside a map column of a table.
-   *
-   * Key support is not yet enabled in phantom because index generation has to be done differently.
-   * Otherwise, there is no support for simultaneous indexing on both KEYS and VALUES of a MAP column.
-   * This limitation will be lifted in the future.
-   *
-   * @param elem The element to check for in the contains clause.
-   * @return A Where clause.
-   */
-  final def containsKey(elem: K): WhereClause.Condition = {
-    new WhereClause.Condition(
-      QueryBuilder.Where.containsKey(col.name, col.keyAsCql(elem))
-    )
-  }
-
-  /**
-    * Generates a Map CONTAINS KEY clause that can be used inside a CQL Where condition.
-    * This allows users to lookup records by a KEY inside a map column of a table.
-    *
-    * Key support is not yet enabled in phantom because index generation has to be done differently.
-    * Otherwise, there is no support for simultaneous indexing on both KEYS and VALUES of a MAP column.
-    * This limitation will be lifted in the future.
-    *
-    * @param mark The prepared mark ? instance.
-    * @return A Where clause.
-    */
-  final def containsKey(mark: PrepareMark): WhereClause.ParametricCondition[K] = {
-    new WhereClause.ParametricCondition[K](
-      QueryBuilder.Where.containsKey(col.name, mark.qb.queryString)
-    )
-  }
-}
-
 sealed class MapConditionals[T <: CassandraTable[T, R], R, K, V](val col: AbstractMapColumn[T, R, K, V]) {
 
   /**
