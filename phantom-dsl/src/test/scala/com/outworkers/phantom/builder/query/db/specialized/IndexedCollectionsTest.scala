@@ -107,17 +107,16 @@ class IndexedCollectionsTest extends PhantomSuite {
   it should "store a record and retrieve it with a CONTAINS query on the MAP using prepared statements" in {
     val record = gen[TestRow]
 
+    val query = database.indexedCollectionsTable.select
+      .where(_.mapTextToText contains ?)
+      .prepareAsync()
+
+    val chain = for {
+      store <- database.indexedCollectionsTable.store(record).future()
+      results <- query.flatMap(_.bind(record.mapTextToText.values.headOption.value).fetch())
+    } yield results
+
     if (cassandraVersion.value > Version.`2.3.0`) {
-
-      val query = database.indexedCollectionsTable.select
-        .where(_.mapTextToText contains ?)
-        .prepareAsync()
-
-      val chain = for {
-        store <- database.indexedCollectionsTable.store(record).future()
-        results <- query.flatMap(_.bind(record.mapTextToText.values.headOption.value)).fetch())
-      } yield results
-
       whenReady(chain) { res =>
         res.nonEmpty shouldEqual true
         res should contain (record)
