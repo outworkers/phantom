@@ -366,6 +366,17 @@ trait DefaultImports extends ImplicitMechanism
         QueryBuilder.Where.contains(col.name, col.valueAsCql(elem))
       )
     }
+
+    /**
+      * Generates a Set CONTAINS clause that can be used inside a CQL Where condition.
+      * @param mark The prepared statements mark.
+      * @return A Where clause.
+      */
+    final def contains(mark: PrepareMark): WhereClause.ParametricCondition[RR] = {
+      new WhereClause.ParametricCondition[RR](
+        QueryBuilder.Where.contains(col.name, mark.qb.queryString)
+      )
+    }
   }
 
   /**
@@ -400,6 +411,23 @@ trait DefaultImports extends ImplicitMechanism
     final def containsKey(elem: K): WhereClause.Condition = {
       new WhereClause.Condition(
         QueryBuilder.Where.containsKey(col.name, col.keyAsCql(elem))
+      )
+    }
+
+    /**
+      * Generates a Map CONTAINS KEY clause that can be used inside a CQL Where condition.
+      * This allows users to lookup records by a KEY inside a map column of a table.
+      *
+      * Key support is not yet enabled in phantom because index generation has to be done differently.
+      * Otherwise, there is no support for simultaneous indexing on both KEYS and VALUES of a MAP column.
+      * This limitation will be lifted in the future.
+      *
+      * @param mark The prepared query mark.
+      * @return A Where clause.
+      */
+    final def containsKey(mark: PrepareMark): WhereClause.ParametricCondition[K] = {
+      new WhereClause.ParametricCondition[K](
+        QueryBuilder.Where.containsKey(col.name, mark.qb.queryString)
       )
     }
   }

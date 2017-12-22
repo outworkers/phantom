@@ -21,10 +21,6 @@ import com.outworkers.phantom.macros.debug
 import scala.reflect.macros.blackbox
 
 private[phantom] object BlackboxToolbelt {
-  def apply(ctx: blackbox.Context): BlackboxToolbelt = new BlackboxToolbelt {
-    override val c: blackbox.Context = ctx
-  }
-
   final class Cache {
     val underlying: MutableMap[Any, Any] = MutableMap.empty
 

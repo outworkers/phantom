@@ -27,7 +27,7 @@ class OrderByTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.timeuuidTable.createSchema()
+    val _ = database.timeuuidTable.createSchema()
   }
 
   it should "store a series of records and retrieve them in the right order" in {
@@ -68,4 +68,105 @@ class OrderByTest extends PhantomSuite {
     }
   }
 
+
+  it should "retrieve ordered records using where + Cassandra lte operator clause" in {
+    val user = gen[UUID]
+
+    info(s"Generating a list of records with the same partition key value: $user")
+    val records = genList[TimeUUIDRecord]().map { rec =>
+      rec.copy(user = user, id = UUIDs.timeBased())
+    }
+
+    val chain = for {
+      _ <- database.timeuuidTable.storeRecords(records)
+      results <- database.timeuuidTable.select
+        .where(_.user eqs user)
+        .and(_.id lte now())
+        .orderBy(_.id descending)
+        .fetch()
+    } yield results
+
+
+    whenReady(chain) { results =>
+      val orderedDesc = records.sortWith((a, b) => { a.id.compareTo(b.id) >= 0 })
+
+      results should contain theSameElementsAs orderedDesc
+    }
+  }
+
+
+  it should "retrieve ordered records using where + Cassandra <= operator clause" in {
+    val user = gen[UUID]
+
+    info(s"Generating a list of records with the same partition key value: $user")
+    val records = genList[TimeUUIDRecord]().map { rec =>
+      rec.copy(user = user, id = UUIDs.timeBased())
+    }
+
+    val chain = for {
+      _ <- database.timeuuidTable.storeRecords(records)
+      results <- database.timeuuidTable.select
+        .where(_.user eqs user)
+        .and(_.id <= now())
+        .orderBy(_.id descending)
+        .fetch()
+    } yield results
+
+
+    whenReady(chain) { results =>
+      val orderedDesc = records.sortWith((a, b) => { a.id.compareTo(b.id) >= 0 })
+
+      results should contain theSameElementsAs orderedDesc
+    }
+  }
+
+  it should "retrieve ordered records using where + Cassandra lt operator clause" in {
+    val user = gen[UUID]
+
+    info(s"Generating a list of records with the same partition key value: $user")
+    val records = genList[TimeUUIDRecord]().map { rec =>
+      rec.copy(user = user, id = UUIDs.timeBased())
+    }
+
+    val chain = for {
+      _ <- database.timeuuidTable.storeRecords(records)
+      results <- database.timeuuidTable.select
+        .where(_.user eqs user)
+        .and(_.id lt now())
+        .orderBy(_.id descending)
+        .fetch()
+    } yield results
+
+
+    whenReady(chain) { results =>
+      val orderedDesc = records.sortWith((a, b) => { a.id.compareTo(b.id) >= 0 })
+
+      results should contain theSameElementsAs orderedDesc
+    }
+  }
+
+  it should "retrieve ordered records using where + Cassandra < operator clause" in {
+    val user = gen[UUID]
+
+    info(s"Generating a list of records with the same partition key value: $user")
+    val records = genList[TimeUUIDRecord]().map { rec =>
+      rec.copy(user = user, id = UUIDs.timeBased())
+    }
+
+    val chain = for {
+      _ <- database.timeuuidTable.storeRecords(records)
+      results <- database.timeuuidTable.select
+        .where(_.user eqs user)
+        .and(_.id < now())
+        .orderBy(_.id descending)
+        .fetch()
+    } yield results
+
+
+    whenReady(chain) { results =>
+      val orderedDesc = records.sortWith((a, b) => { a.id.compareTo(b.id) >= 0 })
+
+      results should contain theSameElementsAs orderedDesc
+    }
+  }
 }

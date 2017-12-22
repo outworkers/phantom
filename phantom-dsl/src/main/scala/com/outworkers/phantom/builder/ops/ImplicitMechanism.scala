@@ -19,6 +19,7 @@ import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.{CompareAndSetClause, OrderingColumn, WhereClause}
 import com.outworkers.phantom.builder.primitives.Primitive
+import com.outworkers.phantom.builder.query.prepared.PrepareMark
 import com.outworkers.phantom.builder.query.sasi.{Mode, SASITextOps}
 import com.outworkers.phantom.column._
 import com.outworkers.phantom.keys._
@@ -89,24 +90,21 @@ sealed class MapEntriesConditionals[K : Primitive, V : Primitive](val col: MapKe
       QueryBuilder.Where.containsEntry(col.column, col.keyName, Primitive[V].asCql(entry))
     )
   }
-}
-
-sealed class MapKeyConditionals[T <: CassandraTable[T, R], R, K, V](val col: AbstractMapColumn[T, R, K, V]) {
 
   /**
-   * Generates a Map CONTAINS KEY clause that can be used inside a CQL Where condition.
-   * This allows users to lookup records by a KEY inside a map column of a table.
-   *
-   * Key support is not yet enabled in phantom because index generation has to be done differently.
-   * Otherwise, there is no support for simultaneous indexing on both KEYS and VALUES of a MAP column.
-   * This limitation will be lifted in the future.
-   *
-   * @param elem The element to check for in the contains clause.
-   * @return A Where clause.
-   */
-  final def containsKey(elem: K): WhereClause.Condition = {
-    new WhereClause.Condition(
-      QueryBuilder.Where.containsKey(col.name, col.keyAsCql(elem))
+    * Generates a Map CONTAINS ENTRY clause that can be used inside a CQL Where condition.
+    * This allows users to lookup records by their full entry inside a map column of a table.
+    *
+    * Key support is not yet enabled in phantom because index generation has to be done differently.
+    * Otherwise, there is no support for simultaneous indexing on both KEYS and VALUES of a MAP column.
+    * This limitation will be lifted in the future.
+    *
+    * @param mark The prepare mark ? to later bind.
+    * @return A Where clause.
+    */
+  final def eqs(mark: PrepareMark): WhereClause.ParametricCondition[V] = {
+    new WhereClause.ParametricCondition[V](
+      QueryBuilder.Where.containsEntry(col.column, col.keyName, mark.qb.queryString)
     )
   }
 }
@@ -123,6 +121,12 @@ sealed class MapConditionals[T <: CassandraTable[T, R], R, K, V](val col: Abstra
   final def contains(elem: K): WhereClause.Condition = {
     new WhereClause.Condition(
       QueryBuilder.Where.contains(col.name, col.keyAsCql(elem))
+    )
+  }
+
+  final def contains(mark: PrepareMark): WhereClause.ParametricCondition[V] = {
+    new WhereClause.ParametricCondition[V](
+      QueryBuilder.Where.contains(col.name, mark.qb.queryString)
     )
   }
 }

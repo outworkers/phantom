@@ -16,8 +16,6 @@
 package com.outworkers.phantom.connectors
 
 import com.datastax.driver.core.{Cluster, Session}
-import org.slf4j.LoggerFactory
-
 import scala.concurrent.blocking
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
@@ -36,13 +34,7 @@ class DefaultSessionProvider(
   errorHandler: Throwable => Throwable = identity
 ) extends SessionProvider {
 
-  val logger = LoggerFactory.getLogger(this.getClass)
-
   val cluster: Cluster = builder(Cluster.builder).build
-
-  def defaultKeyspaceCreationQuery(keySpace: String): String = {
-    s"CREATE KEYSPACE IF NOT EXISTS $keySpace WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};"
-  }
 
   /**
    * Initializes the keySpace with the given name on
@@ -74,9 +66,9 @@ class DefaultSessionProvider(
       }
     } match {
       case Success(value) => value
-      case Failure(NonFatal(err)) => throw errorHandler(err);
+      case Failure(NonFatal(err)) => throw errorHandler(err)
     }
   }
 
-  val session: Session = createSession(space.name)
+  lazy val session: Session = createSession(space.name)
 }

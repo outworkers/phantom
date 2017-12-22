@@ -25,7 +25,7 @@ class SecondaryIndexTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.secondaryIndexTable.create.ifNotExists().future.block(defaultScalaTimeout)
+    val _ = database.secondaryIndexTable.create.ifNotExists().future.block(defaultScalaTimeout)
   }
 
   it should "allow fetching a record by its secondary index" in {
@@ -36,14 +36,33 @@ class SecondaryIndexTest extends PhantomSuite {
       select2 <- database.secondaryIndexTable.select.where(_.secondary eqs sample.secondary).allowFiltering().one()
     } yield (select, select2)
 
-    whenReady(chain) {
-      case (primary, secondary) => {
-        info("Querying by primary key should return the record")
-        primary.value shouldEqual sample
+    whenReady(chain) { case (primary, secondary) =>
+      info("Querying by primary key should return the record")
+      primary.value shouldEqual sample
 
-        info("Querying by the secondary index key should also return the record")
-        secondary.value shouldEqual sample
-      }
+      info("Querying by the secondary index key should also return the record")
+      secondary.value shouldEqual sample
+    }
+  }
+
+  it should "allow fetching a record by its secondary index using prepared statements" in {
+    val sample = gen[SecondaryIndexRecord]
+
+    val query = database.secondaryIndexTable.select.where(_.secondary eqs ?).allowFiltering()
+
+    val chain = for {
+      _ <- database.secondaryIndexTable.store(sample).future()
+      select <- database.secondaryIndexTable.select.where(_.id eqs sample.primary).one
+      bindable <- query.prepareAsync()
+      select2 <- bindable.bind(sample.secondary).one()
+    } yield (select, select2)
+
+    whenReady(chain) { case (primary, secondary) =>
+      info("Querying by primary key should return the record")
+      primary.value shouldEqual sample
+
+      info("Querying by the secondary index key should also return the record")
+      secondary.value shouldEqual sample
     }
   }
 
@@ -58,15 +77,12 @@ class SecondaryIndexTest extends PhantomSuite {
       updated <- database.secondaryIndexTable.select.where(_.secondary eqs updated).allowFiltering().one()
     } yield (selected, updated)
 
-    whenReady(chain) {
-      case (primary, secondary) => {
+    whenReady(chain) { case (primary, secondary) =>
+      info("Querying by primary key should return the record")
+      primary.value shouldEqual sample
 
-        info("Querying by primary key should return the record")
-        primary.value shouldEqual sample
-
-        info("Querying by the secondary index key should also return the record")
-        secondary.value shouldEqual sample.copy(secondary = updated)
-      }
+      info("Querying by the secondary index key should also return the record")
+      secondary.value shouldEqual sample.copy(secondary = updated)
     }
   }
 

@@ -41,7 +41,7 @@ class BatchablePreparedInsertQueryTest extends PhantomSuite {
       .p_value(_.props, ?)
       .prepare()
 
-    def bind(recipe: Recipe): ExecutablePreparedQuery = query.bind(
+    def storePrepared(recipe: Recipe): ExecutablePreparedQuery = query.bind(
       recipe.uid,
       recipe.url,
       recipe.servings,
@@ -51,8 +51,8 @@ class BatchablePreparedInsertQueryTest extends PhantomSuite {
       recipe.props
     )
 
-    val exec1 = bind(sample1)
-    val exec2 = bind(sample2)
+    val exec1 = storePrepared(sample1)
+    val exec2 = storePrepared(sample2)
 
 
     val chain = for {

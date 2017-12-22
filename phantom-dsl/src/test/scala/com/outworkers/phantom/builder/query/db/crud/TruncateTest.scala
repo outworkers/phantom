@@ -24,7 +24,7 @@ class TruncateTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.articles.createSchema()
+    val _ = database.articles.createSchema()
   }
 
   it should "truncate all records in a table" in {

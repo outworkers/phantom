@@ -25,7 +25,7 @@ class BatchQueryTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    new CassandraTableStoreMethods(database.primitivesJoda).createSchema()
+    val _ = database.primitivesJoda.createSchema()
   }
 
   it should "correctly execute a chain of INSERT queries" in {
