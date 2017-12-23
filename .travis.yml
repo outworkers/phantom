@@ -4,28 +4,25 @@ dist: trusty
 scala:
 - 2.10.6
 - 2.11.11
-
 cache:
   directories:
-   - $HOME/.m2
-   - $HOME/.ivy2
-   - $HOME/.sbt/boot/scala-$TRAVIS_SCALA_VERSION
-
+  - $HOME/.m2
+  - $HOME/.ivy2
+  - $HOME/.sbt/boot/scala-$TRAVIS_SCALA_VERSION
 before_cache:
-  # Tricks to avoid unnecessary cache updates
-  - find $HOME/.ivy2 -name "ivydata-*.properties" -delete
-  - find $HOME/.sbt -name "*.lock" -delete
-
+- find $HOME/.ivy2 -name "ivydata-*.properties" -delete
+- find $HOME/.sbt -name "*.lock" -delete
 env:
   global:
-  - TARGET_SCALA_VERSION: "2.12.4"
+  - TARGET_SCALA_VERSION: 2.12.4
   - GH_REF: github.com/outworkers/phantom.git
   - secure: WwLG0fkVV1DS5P6GeLOHjPJ2z+GP9UaLzX27DuHBEXRxNPPw27y7jag0gbbf6E80kYwGB4zfBx9YjcJFVFdGCCcAjDJHMP8kLQirUak1jzuoWZFUEtTkF7ev/OVs0PmMHrOGuysT4W/UaL9MZD/mYO5lO9oavycTQ0kbOwZJwUg=
   - secure: Qtr5ULJ90s5pfLBaXRKFLMPBcDSYBQfUVz+abgjlG/um8iWE/OJswYn2n3zylAqnI4bSKhPobl6bBYzt8f6k9kzMqpR4t/4gWFV1LJUas0eAsTnrjV1He4nbPvO9RVEkvuQcTCqmus2AgYEnwdKhGWwktok5PAoJ22ycy4HK8C8=
   - secure: hbuc+lReAC/tzOfmF3M70L4Qfb48S6fI/gqchctnBD7TcZ6i13EOLhsjgPkFwTuINYU7Bvwd54yjy9simu1Se34+DaGtxKPJ8NZIeWk0ciCGyFxNiz0QVkE+/Cc0kZLD7hJXb0UpLsbMwpIQFlL6FHcB/2xGmMhgYvGHe7+64zM=
   - secure: ma0SLHvjzABno6RmwR/LSZQVC6rv6UcUt5kJAz1l4yJmASpdxkivoa8xWXahsjYP1O05IWuPFGHy/o0Vu7fxykgqN5gOg01wVQ0irjguWR04nNLUQTrOUgKPXR3w22USAbPpzxxqQrGc0ZS/2QFpiu9fvLNsBTkZcosA3oLpyiY=
   - secure: hihHuKLYf8YemlopCITLM1QvvgJH7ITTTsLRvLxKOGfzzBsOLd1m6LKpDOrmWdoKtcigyON+J3AP24DBd4zO95Y8r+Cwq8I4IVfZol3qwhJxvYMSB4Tyje3ssSUGqr/LBUBdLAe8H5pBeoeAECt/iSjDcYYRLKVexWRaJJBafXY=
-  - secure: "EyY0mxgk+rA0Vc0O/rb6pkcN1H5jXfPLkG6lJzH9PhljzLRc/5PltOJ3HMTCe1lgNQBa4kdVRqGAEkMcaFLWWLiCWJeN1lTTvBeFDBGtF9Abyc0Fr1Z0eOjiQofUwQoEyUagfsd5f8ypikruGubxvfh4bQndJdDpqMAi9z/u8ks="
+  - secure: EyY0mxgk+rA0Vc0O/rb6pkcN1H5jXfPLkG6lJzH9PhljzLRc/5PltOJ3HMTCe1lgNQBa4kdVRqGAEkMcaFLWWLiCWJeN1lTTvBeFDBGtF9Abyc0Fr1Z0eOjiQofUwQoEyUagfsd5f8ypikruGubxvfh4bQndJdDpqMAi9z/u8ks=
+  - secure: Z2jhRCgb7CTMG6/XtVmUTAdUINPoZkKqzSsJjWj6b6lUGNF54VaJhIKoiiLTzXP3DuXRaRNLkYyMaVytXlV0rU4WoyLINdGTygrN4ULv20mOVjKyQpY9wvwd9AD0nf4lxExR5flXR8G6NBrKAcKki5K+I9Tv6FEY5MJv+sKFk7k=
 notifications:
   slack:
   - websudos:P9QNXx1ZGFnDHp3v3jUqtB8k
@@ -46,21 +43,17 @@ addons:
     packages:
     - oracle-java8-installer
 before_install: unset SBT_OPTS JVM_OPTS
-
 install:
-  - ./build/install_cassandra.sh
-
+- ./build/install_cassandra.sh
 before_script:
 - mkdir -p $HOME/.sbt/launchers/0.13.15/
 - curl -L -o $HOME/.sbt/launchers/0.13.15/sbt-launch.jar https://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/sbt-launch/0.13.15/sbt-launch.jar
 - travis_retry sbt "++$TRAVIS_SCALA_VERSION update"
-
 script: ./build/run_tests.sh
 after_success: ./build/publish_develop.sh
-
 deploy:
   provider: pages
   skip_cleanup: true
-  github_token: $github_token # Set in travis-ci.org dashboard
+  github_token: $github_token
   on:
     branch: develop

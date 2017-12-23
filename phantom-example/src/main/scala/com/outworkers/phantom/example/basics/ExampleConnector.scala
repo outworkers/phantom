@@ -15,15 +15,17 @@
  */
 package com.outworkers.phantom.example.basics
 
-import com.datastax.driver.core.policies.{ConstantReconnectionPolicy, ReconnectionPolicy}
+import com.datastax.driver.core.policies.{ConstantReconnectionPolicy, ConstantSpeculativeExecutionPolicy, ReconnectionPolicy}
 import com.outworkers.phantom.connectors.{ContactPoint, ContactPoints}
-import com.outworkers.phantom.connectors._
 
 object Defaults {
 
   val connector = ContactPoint.local
     .noHeartbeat()
-    .withClusterBuilder(_.withReconnectionPolicy(new ConstantReconnectionPolicy(50)))
+    .withClusterBuilder(
+      _.withReconnectionPolicy(new ConstantReconnectionPolicy(50))
+        .withSpeculativeExecutionPolicy(new ConstantSpeculativeExecutionPolicy(500, 2))
+    )
     .keySpace("phantom_example")
 }
 
