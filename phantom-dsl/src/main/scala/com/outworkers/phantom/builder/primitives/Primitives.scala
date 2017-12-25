@@ -118,7 +118,7 @@ object Utils {
 
 object Primitives {
 
-  private[this] def emptyCollection: ByteBuffer = ByteBuffer.allocate(0)
+  private[phantom] def emptyCollection: ByteBuffer = ByteBuffer.allocate(0)
 
   object StringPrimitive extends Primitive[String] {
 

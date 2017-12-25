@@ -97,7 +97,7 @@ class KeySpaceBuilder(clusterBuilder: ClusterBuilder) {
   * This allows connectors to be used in isolation from the rest of phantom DSL.
   */
 trait KeySpaceCQLQuery {
-  def keyspace: String
+  def keyspace: String = ""
 
   def queryString: String
 }

@@ -22,7 +22,6 @@ import com.datastax.driver.core.exceptions.InvalidTypeException
 import com.datastax.driver.core.{LocalDate, ProtocolVersion}
 import com.outworkers.phantom.Row
 import com.outworkers.phantom.builder.QueryBuilder
-import com.outworkers.phantom.builder.primitives.Primitives.StringPrimitive
 import org.joda.time.DateTime
 
 import scala.annotation.implicitNotFound
@@ -58,7 +57,7 @@ abstract class Primitive[RR] {
   )(pf: PartialFunction[ByteBuffer, T]): T = {
     source match {
       case Primitive.nullValue => Primitive.nullValue.asInstanceOf[T]
-      case b if b.remaining() != len => throw new InvalidTypeException(s"Expected $len")
+      case b if b.remaining() != len => throw new InvalidTypeException(s"Expected $len, but got ${b.remaining()}. $msg")
       case bytes @ _ => pf(bytes)
     }
   }
@@ -137,8 +136,10 @@ object Primitive {
 
   val nullValue = None.orNull
 
-  def enumByIndex[En <: Enumeration](enum: En): Primitive[En#Value] = {
-    Primitive.manuallyDerive[En#Value, Int](e => e.id, id => enum.apply(id))(Primitives.IntPrimitive)()
+  def enumByIndex[En <: Enumeration](enum: En)(
+    implicit ev: Primitive[Int]
+  ): Primitive[En#Value] = {
+    Primitive.manuallyDerive[En#Value, Int](_.id, enum(_))(ev)()
   }
 
   /**

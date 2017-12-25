@@ -30,7 +30,6 @@ import com.outworkers.phantom.builder.query.prepared.{ListValue, PrepareMark}
  */
 abstract class RootQueryColumn[RR](val name: String)(implicit p: Primitive[RR]) {
 
-
   def eqs(value: RR): WhereClause.Condition = {
     new WhereClause.Condition(QueryBuilder.Where.eqs(name, p.asCql(value)))
   }

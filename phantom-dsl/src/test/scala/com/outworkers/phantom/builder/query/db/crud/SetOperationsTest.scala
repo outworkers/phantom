@@ -24,7 +24,7 @@ class SetOperationsTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.testTable.createSchema()
+    val _ = database.testTable.createSchema()
   }
 
   it should "append an item to a set column" in {

@@ -26,7 +26,7 @@ class UnloggedBatchTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.primitivesJoda.create.ifNotExists().future().block(5.seconds)
+    val _ = database.primitivesJoda.create.ifNotExists().future().block(5.seconds)
   }
 
   it should "get the correct count for batch queries" in {
