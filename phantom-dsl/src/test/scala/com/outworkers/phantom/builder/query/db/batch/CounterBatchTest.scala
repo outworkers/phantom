@@ -22,27 +22,27 @@ import com.outworkers.phantom.tables.TestDatabase
 
 class CounterBatchTest extends PhantomSuite {
 
-  val x = TestDatabase.counterTableTest
-  val y = TestDatabase.secondaryCounterTable
+  val x = db.counterTableTest
+  val y = db.secondaryCounterTable
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.counterTableTest.createSchema()
-    database.secondaryCounterTable.createSchema()
+    db.counterTableTest.createSchema()
+    db.secondaryCounterTable.createSchema()
   }
 
   it should "create a batch query to perform several updates in a single table" in {
     val id = UUIDs.timeBased()
     val ft = Batch.counter
-      .add(TestDatabase.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
-      .add(TestDatabase.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
-      .add(TestDatabase.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
-      .add(TestDatabase.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
-      .add(TestDatabase.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(db.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(db.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(db.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(db.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(db.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
 
     val chain = for {
       batched <- ft.future()
-      get <- TestDatabase.counterTableTest.select(_.count_entries).where(_.id eqs id).one()
+      get <- db.counterTableTest.select(_.count_entries).where(_.id eqs id).one()
     } yield get
 
     whenReady(chain) {
@@ -55,22 +55,22 @@ class CounterBatchTest extends PhantomSuite {
   it should "create a batch query to update counters in several tables" in {
     val id = UUIDs.timeBased()
     val ft = Batch.counter
-      .add(TestDatabase.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
-      .add(TestDatabase.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
-      .add(TestDatabase.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
-      .add(TestDatabase.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
-      .add(TestDatabase.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
-      .add(TestDatabase.secondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
-      .add(TestDatabase.secondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
-      .add(TestDatabase.secondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
-      .add(TestDatabase.secondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
-      .add(TestDatabase.secondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(db.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(db.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(db.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(db.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(db.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(db.secondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(db.secondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(db.secondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(db.secondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(db.secondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
       .future()
 
     val chain = for {
       batched <- ft
-      get <- TestDatabase.counterTableTest.select(_.count_entries).where(_.id eqs id).one()
-      get2 <- TestDatabase.secondaryCounterTable.select(_.count_entries).where(_.id eqs id).one()
+      get <- db.counterTableTest.select(_.count_entries).where(_.id eqs id).one()
+      get2 <- db.secondaryCounterTable.select(_.count_entries).where(_.id eqs id).one()
     } yield (get, get2)
 
     whenReady(chain) {
@@ -91,23 +91,23 @@ class CounterBatchTest extends PhantomSuite {
   it should "create a batch query to counters in several tables while alternating between += and -=" in {
     val id = UUIDs.timeBased()
     val ft = Batch.counter
-      .add(TestDatabase.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
-      .add(TestDatabase.counterTableTest.update.where(_.id eqs id).modify(_.count_entries -= 500))
-      .add(TestDatabase.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
-      .add(TestDatabase.counterTableTest.update.where(_.id eqs id).modify(_.count_entries -= 500))
-      .add(TestDatabase.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(db.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(db.counterTableTest.update.where(_.id eqs id).modify(_.count_entries -= 500))
+      .add(db.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(db.counterTableTest.update.where(_.id eqs id).modify(_.count_entries -= 500))
+      .add(db.counterTableTest.update.where(_.id eqs id).modify(_.count_entries += 500))
 
-      .add(TestDatabase.secondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
-      .add(TestDatabase.secondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries -= 500))
-      .add(TestDatabase.secondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
-      .add(TestDatabase.secondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries -= 500))
-      .add(TestDatabase.secondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(db.secondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(db.secondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries -= 500))
+      .add(db.secondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
+      .add(db.secondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries -= 500))
+      .add(db.secondaryCounterTable.update.where(_.id eqs id).modify(_.count_entries += 500))
       .future()
 
     val chain = for {
       batched <- ft
-      get <- TestDatabase.counterTableTest.select(_.count_entries).where(_.id eqs id).one()
-      get2 <- TestDatabase.secondaryCounterTable.select(_.count_entries).where(_.id eqs id).one()
+      get <- db.counterTableTest.select(_.count_entries).where(_.id eqs id).one()
+      get2 <- db.secondaryCounterTable.select(_.count_entries).where(_.id eqs id).one()
     } yield (get, get2)
 
     whenReady(chain) {

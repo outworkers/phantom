@@ -18,6 +18,7 @@ package com.outworkers.phantom.builder.serializers
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.QueryBuilder.Utils
 import com.outworkers.phantom.builder.query.engine.CQLQuery
+import com.outworkers.phantom.builder.query.prepared.PrepareMark
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 
 private[builder] class IndexModifiers extends BaseModifiers {
@@ -48,6 +49,10 @@ private[builder] class IndexModifiers extends BaseModifiers {
 
   def in(column: String, values: String*): CQLQuery = {
     modifier(column, CQLSyntax.Operators.in, Utils.join(values))
+  }
+
+  def in(column: String, mark: PrepareMark): CQLQuery = {
+    modifier(column, CQLSyntax.Operators.in, mark.qb)
   }
 
   def in(column: String, values: List[String]): CQLQuery = {

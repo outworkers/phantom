@@ -19,7 +19,10 @@ import java.net.InetAddress
 import java.util.Date
 
 import com.datastax.driver.core.ProtocolVersion
+import com.outworkers.phantom.builder.query.prepared.ListValue
 import com.outworkers.util.samplers._
+import org.scalacheck.Gen._
+import org.scalacheck.util.Buildable
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatest.{FlatSpec, Matchers, _}
@@ -33,6 +36,14 @@ class PrimitiveRoundtripTests
   extends FlatSpec
   with Matchers
   with GeneratorDrivenPropertyChecks {
+
+  /** Arbitrary instance of any [[org.scalacheck.util.Buildable]] container
+    *  (such as lists, arrays, streams, etc). The maximum size of the container
+    *  depends on the size generation parameter. */
+  implicit def arbContainer[T](
+    implicit a: Arbitrary[T],
+    b: Buildable[T, List[T]]
+  ): Arbitrary[ListValue[T]] = Arbitrary(buildableOf[List[T], T](a) map ListValue.apply)
 
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration = {
     PropertyCheckConfiguration(minSuccessful = 100)
@@ -56,7 +67,8 @@ class PrimitiveRoundtripTests
   def roundtrip[T : Primitive : Arbitrary]: Assertion = {
     val ev = Primitive[T]
     forAll { sample: T =>
-      ev.deserialize(ev.serialize(sample, protocol), protocol) shouldEqual sample
+      val res = ev.deserialize(ev.serialize(sample, protocol), protocol)
+      res shouldEqual sample
     }
   }
 
@@ -160,12 +172,24 @@ class PrimitiveRoundtripTests
     roundtrip[List[Int]]
   }
 
+  it should "serialize and deserialize a ListValue[Int] primitive" in {
+    roundtrip[ListValue[Int]]
+  }
+
   it should "serialize and deserialize a List[String] primitive" in {
     roundtrip[List[String]]
   }
 
+  it should "serialize and deserialize a ListValue[String] primitive" in {
+    roundtrip[ListValue[String]]
+  }
+
   it should "serialize and deserialize a List[Double] primitive" in {
     roundtrip[List[Double]]
+  }
+
+  it should "serialize and deserialize a ListValue[Double] primitive" in {
+    roundtrip[ListValue[Double]]
   }
 
   it should "serialize and deserialize a List[Long] primitive" in {

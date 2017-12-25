@@ -24,7 +24,7 @@ class NestedPrimitivesTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    db.nestedCollectionTable.createSchema()
+    val _ = db.nestedCollectionTable.createSchema()
   }
 
   it should "automatically store a nested primitive record" in {

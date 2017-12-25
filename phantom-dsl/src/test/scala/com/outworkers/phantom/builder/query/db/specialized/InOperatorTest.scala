@@ -20,7 +20,6 @@ import com.outworkers.phantom.builder.query.prepared.ListValue
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.Recipe
 import com.outworkers.util.samplers._
-import com.outworkers.phantom.macros.debug.Options.ShowBoundStatements
 
 class InOperatorTest extends PhantomSuite {
 
@@ -42,17 +41,14 @@ class InOperatorTest extends PhantomSuite {
     }
   }
 
-  it should "find a record with a in operator if the record exists using a prepared clause" in {
-
+  it should "find a record with an in operator if the record exists using a prepared clause" in {
     val recipe = gen[Recipe]
-
-    val arg = recipe.url
 
     val chain = for {
       done <- database.recipes.store(recipe).future()
       selectIn <- database.recipes.select.where(_.url in ?).prepareAsync()
       selectWhere <- database.recipes.select.where(_.url eqs ?).prepareAsync()
-      bindedIn <- selectIn.bind(ListValue(arg, gen[ShortString].value)).one()
+      bindedIn <- selectIn.bind(ListValue(recipe.url, gen[ShortString].value)).one()
       bindedWhere <- selectWhere.bind(recipe.url).one()
     } yield bindedIn -> bindedIn
 
