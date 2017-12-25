@@ -20,7 +20,7 @@ import java.nio.{BufferUnderflowException, ByteBuffer}
 import java.util.{Date, UUID}
 
 import com.datastax.driver.core.exceptions.InvalidTypeException
-import com.outworkers.phantom.macros.toolbelt.{BlackboxToolbelt, HListHelpers}
+import com.outworkers.phantom.macros.toolbelt.BlackboxToolbelt
 import org.joda.time.DateTime
 
 import scala.collection.concurrent.TrieMap
@@ -36,7 +36,6 @@ class PrimitiveMacro(override val c: blackbox.Context) extends BlackboxToolbelt 
   val rowByIndexType = tq"_root_.com.outworkers.phantom.IndexedRow"
   val pVersion = tq"_root_.com.datastax.driver.core.ProtocolVersion"
   private[this] val versionTerm = q"version"
-  private[this] val rowType = tq"_root_.com.outworkers.phantom.Row"
 
   val boolType = tq"_root_.scala.Boolean"
   val strType: Tree = tq"_root_.java.lang.String"
@@ -196,7 +195,7 @@ class PrimitiveMacro(override val c: blackbox.Context) extends BlackboxToolbelt 
     val fields: List[TupleType] = tupleFields(tpe)
     val indexedFields = fields.zipWithIndex
 
-    var sizeComp = indexedFields.map { case (f, i) =>
+    val sizeComp = indexedFields.map { case (f, i) =>
       val term = elTerm(i)
       fq"""
         $term <- {
@@ -258,7 +257,6 @@ class PrimitiveMacro(override val c: blackbox.Context) extends BlackboxToolbelt 
         } else {
           val size = {for (..$sizeComp) yield ($sumTerm) } get
 
-          val length = ${fields.size}
           val res = $bufferCompanion.allocate(size)
           val buf = for (..$serializedComponents) yield ()
           buf.get

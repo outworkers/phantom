@@ -120,6 +120,30 @@ class OrderByTest extends PhantomSuite {
     }
   }
 
+
+  it should "retrieve ordered records using where + Cassandra eqs operator clause" in {
+    val user = gen[UUID]
+
+    info(s"Generating a list of records with the same partition key value: $user")
+    val records = genList[TimeUUIDRecord]().map { rec =>
+      rec.copy(user = user, id = UUIDs.timeBased())
+    }
+
+    val chain = for {
+      _ <- database.timeuuidTable.storeRecords(records)
+      results <- database.timeuuidTable.select
+        .where(_.user eqs user)
+        .and(_.id eqs now())
+        .orderBy(_.id descending)
+        .fetch()
+    } yield results
+
+
+    whenReady(chain) { results =>
+      results shouldBe empty
+    }
+  }
+
   it should "retrieve ordered records using where + Cassandra lt operator clause" in {
     val user = gen[UUID]
 
