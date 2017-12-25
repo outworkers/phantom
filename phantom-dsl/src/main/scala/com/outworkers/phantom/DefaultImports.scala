@@ -34,7 +34,6 @@ import com.outworkers.phantom.column._
 import com.outworkers.phantom.connectors.DefaultVersions
 import com.outworkers.phantom.keys.Indexed
 import org.joda.time.DateTimeZone
-import shapeless.{::, HNil}
 
 import scala.concurrent.ExecutionContextExecutor
 
@@ -113,10 +112,6 @@ trait DefaultImports extends ImplicitMechanism
   type KeySpaceDef = com.outworkers.phantom.connectors.CassandraConnection
   val ContactPoint = com.outworkers.phantom.connectors.ContactPoint
   val ContactPoints = com.outworkers.phantom.connectors.ContactPoints
-
-  implicit def primitiveToTokenOp[RR : Primitive](value: RR): TokenConstructor[RR :: HNil, TokenTypes.ValueToken] = {
-    new TokenConstructor(Seq(Primitive[RR].asCql(value)))
-  }
 
   /**
     * Used as a secondary option when creating a [[ContactPoint]] to allow users to provide

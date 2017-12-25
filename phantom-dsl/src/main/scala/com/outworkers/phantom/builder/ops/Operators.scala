@@ -214,6 +214,10 @@ sealed class TokenConstructor[P <: HList, TP <: TokenTypes.Root](val mapper: Seq
   }
 }
 
+object TokenConstructor {
+
+}
+
 sealed class TokenCqlFunction extends CqlFunction with TokenComparisonOps
 
 trait Operators {
