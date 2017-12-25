@@ -27,8 +27,8 @@ class CounterBatchTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    TestDatabase.counterTableTest.createSchema()
-    TestDatabase.secondaryCounterTable.createSchema()
+    database.counterTableTest.createSchema()
+    database.secondaryCounterTable.createSchema()
   }
 
   it should "create a batch query to perform several updates in a single table" in {

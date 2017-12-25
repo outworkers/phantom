@@ -29,12 +29,12 @@ class BatchQuerySerialisationTest extends FlatSpec with SerializationTest {
     val row2 = gen[JodaRow].copy(pkey = row.pkey)
     val row3 = gen[JodaRow]
 
-    val statement3 = TestDatabase.primitivesJoda.update
+    val statement3 = db.primitivesJoda.update
       .where(_.pkey eqs row2.pkey)
       .modify(_.intColumn setTo row2.intColumn)
       .and(_.timestamp setTo row2.timestamp)
 
-    val statement4 = TestDatabase.primitivesJoda.delete
+    val statement4 = db.primitivesJoda.delete
       .where(_.pkey eqs row3.pkey)
 
     val batch = Batch.logged.add(statement3, statement4).queryString
@@ -50,12 +50,12 @@ class BatchQuerySerialisationTest extends FlatSpec with SerializationTest {
     val row2 = gen[JodaRow].copy(pkey = row.pkey)
     val row3 = gen[JodaRow]
 
-    val statement3 = TestDatabase.primitivesJoda.update
+    val statement3 = db.primitivesJoda.update
       .where(_.pkey eqs row2.pkey)
       .modify(_.intColumn setTo row2.intColumn)
       .and(_.timestamp setTo row2.timestamp)
 
-    val statement4 = TestDatabase.primitivesJoda.delete.where(_.pkey eqs row3.pkey)
+    val statement4 = db.primitivesJoda.delete.where(_.pkey eqs row3.pkey)
 
     val batch = Batch.logged.add(statement3).add(statement4)
     batch.queryString shouldEqual s"BEGIN BATCH UPDATE phantom.PrimitivesJoda SET intColumn = ${row2.intColumn}," +

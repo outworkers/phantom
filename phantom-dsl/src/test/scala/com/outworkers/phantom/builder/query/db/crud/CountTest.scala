@@ -24,9 +24,8 @@ class CountTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.primitivesJoda.createSchema()
+    val _ = database.primitivesJoda.createSchema()
   }
-
 
   it should "retrieve a count of 0 if the table has been truncated" in {
 
