@@ -120,6 +120,6 @@ then
         echo "Only publishing version for Scala $TARGET_SCALA_VERSION and Oracle JDK 8 to prevent multiple artifacts"
     fi
 else
-    echo "Travis PR: ${TRAVIS_PULL_REQUEST}; Scala Version: ${TRAVIS_SCALA_VERSION}; Target version: ${$TARGET_SCALA_VERSION}"
+    echo "Travis PR: ${TRAVIS_PULL_REQUEST}; Scala Version: ${TRAVIS_SCALA_VERSION}; Target version: ${TARGET_SCALA_VERSION}"
     echo "This is either a pull request or the branch is not develop, deployment not necessary."
 fi

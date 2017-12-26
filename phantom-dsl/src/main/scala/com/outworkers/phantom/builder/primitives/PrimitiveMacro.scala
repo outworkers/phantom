@@ -20,7 +20,8 @@ import java.nio.{BufferUnderflowException, ByteBuffer}
 import java.util.{Date, UUID}
 
 import com.datastax.driver.core.exceptions.InvalidTypeException
-import com.outworkers.phantom.macros.toolbelt.{BlackboxToolbelt, HListHelpers}
+import com.outworkers.phantom.builder.query.prepared.ListValue
+import com.outworkers.phantom.macros.toolbelt.BlackboxToolbelt
 import org.joda.time.DateTime
 
 import scala.collection.concurrent.TrieMap
@@ -34,9 +35,8 @@ class PrimitiveMacro(override val c: blackbox.Context) extends BlackboxToolbelt 
 
   val rowByNameType = tq"_root_.com.datastax.driver.core.GettableByNameData"
   val rowByIndexType = tq"_root_.com.outworkers.phantom.IndexedRow"
-  val pVersion = tq"_root_.com.datastax.driver.core.ProtocolVersion"
+  val protocolVersion = tq"_root_.com.datastax.driver.core.ProtocolVersion"
   private[this] val versionTerm = q"version"
-  private[this] val rowType = tq"_root_.com.outworkers.phantom.Row"
 
   val boolType = tq"_root_.scala.Boolean"
   val strType: Tree = tq"_root_.java.lang.String"
@@ -58,6 +58,7 @@ class PrimitiveMacro(override val c: blackbox.Context) extends BlackboxToolbelt 
   val bufferType = tq"_root_.java.nio.ByteBuffer"
   val bufferCompanion = q"_root_.java.nio.ByteBuffer"
 
+  val listValueType = typeOf[ListValue[_]]
   val bufferException = typeOf[BufferUnderflowException]
   val invalidTypeException = typeOf[InvalidTypeException]
 
@@ -196,7 +197,7 @@ class PrimitiveMacro(override val c: blackbox.Context) extends BlackboxToolbelt 
     val fields: List[TupleType] = tupleFields(tpe)
     val indexedFields = fields.zipWithIndex
 
-    var sizeComp = indexedFields.map { case (f, i) =>
+    val sizeComp = indexedFields.map { case (f, i) =>
       val term = elTerm(i)
       fq"""
         $term <- {
@@ -252,13 +253,12 @@ class PrimitiveMacro(override val c: blackbox.Context) extends BlackboxToolbelt 
           .queryString
       }
 
-      override def serialize($sourceTerm: $tpe, $versionTerm: $pVersion): $bufferType = {
+      override def serialize($sourceTerm: $tpe, $versionTerm: $protocolVersion): $bufferType = {
         if ($sourceTerm == null) {
            null
         } else {
           val size = {for (..$sizeComp) yield ($sumTerm) } get
 
-          val length = ${fields.size}
           val res = $bufferCompanion.allocate(size)
           val buf = for (..$serializedComponents) yield ()
           buf.get
@@ -267,7 +267,7 @@ class PrimitiveMacro(override val c: blackbox.Context) extends BlackboxToolbelt 
         }
       }
 
-      override def deserialize($sourceTerm: $bufferType, $versionTerm: $pVersion): $tpe = {
+      override def deserialize($sourceTerm: $bufferType, $versionTerm: $protocolVersion): $tpe = {
         if ($sourceTerm == null) {
           null
         } else {

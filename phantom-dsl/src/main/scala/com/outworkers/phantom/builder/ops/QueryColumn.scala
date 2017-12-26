@@ -108,7 +108,7 @@ abstract class RootQueryColumn[RR](val name: String)(implicit p: Primitive[RR]) 
   }
 
   final def in(value: PrepareMark): WhereClause.ParametricCondition[ListValue[RR]] = {
-    new WhereClause.ParametricCondition[ListValue[RR]](QueryBuilder.Where.in(name, value.symbol))
+    new WhereClause.ParametricCondition[ListValue[RR]](QueryBuilder.Where.in(name, value))
   }
 
   /**

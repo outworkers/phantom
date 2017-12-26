@@ -18,7 +18,7 @@ package com.outworkers.phantom.tables
 import java.util.UUID
 
 import com.outworkers.phantom.dsl._
-
+import com.outworkers.phantom.macros.debug.Options.ShowTrees
 import scala.concurrent.Future
 
 case class TupleRecord(id: UUID, tp: (String, Long))

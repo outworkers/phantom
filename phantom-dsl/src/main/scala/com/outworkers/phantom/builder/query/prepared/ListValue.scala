@@ -15,19 +15,28 @@
  */
 package com.outworkers.phantom.builder.query.prepared
 
-import java.nio.ByteBuffer
-
-import com.datastax.driver.core.ProtocolVersion
-import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.primitives.Primitive
 
 /**
-  * A special type wrapper
+  * A special type wrapper for binding to prepared in statement values.
+  * This is required because Cassandra wants a special kind of protocol level input
+  * for such bind values.
   *
-  * @tparam T
+  * @tparam T The underlying primitive type held here.
   */
-trait ListValue[T] {
+trait ListValue[T] extends Serializable {
   def value: List[T]
+
+  override def toString: String = value.toString()
+
+  override def equals(obj: Any): Boolean = {
+    obj match {
+      case l: ListValue[T] => l.value == value
+      case _ => false
+    }
+  }
+
+  override def hashCode(): Int = value.hashCode()
 }
 
 object ListValue {
@@ -41,25 +50,9 @@ object ListValue {
   }
 
   implicit def primitive[T](
-    implicit ev: Primitive[T],
-    strP: Primitive[String]
+    implicit ev: Primitive[List[T]]
   ): Primitive[ListValue[T]] = {
-    new Primitive[ListValue[T]] {
-
-      override def asCql(value: ListValue[T]): String = {
-        QueryBuilder.Utils.join(value.value.map(ev.asCql)).queryString
-      }
-
-      override def dataType: String = ev.dataType
-
-      override def serialize(obj: ListValue[T], protocol: ProtocolVersion): ByteBuffer = {
-        strP.serialize(asCql(obj), protocol)
-      }
-
-      override def deserialize(source: ByteBuffer, protocol: ProtocolVersion): ListValue[T] = {
-        ListValue.empty[T]
-      }
-    }
+    Primitive.derive[ListValue[T], List[T]](_.value)(ListValue.apply)
   }
 }
 
