@@ -29,12 +29,14 @@ trait ListValue[T] extends Serializable {
 
   override def toString: String = value.toString()
 
-  override def equals(obj: scala.Any): Boolean = {
+  override def equals(obj: Any): Boolean = {
     obj match {
       case l: ListValue[T] => l.value == value
       case _ => false
     }
   }
+
+  override def hashCode(): Int = value.hashCode()
 }
 
 object ListValue {
@@ -48,8 +50,7 @@ object ListValue {
   }
 
   implicit def primitive[T](
-    implicit ev: Primitive[T],
-    colEv: Primitive[List[T]]
+    implicit ev: Primitive[List[T]]
   ): Primitive[ListValue[T]] = {
     Primitive.derive[ListValue[T], List[T]](_.value)(ListValue.apply)
   }
