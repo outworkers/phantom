@@ -146,7 +146,7 @@ class PreparedSelectBlock[
     * @tparam Out The type argument used to cast the HList to a Tuple.
     * @return An final form prepared select query that can be asynchronously executed.
     */
-  def bind[V1 <: Product, Out <: Product](v1: V1)(
+  def bind[V1 <: Product, Out](v1: V1)(
     implicit tp: Tupler.Aux[PS, Out],
     binder: BindHelper[V1],
     ev: V1 =:= Out

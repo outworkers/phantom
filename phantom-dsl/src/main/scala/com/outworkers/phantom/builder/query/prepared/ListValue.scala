@@ -30,7 +30,10 @@ trait ListValue[T] extends Serializable {
   override def toString: String = value.toString()
 
   override def equals(obj: scala.Any): Boolean = {
-    obj.isInstanceOf[ListValue[T]] && obj.asInstanceOf[ListValue[T]].value == value
+    obj match {
+      case l: ListValue[T] => l.value == value
+      case _ => false
+    }
   }
 }
 

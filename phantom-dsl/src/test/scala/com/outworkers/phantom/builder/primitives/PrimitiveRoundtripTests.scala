@@ -67,8 +67,7 @@ class PrimitiveRoundtripTests
   def roundtrip[T : Primitive : Arbitrary]: Assertion = {
     val ev = Primitive[T]
     forAll { sample: T =>
-      val res = ev.deserialize(ev.serialize(sample, protocol), protocol)
-      res shouldEqual sample
+      ev.deserialize(ev.serialize(sample, protocol), protocol) shouldEqual sample
     }
   }
 

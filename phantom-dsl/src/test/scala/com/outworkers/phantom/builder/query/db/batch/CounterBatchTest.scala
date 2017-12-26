@@ -18,7 +18,6 @@ package com.outworkers.phantom.builder.query.db.batch
 import com.datastax.driver.core.utils.UUIDs
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.tables.TestDatabase
 
 class CounterBatchTest extends PhantomSuite {
 
