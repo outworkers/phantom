@@ -47,13 +47,10 @@ class InOperatorTest extends PhantomSuite {
     val chain = for {
       done <- database.recipes.store(recipe).future()
       selectIn <- database.recipes.select.where(_.url in ?).prepareAsync()
-      selectWhere <- database.recipes.select.where(_.url eqs ?).prepareAsync()
       bindedIn <- selectIn.bind(ListValue(recipe.url, gen[ShortString].value)).one()
-      bindedWhere <- selectWhere.bind(recipe.url).one()
-    } yield bindedIn -> bindedIn
+    } yield bindedIn
 
-    whenReady(chain) { case (resIn, resWhere) =>
-      resWhere.value.url shouldEqual recipe.url
+    whenReady(chain) { resIn =>
       resIn.value.url shouldEqual recipe.url
     }
   }
