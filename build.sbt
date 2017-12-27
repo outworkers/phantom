@@ -89,7 +89,7 @@ lazy val Versions = new {
   val logback = "1.2.3"
   val util = "0.38.0"
   val json4s = "3.5.1"
-  val datastax = "3.3.1"
+  val datastax = "3.3.2"
   val scalatest = "3.0.4"
   val shapeless = "2.3.2"
   val thrift = "0.8.0"
@@ -99,7 +99,6 @@ lazy val Versions = new {
   val slf4j = "1.7.25"
   val reactivestreams = "1.0.0"
   val cassandraUnit = "3.3.0.2"
-  val javaxServlet = "3.0.1"
   val joda = "2.9.9"
   val jodaConvert = "1.8.1"
   val scalamock = "3.5.0"
@@ -229,6 +228,7 @@ lazy val phantom = (project in file("."))
 lazy val readme = (project in file("readme"))
   .settings(sharedSettings)
   .settings(
+    publishArtifact := false,
     crossScalaVersions := Seq(Versions.scala211, Versions.scala212),
     tutSourceDirectory := sourceDirectory.value / "main" / "tut",
     tutTargetDirectory := phantom.base / "docs",
