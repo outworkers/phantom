@@ -16,39 +16,47 @@
 package com.outworkers.phantom.macros
 
 package object debug {
+  private object optionTypes {
+    sealed trait ShowTrees
+    sealed trait ShowCache
+    sealed trait ShowAborts
+    sealed trait ShowBoundStatements
+    sealed trait ShowCompileLog
+    sealed trait ShowAll
+  }
 
   object Options {
 
-    implicit object ShowAll extends ShowAll
+    implicit object ShowAll extends optionTypes.ShowAll
 
     /**
       * Import this value to have Iota print the macro generated code
       * to the console during compilation
       */
-    implicit object ShowTrees extends ShowTrees
+    implicit object ShowTrees extends optionTypes.ShowTrees
 
     /**
       * Shows the internal compilation log for phantom tables.
       * If this is not imported all the c.info level logs are hidden.
       */
-    implicit object ShowLog extends ShowCompileLog
+    implicit object ShowLog extends optionTypes.ShowCompileLog
 
     /**
       * Import this value to have Iota print the cached computations
       * during macro expansion
       */
-    implicit object ShowCache extends ShowCache
+    implicit object ShowCache extends optionTypes.ShowCache
 
     /**
       * Import this value to have debug print aborted instance
       * materialization for [[com.outworkers.phantom.builder.primitives.Primitive]] and [[DatabaseHelper]] macros.
       */
-    implicit object ShowAborts extends ShowAborts
+    implicit object ShowAborts extends optionTypes.ShowAborts
 
     /**
       * Import this to show the query string debug information for prepared statements.
       */
-    implicit object ShowBoundStatements extends ShowBoundStatements
+    implicit object ShowBoundStatements extends optionTypes.ShowBoundStatements
   }
 
 }
