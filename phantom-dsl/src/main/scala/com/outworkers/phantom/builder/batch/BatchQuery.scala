@@ -22,6 +22,7 @@ import com.outworkers.phantom.builder.{ConsistencyBound, QueryBuilder, Specified
 import com.outworkers.phantom.connectors.SessionAugmenterImplicits
 
 import scala.annotation.implicitNotFound
+import scala.collection.generic.CanBuildFrom
 
 case class BatchWithQuery(
   statement: Statement,
@@ -88,6 +89,15 @@ sealed case class BatchQuery[Status <: ConsistencyBound](
     copy(iterator = iterator ++ queries.iterator)
   }
 
+  def add[M[_] <: TraversableOnce[_]](queries: M[Batchable])(
+    implicit cbf: CanBuildFrom[Nothing, Batchable, Iterator[Batchable]]
+  ): BatchQuery[Status] = {
+    val addables = queries.foldLeft(cbf()) { case (acc, el) =>
+      acc += el
+    }
+    copy(iterator = iterator ++ addables.result())
+  }
+
   def add(queries: Iterator[Batchable]): BatchQuery[Status] = {
     copy(iterator = iterator ++ queries)
   }
@@ -108,8 +118,8 @@ sealed case class BatchQuery[Status <: ConsistencyBound](
 
 private[phantom] trait Batcher {
 
-  def apply(batchType: String = CQLSyntax.Batch.Logged): BatchQuery[Unspecified] = {
-    BatchQuery(Iterator.empty, BatchType.Logged, UsingPart.empty, QueryOptions.empty)
+  def apply(batchType: BatchType = BatchType.Logged): BatchQuery[Unspecified] = {
+    BatchQuery(Iterator.empty, batchType, UsingPart.empty, QueryOptions.empty)
   }
 
   def logged: BatchQuery[Unspecified] = {
