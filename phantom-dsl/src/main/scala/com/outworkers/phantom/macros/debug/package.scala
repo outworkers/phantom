@@ -16,7 +16,7 @@
 package com.outworkers.phantom.macros
 
 package object debug {
-  private object optionTypes {
+   private[phantom] object optionTypes {
     sealed trait ShowTrees
     sealed trait ShowCache
     sealed trait ShowAborts
