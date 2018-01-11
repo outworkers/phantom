@@ -63,13 +63,12 @@ class PreparedSelectQueryTest extends PhantomSuite {
       query <- database.recipes.select.limit(?).where(_.url eqs ?).prepareAsync()
       _ <- database.recipes.truncate.future
       _ <- database.recipes.store(recipe).future()
-      select <- query.bind(limit, recipe.url).one()
+      select <- query.bind(limit, recipe.url).fetch()
       select2 <- database.recipes.select.where(_.url eqs recipe.url).one()
     } yield (select, select2)
 
     whenReady(operation) { case (items, items2) =>
-      items shouldBe defined
-      items.value shouldEqual recipe
+      items should contain (recipe)
 
       items2 shouldBe defined
       items2.value shouldEqual recipe
