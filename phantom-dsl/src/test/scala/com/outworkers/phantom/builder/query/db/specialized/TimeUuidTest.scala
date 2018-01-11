@@ -102,6 +102,36 @@ class TimeUuidTest extends PhantomSuite {
     }
   }
 
+  it should "allow retrieving records with operations on a root projection block" in {
+
+    val intervalOffset = 60
+    val now = DateTime.now(DateTimeZone.UTC)
+    val start = now.plusSeconds(-intervalOffset)
+    val user = UUIDs.random()
+
+    // I will repent for my sins in the future, I'm sorry Ben.
+    val records = genList[TimeUUIDRecord]()
+      .map(_.copy(
+        user = user,
+        id = now.plusSeconds(
+          Gen.choose(
+            -intervalOffset,
+            intervalOffset
+          ).sample.get
+        ).timeuuid())
+      )
+
+    val chain = for {
+      _ <- database.timeuuidTable.storeRecords(records)
+      res <- database.timeuuidTable.select.one()
+
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+    }
+  }
+
   it should "not retrieve anything for a mismatched selection time window" in {
 
     val intervalOffset = 60
@@ -123,12 +153,12 @@ class TimeUuidTest extends PhantomSuite {
 
     val chain = for {
       _ <- database.timeuuidTable.storeRecords(records)
-      get <- database.timeuuidTable.select
+      res <- database.timeuuidTable.select
         .where(_.user eqs user)
         .and(_.id >= minTimeuuid(start.plusSeconds(-3 * intervalOffset)))
         .and(_.id <= maxTimeuuid(start.plusSeconds(-2 * intervalOffset)))
         .fetch()
-    } yield get
+    } yield res
 
     whenReady(chain) { res =>
       res.size shouldEqual 0

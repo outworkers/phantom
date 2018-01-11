@@ -16,7 +16,7 @@
 package com.outworkers.phantom.macros
 
 package object debug {
-  object optionTypes {
+   private[phantom] object optionTypes {
     sealed trait ShowTrees
     sealed trait ShowCache
     sealed trait ShowAborts
@@ -25,8 +25,9 @@ package object debug {
     sealed trait ShowAll
   }
 
-
   object Options {
+
+    implicit object ShowAll extends optionTypes.ShowAll
 
     /**
       * Import this value to have Iota print the macro generated code

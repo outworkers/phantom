@@ -16,6 +16,7 @@
 package com.outworkers.phantom.builder.query.db.crud
 
 import com.outworkers.phantom.PhantomSuite
+import com.outworkers.phantom.builder.query.bugs.UserSchema
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
 import com.outworkers.util.samplers._
@@ -25,6 +26,7 @@ class SelectTest extends PhantomSuite {
   override def beforeAll(): Unit = {
     super.beforeAll()
     val _ = database.primitives.createSchema()
+    database.userSchema.createSchema()
   }
 
   "Selecting the whole row" should "work fine" in {
@@ -37,6 +39,35 @@ class SelectTest extends PhantomSuite {
 
     whenReady(chain) { res =>
       res.value shouldEqual row
+    }
+  }
+
+
+  it should "allow directly applying SelectOps on a select projection with no clauses" in {
+    val row = gen[UserSchema]
+
+    val chain = for {
+      store <- database.userSchema.truncate().future()
+      store <- database.userSchema.store(row).future()
+      res <- database.userSchema.select.one()
+    } yield res
+
+    whenReady(chain) { res =>
+      res.value shouldEqual row
+    }
+  }
+
+  it should "allow directly applying SelectOps on a select projection with no clauses via a method call" in {
+    val row = gen[UserSchema]
+
+    val chain = for {
+      store <- database.userSchema.truncate().future()
+      store <- database.userSchema.store(row).future()
+      res <- database.userSchema.checkUserId
+    } yield res
+
+    whenReady(chain) { res =>
+      res.value shouldEqual row.id
     }
   }
 }

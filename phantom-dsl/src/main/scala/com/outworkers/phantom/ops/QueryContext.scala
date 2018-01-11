@@ -74,7 +74,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
   }
 
   implicit class RootSelectBlockOps[
-    Table <: CassandraTable[Table, Record],
+    Table <: CassandraTable[Table, _],
     Record
   ](val block: RootSelectBlock[Table, Record])(
     implicit keySpace: KeySpace

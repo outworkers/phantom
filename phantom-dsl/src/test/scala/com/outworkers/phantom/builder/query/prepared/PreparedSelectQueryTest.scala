@@ -26,7 +26,7 @@ class PreparedSelectQueryTest extends PhantomSuite {
     super.beforeAll()
     System.setProperty("user.timezone", "Canada/Pacific") // perform these tests in non utc timezone
 
-    new CassandraTableStoreMethods(database.recipes).createSchema()
+    database.recipes.createSchema()
     database.articlesByAuthor.createSchema()
     database.primitives.createSchema()
     if (session.v4orNewer) {
@@ -49,6 +49,26 @@ class PreparedSelectQueryTest extends PhantomSuite {
     whenReady(operation) { case (items, items2) =>
       items shouldBe defined
       items.value shouldEqual recipe
+
+      items2 shouldBe defined
+      items2.value shouldEqual recipe
+    }
+  }
+
+  it should "execute a prepared async clause with a prepared limit before the WHERE clause " in {
+    val recipe = gen[Recipe]
+    val limit = 5
+
+    val operation = for {
+      query <- database.recipes.select.where(_.url eqs ?).limit(?).prepareAsync()
+      _ <- database.recipes.truncate.future
+      _ <- database.recipes.store(recipe).future()
+      select <- query.bind(recipe.url, limit).fetch()
+      select2 <- database.recipes.select.where(_.url eqs recipe.url).one()
+    } yield (select, select2)
+
+    whenReady(operation) { case (items, items2) =>
+      items should contain (recipe)
 
       items2 shouldBe defined
       items2.value shouldEqual recipe
