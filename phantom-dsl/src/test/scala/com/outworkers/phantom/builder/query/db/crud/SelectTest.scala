@@ -26,6 +26,7 @@ class SelectTest extends PhantomSuite {
   override def beforeAll(): Unit = {
     super.beforeAll()
     val _ = database.primitives.createSchema()
+    database.userSchema.createSchema()
   }
 
   "Selecting the whole row" should "work fine" in {
