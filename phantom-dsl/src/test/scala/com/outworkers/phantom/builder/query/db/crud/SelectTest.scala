@@ -16,6 +16,7 @@
 package com.outworkers.phantom.builder.query.db.crud
 
 import com.outworkers.phantom.PhantomSuite
+import com.outworkers.phantom.builder.query.bugs.UserSchema
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
 import com.outworkers.util.samplers._
@@ -34,6 +35,20 @@ class SelectTest extends PhantomSuite {
       store <- database.primitives.store(row).future()
       b <- database.primitives.select.where(_.pkey eqs row.pkey).one
     } yield b
+
+    whenReady(chain) { res =>
+      res.value shouldEqual row
+    }
+  }
+
+  it should "allow directly applying SelectOps on a select projection with no clauses" in {
+    val row = gen[UserSchema]
+
+    val chain = for {
+      store <- database.userSchema.truncate().future()
+      store <- database.userSchema.store(row).future()
+      res <- database.userSchema.select.one()
+    } yield res
 
     whenReady(chain) { res =>
       res.value shouldEqual row

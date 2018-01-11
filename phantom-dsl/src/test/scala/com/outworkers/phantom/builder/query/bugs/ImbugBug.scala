@@ -19,14 +19,14 @@ import com.outworkers.phantom.dsl._
 
 import scala.concurrent.Future
 
-case class User(
+case class UserSchema(
   id: Int,
   firstName: String,
   lastName: String,
   dateOfBirth: LocalDate
 )
 
-abstract class UserSchema extends Table[UserSchema, User] {
+abstract class UserSchemaTable extends Table[UserSchemaTable, UserSchema] {
   override def tableName: String = "users"
 
   object id extends IntColumn with PartitionKey
@@ -34,5 +34,5 @@ abstract class UserSchema extends Table[UserSchema, User] {
   object lastName extends StringColumn
   object dateOfBirth extends LocalDateColumn
 
-  def getUserId: Future[Option[Int]] = new RootSelectBlockOps(this.select(_.id)).one()
+  def getUserId: Future[Option[Int]] = select(_.id).one()
 }

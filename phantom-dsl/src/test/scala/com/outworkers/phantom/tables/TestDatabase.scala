@@ -17,6 +17,7 @@ package com.outworkers.phantom.tables
 
 import com.datastax.driver.core.SocketOptions
 import com.outworkers.phantom.builder.query.CreateQuery
+import com.outworkers.phantom.builder.query.bugs.UserSchemaTable
 import com.outworkers.phantom.connectors
 import com.outworkers.phantom.connectors.CassandraConnection
 import com.outworkers.phantom.database.Database
@@ -102,6 +103,9 @@ class TestDatabase(
   object sasiIndexedArticles extends SASIIndexedArticles with Connector
   object multiSasiTable extends MultiSASITable with Connector
   object jsonPreparedTable extends JsonPreparedTable with Connector
+
+  // table to test a schema bug for using RootSelectBlockOps on select projections with no other clauses
+  object userSchema extends UserSchemaTable with Connector
 }
 
 object Connector {
