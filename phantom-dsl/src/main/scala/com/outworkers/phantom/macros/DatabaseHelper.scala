@@ -24,7 +24,7 @@ import com.outworkers.phantom.macros.toolbelt.WhiteboxToolbelt
 import scala.reflect.macros.whitebox
 
 trait DatabaseHelper[T <: Database[T]] {
-  def tables(db: T): Seq[CassandraTable[_ ,_]]
+  def tables(db: T): scala.collection.Seq[CassandraTable[_ ,_]]
 
   def createQueries(db: T)(implicit keySpace: KeySpace): QueryCollection[Seq]
 }
@@ -71,7 +71,7 @@ class DatabaseHelperMacro(override val c: whitebox.Context) extends WhiteboxTool
 
          def createQueries(db: $tpe)(
            implicit space: $keyspaceType
-         ): $execution.QueryCollection[Seq] = {
+         ): $execution.QueryCollection[_root_.scala.collection.Seq] = {
             new $execution.QueryCollection($seqCmp.apply(..$queryList))
          }
        }
