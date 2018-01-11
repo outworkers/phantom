@@ -34,5 +34,5 @@ abstract class UserSchemaTable extends Table[UserSchemaTable, UserSchema] {
   object lastName extends StringColumn
   object dateOfBirth extends LocalDateColumn
 
-  def getUserId: Future[Option[Int]] = select(_.id).one()
+  def checkUserId: Future[Option[Int]] = select(_.id).one()
 }

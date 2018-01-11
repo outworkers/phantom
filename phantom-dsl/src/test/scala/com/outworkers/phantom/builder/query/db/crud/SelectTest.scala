@@ -42,6 +42,7 @@ class SelectTest extends PhantomSuite {
     }
   }
 
+
   it should "allow directly applying SelectOps on a select projection with no clauses" in {
     val row = gen[UserSchema]
 
@@ -53,6 +54,20 @@ class SelectTest extends PhantomSuite {
 
     whenReady(chain) { res =>
       res.value shouldEqual row
+    }
+  }
+
+  it should "allow directly applying SelectOps on a select projection with no clauses via a method call" in {
+    val row = gen[UserSchema]
+
+    val chain = for {
+      store <- database.userSchema.truncate().future()
+      store <- database.userSchema.store(row).future()
+      res <- database.userSchema.checkUserId
+    } yield res
+
+    whenReady(chain) { res =>
+      res.value shouldEqual row.id
     }
   }
 }

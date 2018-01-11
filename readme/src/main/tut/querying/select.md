@@ -18,9 +18,24 @@ If we would just use a timestamp type, if we were to receive two logs for the sa
 the entries would override each other in Cassandra, because in effect they would have the same partition key
 and the same clustering key, so the whole primary key would be identical.
 
-```scala
+```tut:silent
 
+import com.datastax.driver.core.SocketOptions
 import com.outworkers.phantom.dsl._
+
+object Connector {
+  val default: CassandraConnection = ContactPoint.local
+    .withClusterBuilder(_.withSocketOptions(
+      new SocketOptions()
+        .setConnectTimeoutMillis(20000)
+        .setReadTimeoutMillis(20000)
+      )
+    ).noHeartbeat().keySpace(
+      KeySpace("phantom").ifNotExists().`with`(
+        replication eqs SimpleStrategy.replication_factor(1)
+      )
+    )
+}
 
 case class CarMetric(
   car: UUID,
@@ -35,6 +50,13 @@ abstract class AnalyticsEntries extends Table[AnalyticsEntries, CarMetric] {
   object velocity extends DoubleColumn
   object tirePressure extends DoubleColumn
 }
+
+class BasicDatabase(override val connector: CassandraConnection) extends Database[BasicDatabase](connector) {
+  object entries extends AnalyticsEntries with Connector
+}
+
+object db extends BasicDatabase(Connector.default)
+
 
 ```
 
@@ -66,6 +88,42 @@ As opposed to a normal `one` or `fetch` query, calling `paginateRecord` will ret
 you to look inside the original `ResultSet`, as well as the `PagingState`. The state can then be serialized
 to a string, and using that string is the key to pagination from a client.
 
+#### Projections
+
+Cassandra allows you to select only part of the columns in your tables as part of the result select. We refer
+to such queries as projections or partial select queries. Phantom automatically computes the  type of the 
+partial selects using tupled types.
+
+This also enforces a limit on the number of columns you can select in a single query to a maximum of 21, because
+in Scala we cannot have Tuples of more than 21 type parameters. This may be possible in more recent versions of Scala,
+but for the sake of legacy compatibility and enforcing a more lean query API we advise that you respect this
+limitation.
+
+```tut:silent
+
+import java.util.UUID
+import scala.concurrent.Future
+
+trait SelectExamples extends db.Connector {
+  val carId = UUID.randomUUID 
+  
+  // This is a select * query, selecting the entire record
+  def selectAll: Future[List[CarMetric]] = {
+    db.entries.select.where(_.car eqs carId).fetch()
+  }
+  
+  // In this example, we are only going to select the ID column. Notice how phantom handles the type.
+  def selectOnlyId: Future[List[UUID]] = {
+    db.entries.select(_.car).where(_.car eqs carId).fetch()
+  }
+  
+  // We can also select multiple columns, and phantom will create a tuple return type for us.
+  def selectMultiple: Future[List[(UUID, UUID, Double)]] = {
+    db.entries.select(_.car, _.id, _.velocity).where(_.car eqs carId).fetch()
+  }
+}
+
+```
 
 ####  Aggregation functions
 

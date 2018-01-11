@@ -10,7 +10,9 @@ function run_test_suite {
         then
             echo "Running tut compilation"
             sbt ++$TRAVIS_SCALA_VERSION "project readme" "tut"
-            exit $?
+            local tut_exit_code = $?
+            echo "Tut compilation exited with status $tut_exit_code"
+            exit ${tut_exit_code}
         else
             echo "Unable to run tut compilation, test suite failed"
             exit ${testExitCode}
