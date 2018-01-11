@@ -60,10 +60,10 @@ class PreparedSelectQueryTest extends PhantomSuite {
     val limit = 5
 
     val operation = for {
-      query <- database.recipes.select.limit(?).where(_.url eqs ?).prepareAsync()
+      query <- database.recipes.select.where(_.url eqs ?).limit(?).prepareAsync()
       _ <- database.recipes.truncate.future
       _ <- database.recipes.store(recipe).future()
-      select <- query.bind(limit, recipe.url).fetch()
+      select <- query.bind(recipe.url, limit).fetch()
       select2 <- database.recipes.select.where(_.url eqs recipe.url).one()
     } yield (select, select2)
 
