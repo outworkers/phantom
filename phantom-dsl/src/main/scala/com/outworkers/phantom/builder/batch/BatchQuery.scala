@@ -81,12 +81,15 @@ sealed case class BatchQuery[Status <: ConsistencyBound](
     }
   }
 
-  def add(query: Batchable): BatchQuery[Status] = {
-    copy(iterator = iterator ++ Iterator(query))
-  }
-
   def add(queries: Batchable*): BatchQuery[Status] = {
     copy(iterator = iterator ++ queries.iterator)
+  }
+
+  def add(query: Option[Batchable]): BatchQuery[Status] = {
+    query match {
+      case Some(value) => copy(iterator = iterator ++ Iterator(value))
+      case None => this
+    }
   }
 
   def add[M[X] <: TraversableOnce[X], Y <: Batchable](queries: M[Y])(

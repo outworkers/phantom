@@ -24,7 +24,7 @@ class BatchablePreparedInsertQueryTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    val _ = TestDatabase.recipes.createSchema()
+    val _ = database.recipes.createSchema()
   }
 
   it should "serialize an prepared batch query" in {
