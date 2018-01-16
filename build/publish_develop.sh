@@ -11,7 +11,7 @@ function fix_git {
     git config branch.${TRAVIS_BRANCH}.merge refs/heads/${TRAVIS_BRANCH}
 }
 
-function publish_to_maven {
+function prepare_maven_release {
     if [ "$TRAVIS_BRANCH" == "develop" ];
     then
         if [[ $COMMIT_MSG == *"$COMMIT_SKIP_MESSAGE"* ]];
@@ -28,7 +28,6 @@ function publish_to_maven {
           echo "Setting MAVEN_PUBLISH mode to true"
           export MAVEN_PUBLISH="true"
           export pgp_passphrase=${maven_password}
-          sbt "such publishSigned"
         fi
     else
         echo "Not deploying to Maven Central, branch is not develop, current branch is ${TRAVIS_BRANCH}"
@@ -108,10 +107,10 @@ then
         COMMIT_MSG=$(git log -1 --pretty=%B 2>&1)
         COMMIT_SKIP_MESSAGE="[version skip]"
 
+        prepare_maven_release
         sbt "project readme" tut
         sbt "release with-defaults"
 
-        publish_to_maven
         #publish_to_bintray
 
     else
