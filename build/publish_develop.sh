@@ -29,8 +29,21 @@ function publish_to_maven {
           export MAVEN_PUBLISH="true"
           export pgp_passphrase=${maven_password}
           sbt "such publishSigned"
-          sbt sonatypeReleaseAll
-          exit $?
+          local releaseExistCode = $?
+
+            if [ ${releaseExistCode} == "0" ];
+            then
+                "Releasing all published artefacts to Maven Central"
+                sbt sonatypeReleaseAll
+                releaseExistCode=$?
+                "Finished releasing with exit code $releaseExistCode"
+            else
+                sbt sonatypeDrop
+                echo "Dropping all releases from Sonatype as publishing was not successful"
+                releaseExistCode=0
+            fi;
+
+          exit releaseExistCode?
         fi
     else
         echo "Not deploying to Maven Central, branch is not develop, current branch is ${TRAVIS_BRANCH}"
