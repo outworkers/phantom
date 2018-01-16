@@ -141,6 +141,46 @@ class BatchQueryTest extends PhantomSuite {
     }
   }
 
+
+  it should "correctly execute an UPDATE/DELETE pair batch query added a list" in {
+    val row = gen[JodaRow]
+    val row2 = gen[JodaRow].copy(pkey = row.pkey)
+    val row3 = gen[JodaRow]
+
+    val statement1 = database.primitivesJoda.insert
+      .value(_.pkey, row.pkey)
+      .value(_.intColumn, row.intColumn)
+      .value(_.timestamp, row.timestamp)
+
+    val statement2 = database.primitivesJoda.insert
+      .value(_.pkey, row3.pkey)
+      .value(_.intColumn, row3.intColumn)
+      .value(_.timestamp, row3.timestamp)
+
+    val statement3 = database.primitivesJoda.update
+      .where(_.pkey eqs row2.pkey)
+      .modify(_.intColumn setTo row2.intColumn)
+      .and(_.timestamp setTo  row2.timestamp)
+
+    val statement4 = database.primitivesJoda.delete
+      .where(_.pkey eqs row3.pkey)
+
+    val batch = Batch.logged.add(List(statement3, statement4))
+
+    val w = for {
+      s1 <- statement1.future()
+      s3 <- statement2.future()
+      b <- batch.future()
+      updated <- database.primitivesJoda.select.where(_.pkey eqs row.pkey).one()
+      deleted <- database.primitivesJoda.select.where(_.pkey eqs row3.pkey).one()
+    } yield (updated, deleted)
+
+    whenReady(w) { case (updated, deleted) =>
+      updated.value shouldEqual row2
+      deleted shouldNot be (defined)
+    }
+  }
+
   ignore should "prioritise batch updates in a last first order" in {
     val row = gen[JodaRow]
 

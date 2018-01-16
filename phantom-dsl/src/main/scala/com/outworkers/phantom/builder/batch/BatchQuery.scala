@@ -85,20 +85,12 @@ sealed case class BatchQuery[Status <: ConsistencyBound](
     copy(iterator = iterator ++ Iterator(query))
   }
 
-  def add(queries: Batchable*): BatchQuery[Status] = {
-    copy(iterator = iterator ++ queries.iterator)
-  }
-
   def add[M[X] <: TraversableOnce[X]](queries: M[Batchable])(
     implicit cbf: CanBuildFrom[Nothing, Batchable, Iterator[Batchable]]
   ): BatchQuery[Status] = {
     val builder = cbf()
     queries.foreach(builder +=)
     copy(iterator = iterator ++ builder.result())
-  }
-
-  def add(queries: Iterator[Batchable]): BatchQuery[Status] = {
-    copy(iterator = iterator ++ queries)
   }
 
   /**
