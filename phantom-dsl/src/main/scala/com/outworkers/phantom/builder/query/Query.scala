@@ -96,6 +96,6 @@ abstract class Query[
   ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out]
 }
 
-private[phantom] trait Batchable {
+trait Batchable {
   def executableQuery: ExecutableCqlQuery
 }
