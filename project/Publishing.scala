@@ -32,34 +32,7 @@ object Publishing {
     publishArtifact := false
   )
 
-
-  val versionSkipSequence = "[version skip]"
   val ciSkipSequence = "[ci skip]"
-
-  def skipStepConditionally(
-    state: State,
-    step: ReleaseStep,
-    condition: State => Boolean,
-    message: String = "Skipping current step"
-  ): State = {
-    if (condition(state)) {
-      state.log.info(message)
-      state
-    } else {
-      step(state)
-    }
-  }
-
-  def shouldSkipVersionCondition(state: State): Boolean = {
-    val settings = Project.extract(state)
-
-    val commitString = settings.get(git.gitHeadCommit)
-    commitString.exists(_.contains(versionSkipSequence))
-  }
-
-  def onlyIfVersionNotSkipped(step: ReleaseStep): ReleaseStep = { s: State =>
-    skipStepConditionally(s, step, shouldSkipVersionCondition)
-  }
 
   private def toProcessLogger(st: State): ProcessLogger = new ProcessLogger {
     override def error(s: => String): Unit = st.log.error(s)
@@ -71,7 +44,6 @@ object Publishing {
     Project.extract(state).get(releaseVcs)
       .getOrElse(sys.error("Aborting release. Working directory is not a repository of a recognized VCS."))
   }
-
 
   val releaseTutFolder = settingKey[File]("The file to write the version to")
 
@@ -118,12 +90,13 @@ object Publishing {
     releaseProcess := Seq[ReleaseStep](
       checkSnapshotDependencies,
       inquireVersions,
-      onlyIfVersionNotSkipped(setReleaseVersion),
-      onlyIfVersionNotSkipped(commitReleaseVersion),
-      onlyIfVersionNotSkipped(tagRelease),
-      onlyIfVersionNotSkipped(setNextVersion),
-      onlyIfVersionNotSkipped(commitTutFilesAndVersion),
-      onlyIfVersionNotSkipped(pushChanges)
+      setReleaseVersion,
+      commitReleaseVersion,
+      tagRelease,
+      releaseStepCommandAndRemaining("such publishSigned"),
+      setNextVersion,
+      commitTutFilesAndVersion,
+      pushChanges
     )
   )
 
@@ -213,9 +186,7 @@ object Publishing {
         </developers>
   )
 
-  def effectiveSettings: Seq[Def.Setting[_]] = {
-    releaseSettings ++ { if (publishingToMaven) mavenSettings else bintraySettings }
-  }
+  def effectiveSettings: Seq[Def.Setting[_]] = releaseSettings ++ mavenSettings
 
   /**
    * This exists because SBT is not capable of reloading publishing configuration during tasks or commands.

@@ -29,21 +29,6 @@ function publish_to_maven {
           export MAVEN_PUBLISH="true"
           export pgp_passphrase=${maven_password}
           sbt "such publishSigned"
-          local release_exit_code = $?
-
-            if [ ${release_exit_code} == "0" ];
-            then
-                "Releasing all published artefacts to Maven Central"
-                sbt sonatypeReleaseAll
-                release_exit_code=$?
-                "Finished releasing with exit code $release_exit_code"
-            else
-                sbt sonatypeDrop
-                echo "Dropping all releases from Sonatype as publishing was not successful"
-                release_exit_code=0
-            fi;
-
-          exit release_exit_code
         fi
     else
         echo "Not deploying to Maven Central, branch is not develop, current branch is ${TRAVIS_BRANCH}"
@@ -127,7 +112,7 @@ then
         sbt "release with-defaults"
 
         publish_to_maven
-        publish_to_bintray
+        #publish_to_bintray
 
     else
         echo "Only publishing version for Scala $TARGET_SCALA_VERSION and Oracle JDK 8 to prevent multiple artifacts"
