@@ -16,7 +16,7 @@
 package com.outworkers.phantom.builder.batch
 
 import com.datastax.driver.core.{BatchStatement, ConsistencyLevel, Session, Statement}
-import com.outworkers.phantom.builder.query._
+import com.outworkers.phantom.builder.query.{Batchable, _}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.builder.{ConsistencyBound, QueryBuilder, Specified, Unspecified}
 import com.outworkers.phantom.connectors.SessionAugmenterImplicits
@@ -81,24 +81,23 @@ sealed case class BatchQuery[Status <: ConsistencyBound](
     }
   }
 
-  def add(query: Batchable): BatchQuery[Status] = {
-    copy(iterator = iterator ++ Iterator(query))
-  }
-
   def add(queries: Batchable*): BatchQuery[Status] = {
     copy(iterator = iterator ++ queries.iterator)
   }
 
-  def add[M[X] <: TraversableOnce[X]](queries: M[Batchable])(
+  def add(query: Option[Batchable]): BatchQuery[Status] = {
+    query match {
+      case Some(value) => copy(iterator = iterator ++ Iterator(value))
+      case None => this
+    }
+  }
+
+  def add[M[X] <: TraversableOnce[X], Y <: Batchable](queries: M[Y])(
     implicit cbf: CanBuildFrom[Nothing, Batchable, Iterator[Batchable]]
   ): BatchQuery[Status] = {
     val builder = cbf()
     queries.foreach(builder +=)
     copy(iterator = iterator ++ builder.result())
-  }
-
-  def add(queries: Iterator[Batchable]): BatchQuery[Status] = {
-    copy(iterator = iterator ++ queries)
   }
 
   /**

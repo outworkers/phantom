@@ -29,8 +29,6 @@ function publish_to_maven {
           export MAVEN_PUBLISH="true"
           export pgp_passphrase=${maven_password}
           sbt "such publishSigned"
-          sbt sonatypeReleaseAll
-          exit $?
         fi
     else
         echo "Not deploying to Maven Central, branch is not develop, current branch is ${TRAVIS_BRANCH}"
@@ -114,7 +112,7 @@ then
         sbt "release with-defaults"
 
         publish_to_maven
-        publish_to_bintray
+        #publish_to_bintray
 
     else
         echo "Only publishing version for Scala $TARGET_SCALA_VERSION and Oracle JDK 8 to prevent multiple artifacts"
