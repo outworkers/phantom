@@ -18,6 +18,7 @@ package com.outworkers.phantom.builder.query.prepared
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.tables.Recipe
 import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.tables.bugs.VerizonRecord
 import com.outworkers.util.samplers._
 
 import scala.concurrent.Await
@@ -28,6 +29,7 @@ class PreparedUpdateQueryTest extends PhantomSuite {
   override def beforeAll(): Unit = {
     super.beforeAll()
     database.recipes.createSchema()
+    database.verizonSchema.createSchema()
   }
 
   it should "execute a prepared update query with a single argument bind" in {
@@ -164,6 +166,21 @@ class PreparedUpdateQueryTest extends PhantomSuite {
       afterUpdate.value.lastCheckedAt shouldEqual recipe.lastCheckedAt
       afterUpdate.value.uid shouldEqual updatedUid
       afterUpdate.value.description shouldEqual updated
+    }
+  }
+
+  it should "correctly chain type parameters in prepared update clauses" in {
+    val sample = gen[VerizonRecord].copy(isDeleted = true)
+
+    val chain = for {
+      insert <- db.verizonSchema.storeRecord(sample)
+      updated <- db.verizonSchema.updateDeleteStatus.flatMap(_.bind(sample.uid, false).future())
+      res <- db.verizonSchema.select.where(_.uid eqs sample.uid).one()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+      res.value shouldEqual sample.copy(isDeleted = false)
     }
   }
 }

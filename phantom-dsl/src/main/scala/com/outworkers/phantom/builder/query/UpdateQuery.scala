@@ -383,22 +383,30 @@ sealed case class ConditionalQuery[
     new PreparedBlock(flatten.query, flatten.protocolVersion, options)
   }
 
-  def prepareAsync[P[_], F[_], Rev <: HList]()(
+  def prepareAsync[
+    P[_],
+    F[_],
+    Rev <: HList,
+    Reversed <: HList,
+    Out <: HList
+  ]()(
     implicit session: Session,
     executor: ExecutionContextExecutor,
     keySpace: KeySpace,
     ev: PS =:!= HNil,
     rev: Reverse.Aux[PS, Rev],
+    rev2: Reverse.Aux[ModifyPrepared, Reversed],
+    prepend: Prepend.Aux[Reversed, Rev, Out],
     fMonad: FutureMonad[F],
+    adapter: GuavaAdapter[F],
     interface: PromiseInterface[P, F]
-  ): F[PreparedBlock[Rev]] = {
+  ): F[PreparedBlock[Out]] = {
     val flatten = new PreparedFlattener(qb)
 
     flatten.async map { ps =>
-      new PreparedBlock(ps, flatten.protocolVersion, options)
+      new PreparedBlock[Out](ps, flatten.protocolVersion, options)
     }
   }
-
   override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options)
 }
 
