@@ -138,7 +138,7 @@ class TableHelperTest extends PhantomSuite with MockFactory {
 
     val ev = new Events() with database.Connector
     intercept[NotImplementedError] {
-      ev.fromRow(null.asInstanceOf[Row])
+      ev.fromRow(Primitive.nullValue.asInstanceOf[Row])
     }
   }
 

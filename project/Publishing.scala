@@ -81,31 +81,7 @@ object Publishing {
     newState
   }
 
-  val bintrayPublishing = Command.command(
-    "publishToBintray",
-    "Publishes the cross build artifacts to bintray",
-    ""
-  ) { state =>
-
-    val logger = toProcessLogger(state)
-    val settings = Project.extract(state)
-
-    val opt = Project.runTask(
-      publish in compile,
-      settings.append(bintraySettings, state),
-      checkCycles = true
-    )
-
-    logger.info(opt.toString)
-    val updatedSettings = Project.extract(state)
-    val publishToChange = updatedSettings.get(publishTo)
-    logger.info(publishToChange.toString)
-
-    state
-  }
-
   val releaseSettings = Seq(
-    commands += bintrayPublishing,
     releaseTutFolder in ThisBuild := baseDirectory.value / "docs",
     releaseIgnoreUntrackedFiles := true,
     releaseVersionBump := sbtrelease.Version.Bump.Bugfix,

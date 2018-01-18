@@ -23,6 +23,7 @@ import com.outworkers.util.samplers._
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
+import com.outworkers.phantom.macros.debug.Options.ShowBoundStatements
 
 class PreparedUpdateQueryTest extends PhantomSuite {
 
@@ -171,16 +172,18 @@ class PreparedUpdateQueryTest extends PhantomSuite {
 
   it should "correctly chain type parameters in prepared update clauses" in {
     val sample = gen[VerizonRecord].copy(isDeleted = true)
+    val sample2 = gen[VerizonRecord].copy(isDeleted = true)
 
     val chain = for {
       insert <- db.verizonSchema.storeRecord(sample)
+      insert2 <- db.verizonSchema.storeRecord(sample2)
       updated <- db.verizonSchema.updateDeleteStatus.flatMap(_.bind(sample.uid, false).future())
       res <- db.verizonSchema.select.where(_.uid eqs sample.uid).one()
     } yield res
 
     whenReady(chain) { res =>
       res shouldBe defined
-      res.value shouldEqual sample.copy(isDeleted = false)
+      res.value.isDeleted shouldBe false
     }
   }
 }

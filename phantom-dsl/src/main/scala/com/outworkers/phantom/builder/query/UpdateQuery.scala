@@ -373,12 +373,18 @@ sealed case class ConditionalQuery[
     ttl(duration.toSeconds)
   }
 
-  def prepare[Rev <: HList]()(
+  def prepare[
+    Rev <: HList,
+    RevModified <: HList,
+    QueryHL <: HList
+  ]()(
     implicit session: Session,
     keySpace: KeySpace,
     ev: PS =:!= HNil,
-    rev: Reverse.Aux[PS, Rev]
-  ): PreparedBlock[Rev] = {
+    rev: Reverse.Aux[PS, Rev],
+    revModified: Reverse.Aux[ModifyPrepared, RevModified],
+    prepender: Prepend.Aux[Rev, RevModified, QueryHL]
+  ): PreparedBlock[QueryHL] = {
     val flatten = new PreparedFlattener(qb)
     new PreparedBlock(flatten.query, flatten.protocolVersion, options)
   }
@@ -387,26 +393,26 @@ sealed case class ConditionalQuery[
     P[_],
     F[_],
     Rev <: HList,
-    Reversed <: HList,
-    Out <: HList
+    RevModified <: HList,
+    QueryHL <: HList
   ]()(
     implicit session: Session,
     executor: ExecutionContextExecutor,
     keySpace: KeySpace,
     ev: PS =:!= HNil,
-    rev: Reverse.Aux[PS, Rev],
-    rev2: Reverse.Aux[ModifyPrepared, Reversed],
-    prepend: Prepend.Aux[Reversed, Rev, Out],
+    revWhere: Reverse.Aux[PS, Rev],
+    revModified: Reverse.Aux[ModifyPrepared, RevModified],
     fMonad: FutureMonad[F],
-    adapter: GuavaAdapter[F],
-    interface: PromiseInterface[P, F]
-  ): F[PreparedBlock[Out]] = {
+    interface: PromiseInterface[P, F],
+    prepender: Prepend.Aux[Rev, RevModified, QueryHL]
+  ): F[PreparedBlock[QueryHL]] = {
     val flatten = new PreparedFlattener(qb)
 
     flatten.async map { ps =>
-      new PreparedBlock[Out](ps, flatten.protocolVersion, options)
+      new PreparedBlock(ps, flatten.protocolVersion, options)
     }
   }
+
   override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options)
 }
 
