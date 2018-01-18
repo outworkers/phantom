@@ -19,13 +19,15 @@ import com.datastax.driver.core.exceptions.InvalidQueryException
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
+import com.outworkers.phantom.tables.bugs.SecondaryIndexItem
 import com.outworkers.util.samplers._
 
 class SecondaryIndexTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    val _ = database.secondaryIndexTable.create.ifNotExists().future.block(defaultScalaTimeout)
+    database.secondaryIndexTable.createSchema()
+    database.schemaBugSecondaryIndex.createSchema()
   }
 
   it should "allow fetching a record by its secondary index" in {
@@ -124,6 +126,21 @@ class SecondaryIndexTest extends PhantomSuite {
 
     whenReady(chain.failed) { r =>
       r shouldBe an [InvalidQueryException]
+    }
+  }
+
+
+  it should "automatically initialise Secondary Indexes" in {
+    val sample = gen[SecondaryIndexItem]
+
+    val chain = for {
+      _ <- database.schemaBugSecondaryIndex.store(sample).future()
+      res <- database.schemaBugSecondaryIndex.select.where(_.ref eqs sample.ref).one()
+    } yield res
+
+    whenReady(chain) { res =>
+      info("Querying by primary key should return the record")
+      res.value shouldEqual sample
     }
   }
 

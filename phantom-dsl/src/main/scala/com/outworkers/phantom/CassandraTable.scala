@@ -88,7 +88,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
 
   final def insert()(implicit keySpace: KeySpace): InsertQuery.Default[T, R] = InsertQuery(instance)
 
-  def sasiQueries()(implicit keySpace: KeySpace): QueryCollection[Seq] = {
+  def sasiQueries(implicit keySpace: KeySpace): QueryCollection[Seq] = {
     val queries = sasiIndexes.map { index =>
       ExecutableCqlQuery(QueryBuilder.Create.createSASIIndex(
         keySpace,

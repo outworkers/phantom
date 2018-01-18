@@ -18,6 +18,7 @@ package com.outworkers.phantom.builder.query
 import com.datastax.driver.core.{ConsistencyLevel, Session}
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder._
+import com.outworkers.phantom.builder.query.CreateQuery.DelegatedCreateQuery
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, QueryCollection}
 import com.outworkers.phantom.builder.query.options.{CachingStrategies, TablePropertyClause}
@@ -152,11 +153,21 @@ case class CreateQuery[
     })
   }
 
-  val queries = new QueryCollection[Seq](Seq(ExecutableCqlQuery(qb, options))) ++ indexList ++ table.sasiQueries
+  def delegate: DelegatedCreateQuery = DelegatedCreateQuery(
+    executable = ExecutableCqlQuery(qb, options),
+    indexList = indexList,
+    sasiIndexes = table.sasiQueries
+  )
 }
 
 object CreateQuery {
   type Default[T <: CassandraTable[T, _], R] = CreateQuery[T, R, Unspecified]
+
+  case class DelegatedCreateQuery(
+    executable: ExecutableCqlQuery,
+    indexList: QueryCollection[Seq],
+    sasiIndexes: QueryCollection[Seq]
+  )
 }
 
 private[phantom] trait CreateImplicits extends TablePropertyClauses {

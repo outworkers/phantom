@@ -17,25 +17,17 @@ package com.outworkers.phantom.tables.bugs
 
 import com.outworkers.phantom.dsl._
 
-abstract class SchemaBugSecondaryIndex extends Table[SchemaBugSecondaryIndex, Item] {
+abstract class SchemaBugSecondaryIndex extends Table[SchemaBugSecondaryIndex, SecondaryIndexItem] {
 
-  override def tableName: String = "items"
-
-  object id extends IntColumn with PartitionKey
-  object name extends Col[Name]
-  object ref extends DateTimeColumn with Index
+  object id extends UUIDColumn with PartitionKey
+  object name extends Col[String]
+  object ref extends Col[DateTime] with Index
   object date extends Col[DateTime]
 }
 
-case class Name(value: String)
-
-object Name {
-  implicit val namePrimitive: Primitive[Name] = Primitive.derive[Name, String](_.value)(Name.apply)
-}
-
-case class Item(
-  id: Int,
-  name: Name,
-  reference: DateTime,
+case class SecondaryIndexItem(
+  id: UUID,
+  name: String,
+  ref: DateTime,
   date: DateTime
 )

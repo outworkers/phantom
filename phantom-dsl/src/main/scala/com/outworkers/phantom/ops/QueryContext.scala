@@ -18,6 +18,7 @@ package com.outworkers.phantom.ops
 import com.datastax.driver.core.{Session, Statement}
 import com.outworkers.phantom.builder.batch.BatchQuery
 import com.outworkers.phantom.builder._
+import com.outworkers.phantom.builder.query.CreateQuery.DelegatedCreateQuery
 import com.outworkers.phantom.builder.query.execution._
 import com.outworkers.phantom.builder.query.prepared.{ExecutablePreparedQuery, ExecutablePreparedSelectQuery}
 import com.outworkers.phantom.builder.query._
@@ -164,6 +165,17 @@ abstract class QueryContext[P[_], F[_], Timeout](
     override def defaultTimeout: Timeout = outer.defaultTimeout
 
     override def await[T](f: F[T], timeout: Timeout): T = outer.blockAwait(f, timeout)
+
+    override def executeCreateQuery(query: DelegatedCreateQuery)(
+      implicit ctx: ExecutionContextExecutor,
+      session: Session
+    ): F[Seq[ResultSet]] = {
+      for {
+        tableCreationQuery <- adapter.fromGuava(query.executable)
+        secondaryIndexes <- new ExecutableStatements(query.indexList).future()
+        sasiIndexes <- new ExecutableStatements(query.sasiIndexes).future()
+      } yield Seq(tableCreationQuery) ++ secondaryIndexes ++ sasiIndexes
+    }
   }
 
   implicit class ExecutablePrepareQueryOps(query: ExecutablePreparedQuery) extends QueryInterface[F] {
@@ -280,7 +292,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
       for {
         tableCreationQuery <- adapter.fromGuava(modifier(ExecutableCqlQuery(query.qb, query.options).statement()))
         secondaryIndexes <- new ExecutableStatements(query.indexList).future()
-        sasiIndexes <- new ExecutableStatements(query.table.sasiQueries()).future()
+        sasiIndexes <- new ExecutableStatements(query.table.sasiQueries).future()
       } yield Seq(tableCreationQuery) ++ secondaryIndexes ++ sasiIndexes
     }
 
@@ -291,7 +303,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
       for {
         tableCreationQuery <- adapter.fromGuava(query.executableQuery)
         secondaryIndexes <- new ExecutableStatements(query.indexList).future()
-        sasiIndexes <- new ExecutableStatements(query.table.sasiQueries()).future()
+        sasiIndexes <- new ExecutableStatements(query.table.sasiQueries).future()
       } yield Seq(tableCreationQuery) ++ secondaryIndexes ++ sasiIndexes
     }
   }

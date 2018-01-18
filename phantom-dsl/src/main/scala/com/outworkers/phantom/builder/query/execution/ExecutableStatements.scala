@@ -56,16 +56,16 @@ trait GuavaAdapter[F[_]] {
   }
 }
 
-class ExecutableStatements[
-  F[_],
-  M[X] <: TraversableOnce[X]
-](val queryCol: QueryCollection[M])(
-  implicit fMonad: FutureMonad[F],
-  adapter: GuavaAdapter[F]
-) {
-  def sequencedTraverse[A, B](in: M[A])(fn: A => F[B])(
+object ExecutionHelper {
+  def sequencedTraverse[
+    F[_],
+    M[X] <: TraversableOnce[X],
+    A,
+    B
+  ](in: M[A])(fn: A => F[B])(
     implicit cbf: CanBuildFrom[M[A], B, M[B]],
-    ctx: ExecutionContextExecutor
+    ctx: ExecutionContextExecutor,
+    fMonad: FutureMonad[F]
   ): F[M[B]] = {
     in.foldLeft(fMonad.pure(cbf())) { (fr, a) =>
       for (r <- fr; b <- fn(a)) yield r += b
@@ -80,12 +80,25 @@ class ExecutableStatements[
     * @param in        the `TraversableOnce` of Futures which will be sequenced
     * @return          the `Future` of the `TraversableOnce` of results
     */
-  def parallel[A](in: M[F[A]])(
+  def parallel[
+    F[_],
+    M[X] <: TraversableOnce[X],
+    A](in: M[F[A]])(
     implicit cbf: CanBuildFrom[M[F[A]], A, M[A]],
+    fMonad: FutureMonad[F],
     ctx: ExecutionContextExecutor
   ): F[M[A]] = {
     (fMonad.pure(cbf()) /: in) { (fr, fa) => fr.zipWith(fa)(_ += _) }.map(_.result())
   }
+}
+
+class ExecutableStatements[
+  F[_],
+  M[X] <: TraversableOnce[X]
+](val queryCol: QueryCollection[M])(
+  implicit fMonad: FutureMonad[F],
+  adapter: GuavaAdapter[F]
+) {
 
   /**
     * Method that will execute the queries in the underlying collection in parallel.
@@ -112,7 +125,7 @@ class ExecutableStatements[
       builder += adapter.fromGuava(q)
     }
 
-    parallel(builder.result())(ebf, ec)
+    ExecutionHelper.parallel(builder.result())(ebf, fMonad, ec)
   }
 
   def sequence()(
@@ -120,7 +133,7 @@ class ExecutableStatements[
     ec: ExecutionContextExecutor,
     cbf: CanBuildFrom[M[ExecutableCqlQuery], ResultSet, M[ResultSet]]
   ): F[M[ResultSet]] = {
-    sequencedTraverse(queryCol.queries) { query =>
+    ExecutionHelper.sequencedTraverse(queryCol.queries) { query =>
       Manager.logger.info(s"Executing query: ${query.qb.queryString}")
       adapter.fromGuava(query)
     }

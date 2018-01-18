@@ -170,7 +170,32 @@ class PreparedUpdateQueryTest extends PhantomSuite {
     }
   }
 
-  it should "correctly chain type parameters in prepared update clauses" in {
+  it should "correctly chain type parameters in conditional non-async prepared update clauses" in {
+    val sample = gen[VerizonRecord].copy(isDeleted = true)
+    val sample2 = gen[VerizonRecord].copy(isDeleted = true)
+
+    val bindable = db.verizonSchema.update
+      .where(_.uid eqs ?)
+      .modify(_.isdeleted setTo ?)
+      .ifExists
+      .consistencyLevel_=(ConsistencyLevel.LOCAL_QUORUM)
+      .prepare()
+
+    val chain = for {
+      insert <- db.verizonSchema.storeRecord(sample)
+      insert2 <- db.verizonSchema.storeRecord(sample2)
+      updated <- bindable.bind(sample.uid, false).future()
+      res <- db.verizonSchema.select.where(_.uid eqs sample.uid).one()
+    } yield (updated, res)
+
+    whenReady(chain) { case (updated, res) =>
+      Console.println(updated.wasApplied())
+      res shouldBe defined
+      res.value.isDeleted shouldBe false
+    }
+  }
+
+  it should "correctly chain type parameters in conditional async prepared update clauses" in {
     val sample = gen[VerizonRecord].copy(isDeleted = true)
     val sample2 = gen[VerizonRecord].copy(isDeleted = true)
 
@@ -179,9 +204,11 @@ class PreparedUpdateQueryTest extends PhantomSuite {
       insert2 <- db.verizonSchema.storeRecord(sample2)
       updated <- db.verizonSchema.updateDeleteStatus.flatMap(_.bind(sample.uid, false).future())
       res <- db.verizonSchema.select.where(_.uid eqs sample.uid).one()
-    } yield res
+    } yield (updated, res)
 
-    whenReady(chain) { res =>
+    whenReady(chain) { case (updated, res) =>
+
+
       res shouldBe defined
       res.value.isDeleted shouldBe false
     }
