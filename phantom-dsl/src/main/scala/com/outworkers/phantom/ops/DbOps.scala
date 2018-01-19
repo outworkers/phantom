@@ -33,20 +33,6 @@ abstract class DbOps[
 
   import db._
 
-  def executeCreateQuery(query: DelegatedCreateQuery)(
-    implicit ctx: ExecutionContextExecutor,
-    session: Session
-  ): F[Seq[ResultSet]] = {
-
-    implicit val adapter: GuavaAdapter[F] = interface.adapter
-
-    for {
-      tableCreationQuery <- adapter.fromGuava(query.executable)
-      secondaryIndexes <- new ExecutableStatements(query.indexList).future()
-      sasiIndexes <- new ExecutableStatements(query.sasiIndexes).future()
-    } yield Seq(tableCreationQuery) ++ secondaryIndexes ++ sasiIndexes
-  }
-
   def execute[M[X] <: TraversableOnce[X]](col: QueryCollection[M])(
     implicit cbf: CanBuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]]
   ): ExecutableStatements[F, M]
@@ -76,7 +62,9 @@ abstract class DbOps[
   def createAsync()(
     implicit ex: ExecutionContextExecutor
   ): F[Seq[Seq[ResultSet]]] = {
-    ExecutionHelper.sequencedTraverse(tables.map(_.create.ifNotExists().delegate))(executeCreateQuery)
+    ExecutionHelper.sequencedTraverse(tables.map(_.create.ifNotExists().delegate)) { query =>
+      QueryContext.create(query)
+    }
   }
 
   /**

@@ -23,13 +23,11 @@ import com.outworkers.util.samplers._
 import com.outworkers.phantom.dsl._
 import org.scalacheck.Gen
 
-import scala.concurrent.Future
-
 class TimeUuidTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.timeuuidTable.createSchema()
+    val _ = database.timeuuidTable.createSchema()
   }
 
   it should "be able to store and retrieve a time slice of records based on a combination of minTimeuuid and maxTimeuuid" in {
@@ -106,7 +104,6 @@ class TimeUuidTest extends PhantomSuite {
 
     val intervalOffset = 60
     val now = DateTime.now(DateTimeZone.UTC)
-    val start = now.plusSeconds(-intervalOffset)
     val user = UUIDs.random()
 
     // I will repent for my sins in the future, I'm sorry Ben.

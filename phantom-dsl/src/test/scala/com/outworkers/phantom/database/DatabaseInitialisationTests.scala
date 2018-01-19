@@ -26,8 +26,6 @@ class DatabaseInitialisationTests extends FlatSpec
   with PhantomBaseSuite
   with SecondaryIndexOnlyDatabase.connector.Connector {
 
-  Console.println(space)
-
   val specialDb = SecondaryIndexOnlyDatabase
 
   override def beforeAll(): Unit = {

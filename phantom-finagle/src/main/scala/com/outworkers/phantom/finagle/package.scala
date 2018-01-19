@@ -97,8 +97,7 @@ package object finagle extends TwitterQueryContext with DefaultImports {
       * @return
       */
     def fetchSpool()(
-      implicit session: Session,
-      keySpace: KeySpace
+      implicit session: Session
     ): Future[Spool[Seq[Record]]] = {
       query.future() flatMap { rs =>
         ResultSpool.spool(rs).map(spool => spool.map(_.map(query.fromRow)))
@@ -221,9 +220,7 @@ package object finagle extends TwitterQueryContext with DefaultImports {
   }
 
   implicit class ExecuteQueries[M[X] <: TraversableOnce[X]](val qc: QueryCollection[M]) extends AnyVal {
-    def executable()(
-      implicit ctx: ExecutionContextExecutor
-    ): ExecutableStatements[Future, M] = new ExecutableStatements[Future, M](qc)
+    def executable(): ExecutableStatements[Future, M] = new ExecutableStatements[Future, M](qc)
 
     def future()(
       implicit session: Session,

@@ -38,10 +38,10 @@ trait GuavaAdapter[F[_]] {
     implicit executor: ExecutionContextExecutor
   ): F[T]
 
-  def fromGuava(in: ExecutableCqlQuery)(
+  def fromGuava(in: ExecutableCqlQuery, modifier: Option[Statement => Statement] = None)(
     implicit session: Session,
     ctx: ExecutionContextExecutor
-  ): F[ResultSet] = fromGuava(in.statement())
+  ): F[ResultSet] = fromGuava(modifier.getOrElse(identity[Statement] _).apply(in.statement()))
 
   def fromGuava(in: Statement)(
     implicit session: Session,

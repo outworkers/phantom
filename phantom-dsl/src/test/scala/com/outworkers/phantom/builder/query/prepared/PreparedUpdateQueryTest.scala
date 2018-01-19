@@ -51,8 +51,6 @@ class PreparedUpdateQueryTest extends PhantomSuite {
       get2 <- database.recipes.select.where(_.url eqs recipe.url).one()
     } yield (get, get2)
 
-    Await.result(chain, 20.seconds)
-
     whenReady(chain) { case (initial, afterUpdate) =>
 
       initial shouldBe defined
@@ -207,8 +205,6 @@ class PreparedUpdateQueryTest extends PhantomSuite {
     } yield (updated, res)
 
     whenReady(chain) { case (updated, res) =>
-
-
       res shouldBe defined
       res.value.isDeleted shouldBe false
     }
