@@ -18,24 +18,34 @@ package com.outworkers.phantom.ops
 import com.datastax.driver.core.Session
 import com.outworkers.phantom.ResultSet
 import com.outworkers.phantom.builder.query.CreateQuery.DelegatedCreateQuery
-import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, ExecutableStatements, ExecutionHelper, FutureMonad, QueryCollection}
+import com.outworkers.phantom.builder.query.execution._
 import com.outworkers.phantom.database.Database
 
 import scala.collection.generic.CanBuildFrom
 import scala.concurrent.ExecutionContextExecutor
 
 abstract class DbOps[
+  P[_],
   F[_] : FutureMonad,
   DB <: Database[DB],
   Timeout
-](val db: Database[DB]) {
+](val db: Database[DB])(implicit interface: PromiseInterface[P, F]) {
 
   import db._
 
   def executeCreateQuery(query: DelegatedCreateQuery)(
     implicit ctx: ExecutionContextExecutor,
     session: Session
-  ): F[Seq[ResultSet]]
+  ): F[Seq[ResultSet]] = {
+
+    implicit val adapter: GuavaAdapter[F] = interface.adapter
+
+    for {
+      tableCreationQuery <- adapter.fromGuava(query.executable)
+      secondaryIndexes <- new ExecutableStatements(query.indexList).future()
+      sasiIndexes <- new ExecutableStatements(query.sasiIndexes).future()
+    } yield Seq(tableCreationQuery) ++ secondaryIndexes ++ sasiIndexes
+  }
 
   def execute[M[X] <: TraversableOnce[X]](col: QueryCollection[M])(
     implicit cbf: CanBuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]]

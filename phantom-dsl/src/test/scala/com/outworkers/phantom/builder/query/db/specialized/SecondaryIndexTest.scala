@@ -20,14 +20,17 @@ import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
 import com.outworkers.phantom.tables.bugs.SecondaryIndexItem
+import com.outworkers.phantom.tables.dbs.SecondaryIndexOnlyDatabase
 import com.outworkers.util.samplers._
 
 class SecondaryIndexTest extends PhantomSuite {
 
+  val specialDb = SecondaryIndexOnlyDatabase
+
   override def beforeAll(): Unit = {
     super.beforeAll()
     database.secondaryIndexTable.createSchema()
-    database.schemaBugSecondaryIndex.createSchema()
+    specialDb.create()
   }
 
   it should "allow fetching a record by its secondary index" in {
@@ -134,8 +137,8 @@ class SecondaryIndexTest extends PhantomSuite {
     val sample = gen[SecondaryIndexItem]
 
     val chain = for {
-      _ <- database.schemaBugSecondaryIndex.store(sample).future()
-      res <- database.schemaBugSecondaryIndex.select.where(_.ref eqs sample.ref).one()
+      _ <- specialDb.schemaBugSecondaryIndex.store(sample).future()
+      res <- specialDb.schemaBugSecondaryIndex.select.where(_.ref eqs sample.ref).one()
     } yield res
 
     whenReady(chain) { res =>

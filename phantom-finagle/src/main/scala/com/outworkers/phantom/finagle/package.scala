@@ -244,27 +244,4 @@ package object finagle extends TwitterQueryContext with DefaultImports {
       ebf: CanBuildFrom[M[Future[ResultSet]], ResultSet, M[ResultSet]]
     ): Future[M[ResultSet]] = executable().future()
   }
-
-  implicit class FinagleDbOps[DB <: Database[DB]](
-    override val db: Database[DB]
-  ) extends DbOps[Future, DB, TwitterDuration](db) {
-    override def execute[M[X] <: TraversableOnce[X]](col: QueryCollection[M])(
-      implicit cbf: CanBuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]]
-    ): ExecutableStatements[Future, M] = new ExecutableStatements[Future, M](col)
-
-    override def defaultTimeout: TwitterDuration = 10.seconds
-
-    override def await[T](f: Future[T], timeout: TwitterDuration): T = Await.result(f, timeout)
-
-    override def executeCreateQuery(query: DelegatedCreateQuery)(
-      implicit ctx: ExecutionContextExecutor,
-      session: Session
-    ): Future[Seq[ResultSet]] = {
-      for {
-        tableCreationQuery <- adapter.fromGuava(query.executable)
-        secondaryIndexes <- new ExecutableStatements(query.indexList).future()
-        sasiIndexes <- new ExecutableStatements(query.sasiIndexes).future()
-      } yield Seq(tableCreationQuery) ++ secondaryIndexes ++ sasiIndexes
-    }
-  }
 }

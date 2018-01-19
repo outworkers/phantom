@@ -18,7 +18,6 @@ package com.outworkers.phantom.ops
 import com.datastax.driver.core.{Session, Statement}
 import com.outworkers.phantom.builder.batch.BatchQuery
 import com.outworkers.phantom.builder._
-import com.outworkers.phantom.builder.query.CreateQuery.DelegatedCreateQuery
 import com.outworkers.phantom.builder.query.execution._
 import com.outworkers.phantom.builder.query.prepared.{ExecutablePreparedQuery, ExecutablePreparedSelectQuery}
 import com.outworkers.phantom.builder.query._
@@ -152,10 +151,9 @@ abstract class QueryContext[P[_], F[_], Timeout](
     override def executableQuery: ExecutableCqlQuery = query.executableQuery
   }
 
-
   implicit class DatabaseOperation[DB <: Database[DB]](
     override val db: Database[DB]
-  ) extends DbOps[F, DB, Timeout](db) {
+  ) extends DbOps[P, F, DB, Timeout](db) {
     override def execute[M[X] <: TraversableOnce[X]](col: QueryCollection[M])(
       implicit cbf: CanBuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]]
     ): ExecutableStatements[F, M] = {
@@ -165,17 +163,6 @@ abstract class QueryContext[P[_], F[_], Timeout](
     override def defaultTimeout: Timeout = outer.defaultTimeout
 
     override def await[T](f: F[T], timeout: Timeout): T = outer.blockAwait(f, timeout)
-
-    override def executeCreateQuery(query: DelegatedCreateQuery)(
-      implicit ctx: ExecutionContextExecutor,
-      session: Session
-    ): F[Seq[ResultSet]] = {
-      for {
-        tableCreationQuery <- adapter.fromGuava(query.executable)
-        secondaryIndexes <- new ExecutableStatements(query.indexList).future()
-        sasiIndexes <- new ExecutableStatements(query.sasiIndexes).future()
-      } yield Seq(tableCreationQuery) ++ secondaryIndexes ++ sasiIndexes
-    }
   }
 
   implicit class ExecutablePrepareQueryOps(query: ExecutablePreparedQuery) extends QueryInterface[F] {

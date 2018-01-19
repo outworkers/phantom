@@ -19,6 +19,7 @@ import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
 import com.outworkers.util.samplers._
+import org.scalatest.Assertion
 
 import scala.concurrent.Future
 
@@ -138,7 +139,7 @@ class TimeSeriesTest extends PhantomSuite {
     verifyResults(chain, records.reverse.take(limit))
   }
 
-  def verifyResults(futureResults: Future[Seq[TimeSeriesRecord]], expected: Seq[TimeSeriesRecord]): Unit = {
+  def verifyResults(futureResults: Future[Seq[TimeSeriesRecord]], expected: Seq[TimeSeriesRecord]): Assertion = {
     whenReady(futureResults) { results =>
       results should contain theSameElementsAs expected
     }

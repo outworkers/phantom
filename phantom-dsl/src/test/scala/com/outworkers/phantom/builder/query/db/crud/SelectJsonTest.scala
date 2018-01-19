@@ -27,7 +27,7 @@ import shapeless.syntax.std.tuple._
 class SelectJsonTest extends PhantomSuite {
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.primitives.createSchema()
+    val _ = database.primitives.createSchema()
   }
 
   "A JSON selection clause" should "select an entire row as JSON" in {
