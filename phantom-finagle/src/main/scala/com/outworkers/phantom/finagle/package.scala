@@ -17,10 +17,16 @@ package com.outworkers.phantom
 
 import com.datastax.driver.core.Statement
 import com.outworkers.phantom.builder._
+import com.outworkers.phantom.builder.query.CreateQuery.DelegatedCreateQuery
 import com.outworkers.phantom.builder.query._
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.execution._
-import com.outworkers.phantom.builder.query.options.{CompressionStrategy, GcGraceSecondsBuilder, TablePropertyClause, TimeToLiveBuilder}
+import com.outworkers.phantom.builder.query.options.{
+  CompressionStrategy,
+  GcGraceSecondsBuilder,
+  TablePropertyClause,
+  TimeToLiveBuilder
+}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.finagle.execution.{TwitterFutureImplicits, TwitterQueryContext}
 import com.outworkers.phantom.ops.DbOps
@@ -84,7 +90,8 @@ package object finagle extends TwitterQueryContext with DefaultImports {
       * @return
       */
     def fetchSpool(modifier: Statement => Statement)(
-      implicit session: Session
+      implicit session: Session,
+      ctx: ExecutionContextExecutor
     ): Future[Spool[Seq[Record]]] = {
       query.future(modifier) flatMap { rs =>
         ResultSpool.spool(rs).map(spool => spool.map(_.map(query.fromRow)))
@@ -100,7 +107,8 @@ package object finagle extends TwitterQueryContext with DefaultImports {
       */
     def fetchSpool()(
       implicit session: Session,
-      keySpace: KeySpace
+      keySpace: KeySpace,
+      ctx: ExecutionContextExecutor
     ): Future[Spool[Seq[Record]]] = {
       query.future() flatMap { rs =>
         ResultSpool.spool(rs).map(spool => spool.map(_.map(query.fromRow)))
@@ -123,7 +131,8 @@ package object finagle extends TwitterQueryContext with DefaultImports {
       */
     def fetchSpool(modifier: Statement => Statement)(
       implicit session: Session,
-      keySpace: KeySpace
+      keySpace: KeySpace,
+      ctx: ExecutionContextExecutor
     ): Future[Spool[Seq[R]]] = {
       block.all().future(modifier) flatMap { rs =>
         ResultSpool.spool(rs).map(spool => spool.map(_.map(block.all.fromRow)))
@@ -139,7 +148,8 @@ package object finagle extends TwitterQueryContext with DefaultImports {
       */
     def fetchSpool()(
       implicit session: Session,
-      keySpace: KeySpace
+      keySpace: KeySpace,
+      ctx: ExecutionContextExecutor
     ): Future[Spool[Seq[R]]] = {
       block.all().future() flatMap { rs =>
         ResultSpool.spool(rs).map(spool => spool.map(_.map(block.all.fromRow)))
@@ -227,22 +237,34 @@ package object finagle extends TwitterQueryContext with DefaultImports {
       implicit ctx: ExecutionContextExecutor
     ): ExecutableStatements[Future, M] = new ExecutableStatements[Future, M](qc)
 
-    def future()(implicit session: Session,
+    def future()(
+      implicit session: Session,
+      ctx: ExecutionContextExecutor,
       fbf: CanBuildFrom[M[Future[ResultSet]], Future[ResultSet], M[Future[ResultSet]]],
       ebf: CanBuildFrom[M[Future[ResultSet]], ResultSet, M[ResultSet]]
     ): Future[M[ResultSet]] = executable().future()
   }
 
-  implicit def dbToOps[DB <: Database[DB]](db: Database[DB]): DbOps[Future, DB, TwitterDuration] = {
-    new DbOps[Future, DB, TwitterDuration](db) {
+  implicit class FinagleDbOps[DB <: Database[DB]](
+    override val db: Database[DB]
+  ) extends DbOps[Future, DB, TwitterDuration](db) {
+    override def execute[M[X] <: TraversableOnce[X]](col: QueryCollection[M])(
+      implicit cbf: CanBuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]]
+    ): ExecutableStatements[Future, M] = new ExecutableStatements[Future, M](col)
 
-      override def execute[M[X] <: TraversableOnce[X]](col: QueryCollection[M])(
-        implicit cbf: CanBuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]]
-      ): ExecutableStatements[Future, M] = new ExecutableStatements[Future, M](col)
+    override def defaultTimeout: TwitterDuration = 10.seconds
 
-      override def defaultTimeout: TwitterDuration = 10.seconds
+    override def await[T](f: Future[T], timeout: TwitterDuration): T = Await.result(f, timeout)
 
-      override def await[T](f: Future[T], timeout: TwitterDuration): T = Await.result(f, timeout)
+    override def executeCreateQuery(query: DelegatedCreateQuery)(
+      implicit ctx: ExecutionContextExecutor,
+      session: Session
+    ): Future[Seq[ResultSet]] = {
+      for {
+        tableCreationQuery <- adapter.fromGuava(query.executable)
+        secondaryIndexes <- new ExecutableStatements(query.indexList).future()
+        sasiIndexes <- new ExecutableStatements(query.sasiIndexes).future()
+      } yield Seq(tableCreationQuery) ++ secondaryIndexes ++ sasiIndexes
     }
   }
 }

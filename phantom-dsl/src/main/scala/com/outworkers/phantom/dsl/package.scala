@@ -20,11 +20,13 @@ import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.execution._
 
 import scala.collection.generic.CanBuildFrom
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContextExecutor, Future}
 
 package object dsl extends ScalaQueryContext with DefaultImports {
 
   implicit val futureMonad: FutureMonad[Future] = ScalaFutureImplicits.monadInstance
+
+  implicit val context: ExecutionContextExecutor = Manager.scalaExecutor
 
   implicit class ExecuteQueries[M[X] <: TraversableOnce[X]](val qc: QueryCollection[M]) extends AnyVal {
     def executable(): ExecutableStatements[Future, M] = {

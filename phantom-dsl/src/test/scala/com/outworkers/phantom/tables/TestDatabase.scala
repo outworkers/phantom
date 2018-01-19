@@ -110,6 +110,10 @@ class TestDatabase(
   object schemaBugSecondaryIndex extends SchemaBugSecondaryIndex with Connector
 }
 
+class SecondaryIndexOnlyDatabase(
+  override val connector: CassandraConnection
+) extends Database[SecondaryIndexOnlyDatabase](connector)
+
 object Connector {
   val default: CassandraConnection = connectors.ContactPoint.local
     .withClusterBuilder(_.withSocketOptions(
@@ -122,6 +126,19 @@ object Connector {
         replication eqs SimpleStrategy.replication_factor(1)
       )
     )
+
+  val specialTests = connectors.ContactPoint.local
+    .withClusterBuilder(_.withSocketOptions(
+      new SocketOptions()
+        .setConnectTimeoutMillis(20000)
+        .setReadTimeoutMillis(20000)
+    )
+    ).noHeartbeat().keySpace(
+    KeySpace("phantom_special").ifNotExists().`with`(
+      replication eqs SimpleStrategy.replication_factor(1)
+    )
+  )
+
 }
 
 object TestDatabase extends TestDatabase(Connector.default)

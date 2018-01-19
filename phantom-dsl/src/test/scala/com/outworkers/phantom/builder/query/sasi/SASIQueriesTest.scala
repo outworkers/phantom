@@ -22,12 +22,12 @@ class SASIQueriesTest extends PhantomSuite {
 
   it should "automatically find SASI indexed columns " in {
     val sasiColumns = database.sasiIndexedArticles.sasiIndexes
-    database.sasiIndexedArticles.sasiQueries().queries.size shouldEqual 1
+    database.sasiIndexedArticles.sasiQueries.queries.size shouldEqual 1
     sasiColumns.exists(_.name == database.sasiIndexedArticles.orderId.name) shouldEqual true
   }
 
   it should "generate a correct query for a SASI index" in {
-    val queries = database.sasiIndexedArticles.sasiQueries().queries
+    val queries = database.sasiIndexedArticles.sasiQueries.queries
     queries.size shouldEqual 1
 
     val qs = queries.headOption.value.qb.queryString
@@ -39,7 +39,7 @@ class SASIQueriesTest extends PhantomSuite {
 
 
   it should "automatically find multiple SASI indexed columns " in {
-    database.multiSasiTable.sasiQueries().queries.size shouldEqual 3
+    database.multiSasiTable.sasiQueries.queries.size shouldEqual 3
   }
 
   it should "allow using a prefix clause on a Mode.Contains Text column" in {
