@@ -426,4 +426,6 @@ trait DefaultImports extends ImplicitMechanism
       )
     }
   }
+
+  implicit val context: ExecutionContextExecutor = Manager.scalaExecutor
 }

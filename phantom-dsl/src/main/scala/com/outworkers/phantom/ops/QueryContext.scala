@@ -300,7 +300,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
     def createSchema(timeout: Timeout = defaultTimeout)(
       implicit session: Session,
       keySpace: KeySpace,
-      ec: ExecutionContextExecutor
+      ctx: ExecutionContextExecutor
     ): Seq[ResultSet] = {
       blockAwait(table.autocreate(keySpace).future(), timeout)
     }

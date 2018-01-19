@@ -26,8 +26,6 @@ package object dsl extends ScalaQueryContext with DefaultImports {
 
   implicit val futureMonad: FutureMonad[Future] = ScalaFutureImplicits.monadInstance
 
-  implicit val context: ExecutionContextExecutor = Manager.scalaExecutor
-
   implicit class ExecuteQueries[M[X] <: TraversableOnce[X]](val qc: QueryCollection[M]) extends AnyVal {
     def executable(): ExecutableStatements[Future, M] = {
       new ExecutableStatements[Future, M](qc)(futureMonad, promiseInterface.adapter)
