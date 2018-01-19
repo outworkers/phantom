@@ -55,7 +55,7 @@ trait StreamTest extends FlatSpec with BeforeAndAfterAll
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    StreamDatabase.create()
+    val _ = StreamDatabase.create()
   }
 
   override def afterAll(): Unit = {
