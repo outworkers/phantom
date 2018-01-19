@@ -20,9 +20,10 @@ import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.execution._
 
 import scala.collection.generic.CanBuildFrom
-import scala.concurrent.{ExecutionContextExecutor, Future}
 
 package object dsl extends ScalaQueryContext with DefaultImports {
+
+  type Future[T] = scala.concurrent.Future[T]
 
   implicit val futureMonad: FutureMonad[Future] = ScalaFutureImplicits.monadInstance
 

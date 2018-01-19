@@ -21,10 +21,6 @@ import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.bugs.VerizonRecord
 import com.outworkers.util.samplers._
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
-import com.outworkers.phantom.macros.debug.Options.ShowBoundStatements
-
 class PreparedUpdateQueryTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
@@ -116,20 +112,18 @@ class PreparedUpdateQueryTest extends PhantomSuite {
       get2 <- database.recipes.select.where(_.url eqs recipe.url).one()
     } yield (get, get2)
 
-    whenReady(chain) {
-      case (initial, afterUpdate) => {
-        initial shouldBe defined
-        initial.value shouldEqual recipe
+    whenReady(chain) { case (initial, afterUpdate) =>
+      initial shouldBe defined
+      initial.value shouldEqual recipe
 
-        afterUpdate shouldBe defined
-        afterUpdate.value.url shouldEqual recipe.url
-        afterUpdate.value.props shouldEqual recipe.props
-        afterUpdate.value.ingredients shouldEqual recipe.ingredients
-        afterUpdate.value.servings shouldEqual recipe.servings
-        afterUpdate.value.lastCheckedAt shouldEqual recipe.lastCheckedAt
-        afterUpdate.value.uid shouldEqual updatedUid
-        afterUpdate.value.description shouldEqual updated
-      }
+      afterUpdate shouldBe defined
+      afterUpdate.value.url shouldEqual recipe.url
+      afterUpdate.value.props shouldEqual recipe.props
+      afterUpdate.value.ingredients shouldEqual recipe.ingredients
+      afterUpdate.value.servings shouldEqual recipe.servings
+      afterUpdate.value.lastCheckedAt shouldEqual recipe.lastCheckedAt
+      afterUpdate.value.uid shouldEqual updatedUid
+      afterUpdate.value.description shouldEqual updated
     }
   }
 
@@ -147,6 +141,7 @@ class PreparedUpdateQueryTest extends PhantomSuite {
         .modify(_.description setTo ?)
         .and(_.uid setTo ?)
         .prepareAsync()
+
       store <- database.recipes.store(recipe).future()
       get <- database.recipes.select.where(_.url eqs recipe.url).one()
       update <- query.bind(updated, updatedUid, recipe.url).future()
@@ -182,12 +177,11 @@ class PreparedUpdateQueryTest extends PhantomSuite {
     val chain = for {
       insert <- db.verizonSchema.storeRecord(sample)
       insert2 <- db.verizonSchema.storeRecord(sample2)
-      updated <- bindable.bind(sample.uid, false).future()
+      updated <- bindable.bind(false, sample.uid).future()
       res <- db.verizonSchema.select.where(_.uid eqs sample.uid).one()
     } yield (updated, res)
 
     whenReady(chain) { case (updated, res) =>
-      Console.println(updated.wasApplied())
       res shouldBe defined
       res.value.isDeleted shouldBe false
     }
@@ -200,7 +194,7 @@ class PreparedUpdateQueryTest extends PhantomSuite {
     val chain = for {
       insert <- db.verizonSchema.storeRecord(sample)
       insert2 <- db.verizonSchema.storeRecord(sample2)
-      updated <- db.verizonSchema.updateDeleteStatus.flatMap(_.bind(sample.uid, false).future())
+      updated <- db.verizonSchema.updateDeleteStatus.flatMap(_.bind(false, sample.uid).future())
       res <- db.verizonSchema.select.where(_.uid eqs sample.uid).one()
     } yield (updated, res)
 

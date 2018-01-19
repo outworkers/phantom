@@ -84,7 +84,7 @@ object Publishing {
   val releaseSettings = Seq(
     releaseTutFolder in ThisBuild := baseDirectory.value / "docs",
     releaseIgnoreUntrackedFiles := true,
-    releaseVersionBump := sbtrelease.Version.Bump.Bugfix,
+    releaseVersionBump := sbtrelease.Version.Bump.Minor,
     releaseTagComment := s"Releasing ${(version in ThisBuild).value} $ciSkipSequence",
     releaseCommitMessage := s"Setting version to ${(version in ThisBuild).value} $ciSkipSequence",
     releaseProcess := Seq[ReleaseStep](

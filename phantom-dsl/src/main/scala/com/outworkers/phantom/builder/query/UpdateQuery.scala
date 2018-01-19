@@ -383,7 +383,7 @@ sealed case class ConditionalQuery[
     ev: PS =:!= HNil,
     rev: Reverse.Aux[PS, Rev],
     revModified: Reverse.Aux[ModifyPrepared, RevModified],
-    prepender: Prepend.Aux[Rev, RevModified, QueryHL]
+    prepender: Prepend.Aux[RevModified, Rev, QueryHL]
   ): PreparedBlock[QueryHL] = {
     val flatten = new PreparedFlattener(qb)
     new PreparedBlock(flatten.query, flatten.protocolVersion, options)
@@ -404,7 +404,7 @@ sealed case class ConditionalQuery[
     revModified: Reverse.Aux[ModifyPrepared, RevModified],
     fMonad: FutureMonad[F],
     interface: PromiseInterface[P, F],
-    prepender: Prepend.Aux[Rev, RevModified, QueryHL]
+    prepender: Prepend.Aux[RevModified, Rev, QueryHL]
   ): F[PreparedBlock[QueryHL]] = {
     val flatten = new PreparedFlattener(qb)
 

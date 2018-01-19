@@ -17,6 +17,8 @@ package com.outworkers.phantom.tables.bugs
 
 import com.outworkers.phantom.dsl._
 
+import scala.concurrent.Future
+
 case class VerizonRecord(
   uid: String,
   name: String,
@@ -45,6 +47,15 @@ abstract class VerizonSchema extends Table[VerizonSchema, VerizonRecord] {
   object lastupdated extends LongColumn
 
   object isdeleted extends BooleanColumn with Index
+
+  def updateStatus(uid: String, status: Boolean): Future[ResultSet] = {
+    update
+      .where(_.uid eqs uid)
+      .modify(_.isdeleted setTo status)
+      .ifExists
+      .consistencyLevel_=(ConsistencyLevel.LOCAL_QUORUM)
+      .future()
+  }
 
   lazy val updateDeleteStatus = update
     .where(_.uid eqs ?)
