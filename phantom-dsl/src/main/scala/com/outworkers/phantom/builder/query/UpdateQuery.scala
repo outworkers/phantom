@@ -59,32 +59,6 @@ case class UpdateQuery[
     P <: HList
   ] = UpdateQuery[T, R, L, O, S, C, P]
 
-  def prepare[Rev <: HList]()(
-    implicit session: Session,
-    keySpace: KeySpace,
-    ev: PS =:!= HNil,
-    rev: Reverse.Aux[PS, Rev]
-  ): PreparedBlock[Rev] = {
-    val flatten = new PreparedFlattener(qb)
-    new PreparedBlock(flatten.query, flatten.protocolVersion, options)
-  }
-
-  def prepareAsync[P[_], F[_], Rev <: HList]()(
-    implicit session: Session,
-    executor: ExecutionContextExecutor,
-    keySpace: KeySpace,
-    ev: PS =:!= HNil,
-    rev: Reverse.Aux[PS, Rev],
-    fMonad: FutureMonad[F],
-    interface: PromiseInterface[P, F]
-  ): F[PreparedBlock[Rev]] = {
-    val flatten = new PreparedFlattener(qb)
-
-    flatten.async map { ps =>
-      new PreparedBlock(ps, flatten.protocolVersion, options)
-    }
-  }
-
   protected[this] def create[
     T <: CassandraTable[T, _],
     R,
@@ -244,16 +218,16 @@ sealed case class AssignmentsQuery[
   }
 
   def prepare[
-    Rev <: HList,
-    Reversed <: HList,
+    RevSet <: HList,
+    RevModified <: HList,
     Out <: HList
   ]()(
     implicit session: Session,
     keySpace: KeySpace,
     ev: PS =:!= HNil,
-    rev: Reverse.Aux[PS, Rev],
-    rev2: Reverse.Aux[ModifyPrepared, Reversed],
-    prepend: Prepend.Aux[Reversed, Rev, Out]
+    rev: Reverse.Aux[PS, RevSet],
+    rev2: Reverse.Aux[ModifyPrepared, RevModified],
+    prepend: Prepend.Aux[RevModified, RevSet, Out]
   ): PreparedBlock[Out] = {
     val flatten = new PreparedFlattener(qb)
     new PreparedBlock[Out](flatten.query, flatten.protocolVersion, options)
@@ -262,17 +236,17 @@ sealed case class AssignmentsQuery[
   def prepareAsync[
     P[_],
     F[_],
-    Rev <: HList,
-    Reversed <: HList,
+    RevWhere <: HList,
+    RevSet <: HList,
     Out <: HList
   ]()(
     implicit session: Session,
     executor: ExecutionContextExecutor,
     keySpace: KeySpace,
     ev: PS =:!= HNil,
-    rev: Reverse.Aux[PS, Rev],
-    rev2: Reverse.Aux[ModifyPrepared, Reversed],
-    prepend: Prepend.Aux[Reversed, Rev, Out],
+    rev: Reverse.Aux[PS, RevWhere],
+    rev2: Reverse.Aux[ModifyPrepared, RevSet],
+    prepend: Prepend.Aux[RevSet, RevWhere, Out],
     fMonad: FutureMonad[F],
     adapter: GuavaAdapter[F],
     interface: PromiseInterface[P, F]
@@ -374,16 +348,16 @@ sealed case class ConditionalQuery[
   }
 
   def prepare[
-    Rev <: HList,
-    RevModified <: HList,
+    RevWhere <: HList,
+    RevSet <: HList,
     QueryHL <: HList
   ]()(
     implicit session: Session,
     keySpace: KeySpace,
     ev: PS =:!= HNil,
-    rev: Reverse.Aux[PS, Rev],
-    revModified: Reverse.Aux[ModifyPrepared, RevModified],
-    prepender: Prepend.Aux[RevModified, Rev, QueryHL]
+    rev: Reverse.Aux[PS, RevWhere],
+    revModified: Reverse.Aux[ModifyPrepared, RevSet],
+    prepender: Prepend.Aux[RevSet, RevWhere, QueryHL]
   ): PreparedBlock[QueryHL] = {
     val flatten = new PreparedFlattener(qb)
     new PreparedBlock(flatten.query, flatten.protocolVersion, options)
@@ -392,19 +366,19 @@ sealed case class ConditionalQuery[
   def prepareAsync[
     P[_],
     F[_],
-    Rev <: HList,
-    RevModified <: HList,
+    RevWhere <: HList,
+    RevSet <: HList,
     QueryHL <: HList
   ]()(
     implicit session: Session,
     executor: ExecutionContextExecutor,
     keySpace: KeySpace,
     ev: PS =:!= HNil,
-    revWhere: Reverse.Aux[PS, Rev],
-    revModified: Reverse.Aux[ModifyPrepared, RevModified],
+    revWhere: Reverse.Aux[PS, RevWhere],
+    revModified: Reverse.Aux[ModifyPrepared, RevSet],
     fMonad: FutureMonad[F],
     interface: PromiseInterface[P, F],
-    prepender: Prepend.Aux[RevModified, Rev, QueryHL]
+    prepender: Prepend.Aux[RevSet, RevWhere, QueryHL]
   ): F[PreparedBlock[QueryHL]] = {
     val flatten = new PreparedFlattener(qb)
 

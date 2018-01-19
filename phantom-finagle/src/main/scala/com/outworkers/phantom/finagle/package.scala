@@ -97,7 +97,8 @@ package object finagle extends TwitterQueryContext with DefaultImports {
       * @return
       */
     def fetchSpool()(
-      implicit session: Session
+      implicit session: Session,
+      keySpace: KeySpace,
     ): Future[Spool[Seq[Record]]] = {
       query.future() flatMap { rs =>
         ResultSpool.spool(rs).map(spool => spool.map(_.map(query.fromRow)))
@@ -120,7 +121,8 @@ package object finagle extends TwitterQueryContext with DefaultImports {
       */
     def fetchSpool(modifier: Statement => Statement)(
       implicit session: Session,
-      keySpace: KeySpace
+      keySpace: KeySpace,
+      ctx: ExecutionContextExecutor
     ): Future[Spool[Seq[R]]] = {
       block.all().future(modifier) flatMap { rs =>
         ResultSpool.spool(rs).map(spool => spool.map(_.map(block.all.fromRow)))
@@ -136,7 +138,8 @@ package object finagle extends TwitterQueryContext with DefaultImports {
       */
     def fetchSpool()(
       implicit session: Session,
-      keySpace: KeySpace
+      keySpace: KeySpace,
+      ctx: ExecutionContextExecutor
     ): Future[Spool[Seq[R]]] = {
       block.all().future() flatMap { rs =>
         ResultSpool.spool(rs).map(spool => spool.map(_.map(block.all.fromRow)))
@@ -220,10 +223,13 @@ package object finagle extends TwitterQueryContext with DefaultImports {
   }
 
   implicit class ExecuteQueries[M[X] <: TraversableOnce[X]](val qc: QueryCollection[M]) extends AnyVal {
-    def executable(): ExecutableStatements[Future, M] = new ExecutableStatements[Future, M](qc)
+    def executable()(
+      implicit ctx: ExecutionContextExecutor
+    ): ExecutableStatements[Future, M] = new ExecutableStatements[Future, M](qc)
 
     def future()(
       implicit session: Session,
+      ctx: ExecutionContextExecutor,
       fbf: CanBuildFrom[M[Future[ResultSet]], Future[ResultSet], M[Future[ResultSet]]],
       ebf: CanBuildFrom[M[Future[ResultSet]], ResultSet, M[ResultSet]]
     ): Future[M[ResultSet]] = executable().future()
