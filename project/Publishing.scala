@@ -94,6 +94,7 @@ object Publishing {
       commitReleaseVersion,
       tagRelease,
       releaseStepCommandAndRemaining("such publishSigned"),
+      releaseStepCommandAndRemaining("sonatypeReleaseAll"),
       setNextVersion,
       commitTutFilesAndVersion,
       pushChanges
