@@ -98,7 +98,7 @@ package object finagle extends TwitterQueryContext with DefaultImports {
       */
     def fetchSpool()(
       implicit session: Session,
-      keySpace: KeySpace,
+      keySpace: KeySpace
     ): Future[Spool[Seq[Record]]] = {
       query.future() flatMap { rs =>
         ResultSpool.spool(rs).map(spool => spool.map(_.map(query.fromRow)))
