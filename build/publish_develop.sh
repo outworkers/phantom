@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 echo "Pull request: ${TRAVIS_PULL_REQUEST}; Branch: ${TRAVIS_BRANCH}"
+github_url="https://${github_token}@${GH_REF}"
 
 #!/usr/bin/env bash
 function fix_git {
@@ -9,6 +10,20 @@ function fix_git {
     git branch -u origin/${TRAVIS_BRANCH}
     git config branch.${TRAVIS_BRANCH}.remote origin
     git config branch.${TRAVIS_BRANCH}.merge refs/heads/${TRAVIS_BRANCH}
+}
+
+function setup_git_credentials {
+    local target="build/git_credentials.asc"
+    touch ${target}
+
+    echo "protocol=https" >> ${target}
+    echo "host=$GH_REF" >> ${target}
+    echo "username=alexflav23" >> ${target}
+    echo "password=$github_token" >> ${target}
+    git config --global credential.helper cache
+    git credential-store --file ${target}
+
+    git remote set-url origin ${github_url}
 }
 
 function prepare_maven_release {
@@ -103,6 +118,7 @@ then
 
         setup_credentials
         fix_git
+        setup_git_credentials
 
         COMMIT_MSG=$(git log -1 --pretty=%B 2>&1)
         COMMIT_SKIP_MESSAGE="[version skip]"
