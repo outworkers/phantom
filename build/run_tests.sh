@@ -4,18 +4,18 @@ function run_test_suite {
     then
         echo "Running tests with coverage and report submission"
         sbt ++$TRAVIS_SCALA_VERSION coverage test coverageReport coverageAggregate coveralls
-        testExitCode=$?
+        test_exit_code=$?
 
-        if [ ${testExitCode} == "0" ];
+        if [ ${test_exit_code} -eq "0" ];
         then
             echo "Running tut compilation"
             sbt ++$TRAVIS_SCALA_VERSION "project readme" "tut"
-            local tut_exit_code = $?
+            local tut_exit_code=$?
             echo "Tut compilation exited with status $tut_exit_code"
             exit ${tut_exit_code}
         else
             echo "Unable to run tut compilation, test suite failed"
-            exit ${testExitCode}
+            exit ${test_exit_code}
         fi
     else
         echo "Running tests without attempting to submit coverage reports or run tut"

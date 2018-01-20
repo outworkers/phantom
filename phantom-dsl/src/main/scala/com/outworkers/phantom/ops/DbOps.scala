@@ -15,18 +15,21 @@
  */
 package com.outworkers.phantom.ops
 
+import com.datastax.driver.core.Session
 import com.outworkers.phantom.ResultSet
-import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, ExecutableStatements, FutureMonad, QueryCollection}
+import com.outworkers.phantom.builder.query.CreateQuery.DelegatedCreateQuery
+import com.outworkers.phantom.builder.query.execution._
 import com.outworkers.phantom.database.Database
 
 import scala.collection.generic.CanBuildFrom
 import scala.concurrent.ExecutionContextExecutor
 
 abstract class DbOps[
+  P[_],
   F[_] : FutureMonad,
   DB <: Database[DB],
   Timeout
-](val db: Database[DB]) {
+](val db: Database[DB])(implicit interface: PromiseInterface[P, F]) {
 
   import db._
 
@@ -46,7 +49,7 @@ abstract class DbOps[
     *                Defaults to [[com.outworkers.phantom.database.Database#defaultTimeout]]
     * @return A sequence of result sets, where every result is the result of a single create operation.
     */
-  def create(timeout: Timeout = defaultTimeout)(implicit ex: ExecutionContextExecutor): Seq[ResultSet] = {
+  def create(timeout: Timeout = defaultTimeout)(implicit ex: ExecutionContextExecutor): Seq[Seq[ResultSet]] = {
     await(createAsync(), timeout)
   }
 
@@ -56,8 +59,12 @@ abstract class DbOps[
     *
     * @return A sequence of result sets, where every result is the result of a single create operation.
     */
-  def createAsync()(implicit ex: ExecutionContextExecutor): F[Seq[ResultSet]] = {
-    execute(db.autocreate()).sequence()
+  def createAsync()(
+    implicit ex: ExecutionContextExecutor
+  ): F[Seq[Seq[ResultSet]]] = {
+    ExecutionHelper.sequencedTraverse(tables.map(_.create.ifNotExists().delegate)) { query =>
+      QueryContext.create(query)
+    }
   }
 
   /**

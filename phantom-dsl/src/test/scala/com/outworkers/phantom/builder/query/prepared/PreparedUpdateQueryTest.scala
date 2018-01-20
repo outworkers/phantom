@@ -18,16 +18,15 @@ package com.outworkers.phantom.builder.query.prepared
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.tables.Recipe
 import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.tables.bugs.VerizonRecord
 import com.outworkers.util.samplers._
-
-import scala.concurrent.Await
-import scala.concurrent.duration._
 
 class PreparedUpdateQueryTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
     database.recipes.createSchema()
+    database.verizonSchema.createSchema()
   }
 
   it should "execute a prepared update query with a single argument bind" in {
@@ -47,8 +46,6 @@ class PreparedUpdateQueryTest extends PhantomSuite {
       update <- query.bind(updated, recipe.url).future()
       get2 <- database.recipes.select.where(_.url eqs recipe.url).one()
     } yield (get, get2)
-
-    Await.result(chain, 20.seconds)
 
     whenReady(chain) { case (initial, afterUpdate) =>
 
@@ -115,20 +112,18 @@ class PreparedUpdateQueryTest extends PhantomSuite {
       get2 <- database.recipes.select.where(_.url eqs recipe.url).one()
     } yield (get, get2)
 
-    whenReady(chain) {
-      case (initial, afterUpdate) => {
-        initial shouldBe defined
-        initial.value shouldEqual recipe
+    whenReady(chain) { case (initial, afterUpdate) =>
+      initial shouldBe defined
+      initial.value shouldEqual recipe
 
-        afterUpdate shouldBe defined
-        afterUpdate.value.url shouldEqual recipe.url
-        afterUpdate.value.props shouldEqual recipe.props
-        afterUpdate.value.ingredients shouldEqual recipe.ingredients
-        afterUpdate.value.servings shouldEqual recipe.servings
-        afterUpdate.value.lastCheckedAt shouldEqual recipe.lastCheckedAt
-        afterUpdate.value.uid shouldEqual updatedUid
-        afterUpdate.value.description shouldEqual updated
-      }
+      afterUpdate shouldBe defined
+      afterUpdate.value.url shouldEqual recipe.url
+      afterUpdate.value.props shouldEqual recipe.props
+      afterUpdate.value.ingredients shouldEqual recipe.ingredients
+      afterUpdate.value.servings shouldEqual recipe.servings
+      afterUpdate.value.lastCheckedAt shouldEqual recipe.lastCheckedAt
+      afterUpdate.value.uid shouldEqual updatedUid
+      afterUpdate.value.description shouldEqual updated
     }
   }
 
@@ -146,6 +141,7 @@ class PreparedUpdateQueryTest extends PhantomSuite {
         .modify(_.description setTo ?)
         .and(_.uid setTo ?)
         .prepareAsync()
+
       store <- database.recipes.store(recipe).future()
       get <- database.recipes.select.where(_.url eqs recipe.url).one()
       update <- query.bind(updated, updatedUid, recipe.url).future()
@@ -164,6 +160,47 @@ class PreparedUpdateQueryTest extends PhantomSuite {
       afterUpdate.value.lastCheckedAt shouldEqual recipe.lastCheckedAt
       afterUpdate.value.uid shouldEqual updatedUid
       afterUpdate.value.description shouldEqual updated
+    }
+  }
+
+  it should "correctly chain type parameters in conditional non-async prepared update clauses" in {
+    val sample = gen[VerizonRecord].copy(isDeleted = true)
+    val sample2 = gen[VerizonRecord].copy(isDeleted = true)
+
+    val bindable = db.verizonSchema.update
+      .where(_.uid eqs ?)
+      .modify(_.isdeleted setTo ?)
+      .ifExists
+      .consistencyLevel_=(ConsistencyLevel.LOCAL_QUORUM)
+      .prepare()
+
+    val chain = for {
+      insert <- db.verizonSchema.storeRecord(sample)
+      insert2 <- db.verizonSchema.storeRecord(sample2)
+      updated <- bindable.bind(false, sample.uid).future()
+      res <- db.verizonSchema.select.where(_.uid eqs sample.uid).one()
+    } yield (updated, res)
+
+    whenReady(chain) { case (updated, res) =>
+      res shouldBe defined
+      res.value.isDeleted shouldBe false
+    }
+  }
+
+  it should "correctly chain type parameters in conditional async prepared update clauses" in {
+    val sample = gen[VerizonRecord].copy(isDeleted = true)
+    val sample2 = gen[VerizonRecord].copy(isDeleted = true)
+
+    val chain = for {
+      insert <- db.verizonSchema.storeRecord(sample)
+      insert2 <- db.verizonSchema.storeRecord(sample2)
+      updated <- db.verizonSchema.updateDeleteStatus.flatMap(_.bind(false, sample.uid).future())
+      res <- db.verizonSchema.select.where(_.uid eqs sample.uid).one()
+    } yield (updated, res)
+
+    whenReady(chain) { case (updated, res) =>
+      res shouldBe defined
+      res.value.isDeleted shouldBe false
     }
   }
 }

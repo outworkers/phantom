@@ -20,7 +20,8 @@ import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.keys.Unmodifiable
 import com.outworkers.phantom.{CassandraTable, Row}
 
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
+import scala.util.control.NonFatal
 
 private[phantom] trait CounterRestriction[T]
 
@@ -34,8 +35,9 @@ class CounterColumn[
 
   override val isCounterColumn = true
 
-  def parse(r: Row): Try[Long] = primitive.fromRow(name, r) recover {
-    case e: Exception if r.isNull(name) => 0L
+  def parse(r: Row): Try[Long] = primitive.fromRow(name, r) recoverWith {
+    case NonFatal(_) if r.isNull(name) => Success(0L)
+    case e => Failure(e)
   }
 
   override def asCql(v: Long): String = primitive.asCql(v)

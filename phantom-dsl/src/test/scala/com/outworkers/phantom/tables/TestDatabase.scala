@@ -22,7 +22,7 @@ import com.outworkers.phantom.connectors
 import com.outworkers.phantom.connectors.CassandraConnection
 import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.tables.bugs.{JsonPreparedTable, SchemaBug656Table, SchemaBug663Table}
+import com.outworkers.phantom.tables.bugs._
 import com.outworkers.phantom.tables.sasi.{MultiSASITable, SASIIndexedArticles}
 
 class TestDatabase(
@@ -106,7 +106,9 @@ class TestDatabase(
 
   // table to test a schema bug for using RootSelectBlockOps on select projections with no other clauses
   object userSchema extends UserSchemaTable with Connector
+  object verizonSchema extends VerizonSchema with Connector
 }
+
 
 object Connector {
   val default: CassandraConnection = connectors.ContactPoint.local

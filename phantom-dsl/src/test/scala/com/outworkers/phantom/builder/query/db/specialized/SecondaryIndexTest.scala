@@ -19,13 +19,14 @@ import com.datastax.driver.core.exceptions.InvalidQueryException
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
+import com.outworkers.phantom.tables.dbs.SecondaryIndexOnlyDatabase
 import com.outworkers.util.samplers._
 
 class SecondaryIndexTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    val _ = database.secondaryIndexTable.create.ifNotExists().future.block(defaultScalaTimeout)
+    database.secondaryIndexTable.createSchema()
   }
 
   it should "allow fetching a record by its secondary index" in {

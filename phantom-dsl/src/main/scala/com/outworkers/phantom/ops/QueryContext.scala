@@ -18,6 +18,7 @@ package com.outworkers.phantom.ops
 import com.datastax.driver.core.{Session, Statement}
 import com.outworkers.phantom.builder.batch.BatchQuery
 import com.outworkers.phantom.builder._
+import com.outworkers.phantom.builder.query.CreateQuery.DelegatedCreateQuery
 import com.outworkers.phantom.builder.query.execution._
 import com.outworkers.phantom.builder.query.prepared.{ExecutablePreparedQuery, ExecutablePreparedSelectQuery}
 import com.outworkers.phantom.builder.query._
@@ -151,10 +152,9 @@ abstract class QueryContext[P[_], F[_], Timeout](
     override def executableQuery: ExecutableCqlQuery = query.executableQuery
   }
 
-
   implicit class DatabaseOperation[DB <: Database[DB]](
     override val db: Database[DB]
-  ) extends DbOps[F, DB, Timeout](db) {
+  ) extends DbOps[P, F, DB, Timeout](db) {
     override def execute[M[X] <: TraversableOnce[X]](col: QueryCollection[M])(
       implicit cbf: CanBuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]]
     ): ExecutableStatements[F, M] = {
@@ -276,24 +276,12 @@ abstract class QueryContext[P[_], F[_], Timeout](
     override def future(modifier: Statement => Statement)(
       implicit session: Session,
       executor: ExecutionContextExecutor
-    ): F[Seq[ResultSet]] = {
-      for {
-        tableCreationQuery <- adapter.fromGuava(modifier(ExecutableCqlQuery(query.qb, query.options).statement()))
-        secondaryIndexes <- new ExecutableStatements(query.indexList).future()
-        sasiIndexes <- new ExecutableStatements(query.table.sasiQueries()).future()
-      } yield Seq(tableCreationQuery) ++ secondaryIndexes ++ sasiIndexes
-    }
+    ): F[Seq[ResultSet]] = QueryContext.create(query.delegate, Some(modifier))
 
     override def future()(
       implicit session: Session,
       ctx: ExecutionContextExecutor
-    ): F[Seq[ResultSet]] = {
-      for {
-        tableCreationQuery <- adapter.fromGuava(query.executableQuery)
-        secondaryIndexes <- new ExecutableStatements(query.indexList).future()
-        sasiIndexes <- new ExecutableStatements(query.table.sasiQueries()).future()
-      } yield Seq(tableCreationQuery) ++ secondaryIndexes ++ sasiIndexes
-    }
+    ): F[Seq[ResultSet]] = QueryContext.create(query.delegate)
   }
 
   implicit class CassandraTableStoreMethods[T <: CassandraTable[T, R], R](val table: CassandraTable[T, R]) {
@@ -301,7 +289,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
     def createSchema(timeout: Timeout = defaultTimeout)(
       implicit session: Session,
       keySpace: KeySpace,
-      ec: ExecutionContextExecutor
+      ctx: ExecutionContextExecutor
     ): Seq[ResultSet] = {
       blockAwait(table.autocreate(keySpace).future(), timeout)
     }
@@ -349,6 +337,27 @@ abstract class QueryContext[P[_], F[_], Timeout](
       ec: ExecutionContextExecutor,
       cbf: CanBuildFrom[M[ExecutableCqlQuery], ResultSet, M[ResultSet]]
     ): F[M[ResultSet]] = executeStatements(col).sequence()
+  }
+}
 
+
+object QueryContext {
+  def create[P[_], F[_]](
+    query: DelegatedCreateQuery,
+    modifier: Option[Statement => Statement] = None
+  )(
+    implicit interface: PromiseInterface[P, F],
+    futureMonad: FutureMonad[F],
+    session: Session,
+    ctx: ExecutionContextExecutor
+  ): F[Seq[ResultSet]] = {
+
+    implicit val adapter: GuavaAdapter[F] = interface.adapter
+
+    for {
+      tableCreationQuery <- adapter.fromGuava(query.executable, modifier)
+      secondaryIndexes <- new ExecutableStatements(query.indexList).future()
+      sasiIndexes <- new ExecutableStatements(query.sasiIndexes).future()
+    } yield Seq(tableCreationQuery) ++ secondaryIndexes ++ sasiIndexes
   }
 }

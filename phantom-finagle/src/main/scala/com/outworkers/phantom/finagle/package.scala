@@ -23,9 +23,7 @@ import com.outworkers.phantom.builder.query.execution._
 import com.outworkers.phantom.builder.query.options.{CompressionStrategy, GcGraceSecondsBuilder, TablePropertyClause, TimeToLiveBuilder}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.finagle.execution.{TwitterFutureImplicits, TwitterQueryContext}
-import com.outworkers.phantom.ops.DbOps
 import com.twitter.concurrent.Spool
-import com.twitter.conversions.time._
 import com.twitter.util.{Duration => TwitterDuration, _}
 import org.joda.time.Seconds
 import shapeless.HList
@@ -227,22 +225,10 @@ package object finagle extends TwitterQueryContext with DefaultImports {
       implicit ctx: ExecutionContextExecutor
     ): ExecutableStatements[Future, M] = new ExecutableStatements[Future, M](qc)
 
-    def future()(implicit session: Session,
+    def future()(
+      implicit session: Session,
       fbf: CanBuildFrom[M[Future[ResultSet]], Future[ResultSet], M[Future[ResultSet]]],
       ebf: CanBuildFrom[M[Future[ResultSet]], ResultSet, M[ResultSet]]
     ): Future[M[ResultSet]] = executable().future()
-  }
-
-  implicit def dbToOps[DB <: Database[DB]](db: Database[DB]): DbOps[Future, DB, TwitterDuration] = {
-    new DbOps[Future, DB, TwitterDuration](db) {
-
-      override def execute[M[X] <: TraversableOnce[X]](col: QueryCollection[M])(
-        implicit cbf: CanBuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]]
-      ): ExecutableStatements[Future, M] = new ExecutableStatements[Future, M](col)
-
-      override def defaultTimeout: TwitterDuration = 10.seconds
-
-      override def await[T](f: Future[T], timeout: TwitterDuration): T = Await.result(f, timeout)
-    }
   }
 }

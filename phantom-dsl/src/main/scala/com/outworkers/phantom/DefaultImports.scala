@@ -64,7 +64,6 @@ trait DefaultImports extends ImplicitMechanism
 
   type DateTime = org.joda.time.DateTime
   type LocalDate = org.joda.time.LocalDate
-  type DateTimeZone = org.joda.time.DateTimeZone
   type UUID = java.util.UUID
   type Row = com.outworkers.phantom.Row
   type ResultSet = com.outworkers.phantom.ResultSet
