@@ -11,6 +11,18 @@ function fix_git {
     git config branch.${TRAVIS_BRANCH}.merge refs/heads/${TRAVIS_BRANCH}
 }
 
+function setup_git_credentials {
+    local target="build/git_credentials.asc"
+    touch ${target}
+
+    echo "protocol=https" >> ${target}
+    echo "host=$GH_REF" >> ${target}
+    echo "username=alexflav23" >> ${target}
+    echo "password=$github_token" >> ${target}
+    git config --global credential.helper cache
+    git credential-store --file ${target}
+}
+
 function prepare_maven_release {
     if [ "$TRAVIS_BRANCH" == "develop" ];
     then
@@ -103,6 +115,7 @@ then
 
         setup_credentials
         fix_git
+        setup_git_credentials
 
         COMMIT_MSG=$(git log -1 --pretty=%B 2>&1)
         COMMIT_SKIP_MESSAGE="[version skip]"
