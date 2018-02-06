@@ -33,7 +33,7 @@ object Defaults {
  * This is an example of how to connect to Cassandra in the easiest possible way.
  * The SimpleCassandraConnector is designed to get you up and running immediately, with almost 0 effort.
  *
- * What you have to do now is to tell phantom what keyspace you will be using in Cassandra. This connector will automaticalyl try to connect to localhost:9042.
+ * What you have to do now is to tell phantom what keyspace you will be using in Cassandra. This connector will automatically try to connect to localhost:9042.
  * If you want to tell the connector to use a different host:port combination, simply override the address inside it.
  *
  * Otherwise, simply mixing this connector in will magically inject a database session for all your queries and you can immediately run them.
