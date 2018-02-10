@@ -22,7 +22,7 @@ import com.outworkers.phantom.builder.query.prepared.PrepareMark
 import com.outworkers.phantom.column._
 import com.outworkers.phantom.keys._
 import com.outworkers.phantom.{CassandraTable, Row}
-import shapeless.<:!<
+import shapeless.{<:!<, HNil}
 
 import scala.annotation.implicitNotFound
 
@@ -63,6 +63,7 @@ private[phantom] abstract class AbstractModifyColumn[RR](col: AbstractColumn[RR]
 }
 
 sealed class ModifyColumn[RR](col: AbstractColumn[RR]) extends AbstractModifyColumn[RR](col) {
+
   /**
     * Default setTo clause for all update queries except for map columns.
     * This differs from the standard setTo in that it will only create a set clause
@@ -76,6 +77,18 @@ sealed class ModifyColumn[RR](col: AbstractColumn[RR]) extends AbstractModifyCol
       case Some(existing) => new UpdateClause.Condition(QueryBuilder.Update.setTo(col.name, col.asCql(existing)))
       case None => new UpdateClause.Condition(qb = CQLQuery.empty, skipped = true)
     }
+  }
+
+  /**
+    * Default setTo clause for all update queries except for map columns.
+    * This differs from the standard setTo in that it will only create a set clause
+    * if the option provided as an argument is not empty.
+    *
+    * @param value The typed value to set the column to.
+    * @return A serialized update clause condition that is latter appended to the Set Query part of an update query.
+    */
+  def setIfDefined[T](value: PrepareMark): UpdateClause.Prepared[T] = {
+    new UpdateClause.Condition(QueryBuilder.Update.setTo(col.name, value.qb.queryString))
   }
 }
 
