@@ -38,6 +38,10 @@ abstract class QueryContext[P[_], F[_], Timeout](
   val promiseInterface: PromiseInterface[P, F]
 ) { outer =>
 
+
+  type ListValue[T] = com.outworkers.phantom.builder.query.prepared.ListValue[T]
+  val ListValue = com.outworkers.phantom.builder.query.prepared.ListValue
+
   implicit val adapter: GuavaAdapter[F] = promiseInterface.adapter
 
   def executeStatements[M[X] <: TraversableOnce[X]](
