@@ -40,4 +40,4 @@ fi
 #pip install --user 'requests[security]'
 pip install --user ccm
 ccm create test -v ${CASSANDRA_VERSION} -n 1 -s
-nodetool status
+ccm status
