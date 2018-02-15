@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+python -V
 pip install --user 'pyOpenSSL'
 pip install --user 'ndg-httpsclient'
 
