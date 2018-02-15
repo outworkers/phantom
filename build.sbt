@@ -89,6 +89,7 @@ lazy val Versions = new {
   val logback = "1.2.3"
   val util = "0.38.0"
   val json4s = "3.5.1"
+  val dockerKit = "0.9.0"
   val datastax = "3.4.0"
   val scalatest = "3.0.4"
   val shapeless = "2.3.2"
@@ -224,6 +225,21 @@ lazy val phantom = (project in file("."))
   ).aggregate(
     fullProjectList: _*
   )
+
+lazy val phantomDocker = (project in file("phantom-docker"))
+  .settings(sharedSettings: _*)
+  .settings(
+    moduleName := "phantom-docker",
+    publishMavenStyle := false,
+    sbtPlugin := true,
+    publishArtifact in Test := false,
+    pomIncludeRepository := { _ => false },
+    crossScalaVersions := Seq(Versions.scala210),
+    libraryDependencies ++= Seq(
+      "com.whisk" %% "docker-testkit-scalatest" % Versions.dockerKit,
+      "com.whisk" %% "docker-testkit-impl-spotify" % Versions.dockerKit
+    )
+  ).enablePlugins(CrossPerProjectPlugin)
 
 lazy val readme = (project in file("readme"))
   .settings(sharedSettings ++ Publishing.noPublishSettings)
