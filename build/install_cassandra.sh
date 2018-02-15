@@ -38,6 +38,9 @@ if [ ${jdk_version_8_or_more} -gt 1 ];
 fi
 
 pip install --user 'urllib3[secure]'
-pip install --user 'requests[security]'
+pip install --user 'requests'
+pip install --user 'pyOpenSSL'
+pip install --user 'ndg-httpsclient'
+pip install --user 'pyasn1'
 pip install --user ccm
 ccm create test -v ${CASSANDRA_VERSION} -n 1 -s
