@@ -9,7 +9,7 @@ pip install --user 'urllib3'
 pip install --user 'requests[security]'
 pip install --user ccm
 
-ccm create test -v "3.10" -n 1 -s timeout 60
+ccm create test -v "3.11" -n 1 -s timeout 60
 ccm node1 showlog
 
 if [ -e "/var/log/cassandra/" ]; then
