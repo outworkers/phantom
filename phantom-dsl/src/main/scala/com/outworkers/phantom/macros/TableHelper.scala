@@ -265,6 +265,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
     unprocessed: List[Record.Field] = Nil
   ): TableDescriptor = {
     recordFields match { case recField :: tail =>
+
       columnFields.find { case (tpe, seq) => predicate(recField, tpe) } map { case (_, seq) => seq } match {
         case None =>
           val un = Unmatched(recField, s"Table doesn't contain a column of type ${printType(recField.tpe)}")
