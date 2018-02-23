@@ -78,18 +78,6 @@ sealed class ModifyColumn[RR](col: AbstractColumn[RR]) extends AbstractModifyCol
       case None => new UpdateClause.Condition(qb = CQLQuery.empty, skipped = true)
     }
   }
-
-  /**
-    * Default setTo clause for all update queries except for map columns.
-    * This differs from the standard setTo in that it will only create a set clause
-    * if the option provided as an argument is not empty.
-    *
-    * @param value The typed value to set the column to.
-    * @return A serialized update clause condition that is latter appended to the Set Query part of an update query.
-    */
-  def setIfDefined[T](value: PrepareMark): UpdateClause.Prepared[T] = {
-    new UpdateClause.Condition(QueryBuilder.Update.setTo(col.name, value.qb.queryString))
-  }
 }
 
 sealed class ModifyColumnOptional[RR](col: OptionalColumn[_, _, RR])
