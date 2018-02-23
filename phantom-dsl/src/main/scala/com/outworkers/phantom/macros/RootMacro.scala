@@ -31,6 +31,7 @@ trait RootMacro extends HListHelpers with WhiteboxToolbelt {
   val c: whitebox.Context
   import c.universe._
 
+  protected[this] val primitivePkg = q"_root_.com.outworkers.phantom.builder.primitives"
   protected[this] val rowType = tq"_root_.com.outworkers.phantom.Row"
   protected[this] val builder = q"_root_.com.outworkers.phantom.builder.QueryBuilder"
   protected[this] val macroPkg = q"_root_.com.outworkers.phantom.macros"

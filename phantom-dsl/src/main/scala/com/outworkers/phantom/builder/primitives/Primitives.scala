@@ -19,6 +19,8 @@ import java.math.BigInteger
 import java.net.{InetAddress, UnknownHostException}
 import java.nio.charset.Charset
 import java.nio.{BufferUnderflowException, ByteBuffer}
+import java.sql.Timestamp
+import java.time.Instant
 import java.util.{Date, UUID}
 
 import com.datastax.driver.core._
@@ -470,6 +472,11 @@ object Primitives {
   val DateTimeIsPrimitive: Primitive[DateTime] = Primitive.manuallyDerive[DateTime, Long](
     _.toDateTime(DateTimeZone.UTC).getMillis,
     new DateTime(_, DateTimeZone.UTC)
+  )(LongPrimitive)(CQLSyntax.Types.Timestamp)
+
+  val SqlTimestampIsPrimitive = Primitive.manuallyDerive[Timestamp, Long](
+    ts => ts.getTime,
+    dt => Timestamp.from(Instant.ofEpochMilli(dt))
   )(LongPrimitive)(CQLSyntax.Types.Timestamp)
 
   val JodaLocalDateIsPrimitive: Primitive[JodaLocalDate] = Primitive.manuallyDerive[JodaLocalDate, DateTime](

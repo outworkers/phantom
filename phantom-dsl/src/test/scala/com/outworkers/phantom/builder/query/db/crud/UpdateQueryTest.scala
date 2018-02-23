@@ -21,9 +21,9 @@ import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
 import com.outworkers.util.samplers._
 import org.joda.time.{DateTime, DateTimeZone}
-import org.scalatest.{Assertions, Inside, Matchers}
+import org.scalatest.{EitherValues, Inside}
 
-class UpdateQueryTest extends PhantomSuite with Matchers with Assertions with Inside {
+class UpdateQueryTest extends PhantomSuite with Inside with EitherValues {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -344,11 +344,12 @@ class UpdateQueryTest extends PhantomSuite with Matchers with Assertions with In
         .and(_.bi setIfDefined None)
         .succeedAnyway()
       a2 <- database.primitives.select.where(_.pkey eqs row.pkey).one
-    } yield (a, a2)
+    } yield (a, a2, u)
 
-    whenReady(chain) { case (res1, res2) =>
+    whenReady(chain) { case (res1, res2, u) =>
       res1.value shouldEqual row
       res2.value shouldEqual row
+      u.left.value shouldBe a [QueryNotExecuted]
     }
   }
 
@@ -375,11 +376,12 @@ class UpdateQueryTest extends PhantomSuite with Matchers with Assertions with In
         .and(_.bi setTo updatedRow.bi)
         .succeedAnyway()
       a2 <- database.primitives.select.where(_.pkey eqs row.pkey).one
-    } yield (a, a2)
+    } yield (a, a2, u)
 
-    whenReady(chain) { case (res1, res2) =>
+    whenReady(chain) { case (res1, res2, updateResult) =>
       res1.value shouldEqual row
       res2.value shouldEqual updatedRow.copy(double = row.double)
+      updateResult.right.value shouldBe a[ResultSet]
     }
   }
 }
