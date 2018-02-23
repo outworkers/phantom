@@ -38,6 +38,8 @@ abstract class QueryContext[P[_], F[_], Timeout](
   val promiseInterface: PromiseInterface[P, F]
 ) { outer =>
 
+  type QueryNotExecuted = _root_.com.outworkers.phantom.ops.QueryNotExecuted
+
 
   type ListValue[T] = com.outworkers.phantom.builder.query.prepared.ListValue[T]
   val ListValue = com.outworkers.phantom.builder.query.prepared.ListValue

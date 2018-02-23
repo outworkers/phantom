@@ -17,8 +17,6 @@ package com.outworkers.phantom.tables.bugs
 
 import com.outworkers.phantom.dsl._
 
-
-
 abstract class SchemaBug656Table extends Table[
   SchemaBug656Table, SchemaBug656Model
 ] {

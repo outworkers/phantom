@@ -105,6 +105,7 @@ class PrimitiveMacro(override val c: blackbox.Context) extends BlackboxToolbelt 
     val localDateSymbol: Symbol = typed[com.datastax.driver.core.LocalDate]
     val uuidSymbol: Symbol = typed[UUID]
     val jodaLocalDateSymbol: Symbol = typed[org.joda.time.LocalDate]
+    val timestampSymbol: Symbol = typed[java.sql.Timestamp]
     val inetSymbol: Symbol = typed[InetAddress]
     val bigInt: Symbol = typed[BigInt]
     val bigDecimal: Symbol = typed[BigDecimal]
@@ -140,6 +141,8 @@ class PrimitiveMacro(override val c: blackbox.Context) extends BlackboxToolbelt 
   val dateTimePrimitive: Tree = primitive("DateTimeIsPrimitive")
 
   val localJodaDatePrimitive: Tree = primitive("JodaLocalDateIsPrimitive")
+
+  val sqlTimeStampPrimitive: Tree = primitive("SqlTimestampIsPrimitive")
 
   val bigDecimalPrimitive: Tree = primitive("BigDecimalIsPrimitive")
 
@@ -374,6 +377,7 @@ class PrimitiveMacro(override val c: blackbox.Context) extends BlackboxToolbelt 
       case Symbols.inetSymbol => inetPrimitive
       case Symbols.bigInt => bigIntPrimitive
       case Symbols.bigDecimal => bigDecimalPrimitive
+      case Symbols.timestampSymbol => sqlTimeStampPrimitive
       case Symbols.buffer => bufferPrimitive
       case Symbols.enum => enumPrimitive(wkType)
       case Symbols.enumValue => enumValuePrimitive(wkType)

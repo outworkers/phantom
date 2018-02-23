@@ -18,6 +18,8 @@ package com.outworkers.phantom.builder
 import org.joda.time.{DateTime, DateTimeZone}
 import java.net.InetAddress
 import java.nio.ByteBuffer
+import java.sql.Timestamp
+import java.time.Instant
 import java.util.{Date, UUID}
 
 import com.datastax.driver.core.utils.UUIDs
@@ -43,6 +45,11 @@ package object primitives {
     offset <- Gen.choose(genLower, genHigher)
     time = new DateTime(DateTimeZone.UTC)
   } yield time.plusMillis(offset)
+
+  implicit val timestampGen: Gen[Timestamp] = for {
+    offset <- Gen.choose(genLower, genHigher)
+    time = Timestamp.from(Instant.now().plusMillis(offset))
+  } yield time
 
   def bytebufferGen[T : Primitive : Sample](
     version: ProtocolVersion
