@@ -4,6 +4,9 @@ dist: trusty
 scala:
 - 2.10.6
 - 2.11.11
+
+python: "2.7.13"
+
 cache:
   directories:
   - $HOME/.m2

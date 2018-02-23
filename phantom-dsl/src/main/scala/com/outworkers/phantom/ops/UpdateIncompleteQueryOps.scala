@@ -16,10 +16,16 @@
 package com.outworkers.phantom.ops
 
 import com.datastax.driver.core.Session
+import com.outworkers.phantom.ResultSet
 import com.outworkers.phantom.builder.query.SetPart
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.execution._
 
 import scala.concurrent.ExecutionContextExecutor
+
+trait QueryNotExecuted {
+  def qb: CQLQuery
+}
 
 class UpdateIncompleteQueryOps[
   P[_],
@@ -43,11 +49,13 @@ class UpdateIncompleteQueryOps[
   def succeedAnyway()(
     implicit session: Session,
     ctx: ExecutionContextExecutor
-  ): F[Unit] = {
+  ): F[Either[QueryNotExecuted, ResultSet]] = {
     if (setPart.nonEmpty) {
-      fMonad.map(pf.adapter.fromGuava(query))(_ => ())
+      fMonad.map(pf.adapter.fromGuava(query))(Right.apply)
     } else {
-      pf.apply(())
+      pf.apply(Left(new QueryNotExecuted {
+        override def qb: CQLQuery = query.qb
+      }))
     }
   }
 }

@@ -38,6 +38,8 @@ abstract class QueryContext[P[_], F[_], Timeout](
   val promiseInterface: PromiseInterface[P, F]
 ) { outer =>
 
+  type QueryNotExecuted = _root_.com.outworkers.phantom.ops.QueryNotExecuted
+
   implicit val adapter: GuavaAdapter[F] = promiseInterface.adapter
 
   def executeStatements[M[X] <: TraversableOnce[X]](
