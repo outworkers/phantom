@@ -53,11 +53,5 @@ before_script:
 script:
 - ./build/run_tests.sh
 - ./build/publish_develop.sh
-deploy:
-  provider: pages
-  skip_cleanup: true
-  github_token: $github_token
-  on:
-    branch: develop
 dd:
   secure: Gi3fThDupyUc//V5JihjLpnKGbJrCKZDmgxXTGAKHTjtyLBifVnnNjM37LERXtTuoSevT7tYDTOGQD490Qmcg/fh2PtzeU3cFiJ6rRKzn1jqVmpormahaewsBs6akBR+5gH2eh37d6eN/4UdiKrUDDflFfc8BcS3AC1y7aeKxq0=
