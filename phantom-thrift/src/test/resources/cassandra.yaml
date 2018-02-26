@@ -7,7 +7,7 @@
 
 # The name of the cluster. This is mainly used to prevent machines in
 # one logical cluster from joining another.
-cluster_name: 'Test Cluster'
+cluster_name: 'Phantom test'
 
 # You should always specify InitialToken when setting up a production
 # cluster for the first time, and often when adding capacity later.

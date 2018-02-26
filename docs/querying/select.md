@@ -125,6 +125,50 @@ trait SelectExamples extends db.Connector {
 
 ```
 
+#### "IN" operator
+
+```scala
+
+import java.util.UUID
+import scala.concurrent.Future
+
+trait InSelectExamples extends db.Connector {
+  val carId = UUID.randomUUID 
+  
+  // This is a select * query, selecting the entire record
+  def selectAll: Future[List[CarMetric]] = {
+    db.entries.select.where(_.car in List(carId, UUID.randomUUID)).fetch()
+  }
+}
+
+```
+
+Due to an interesting behaviour in the Scala compiler, prepared queries that use the "IN" operator will
+require special binding at compile time, called `ListValue`.
+
+
+```scala
+
+import java.util.UUID
+import scala.concurrent.Future
+
+trait InSelectPreparedExamples extends db.Connector {
+  
+  lazy val selectInExample = db.entries.select.where(_.car in ?).prepareAsync()
+  
+  // This is a select * query, selecting the entire record
+  def selectFromList(values: List[UUID]): Future[List[CarMetric]] = {
+    selectInExample.flatMap(_.bind(ListValue(values)).fetch)
+  }
+    
+  // We can use also use a vargargs style method call to achieve the same goal.  
+  def selectFromArgs(args: UUID*): Future[List[CarMetric]] = {
+    selectInExample.flatMap(_.bind(ListValue(args: _*)).fetch)
+  }
+}
+
+```
+
 ####  Aggregation functions
 
 Cassandra supports a set of native aggregation functions. To explore them in more detail, have a look
