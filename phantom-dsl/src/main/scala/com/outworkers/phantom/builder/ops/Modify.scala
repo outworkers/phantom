@@ -22,7 +22,7 @@ import com.outworkers.phantom.builder.query.prepared.PrepareMark
 import com.outworkers.phantom.column._
 import com.outworkers.phantom.keys._
 import com.outworkers.phantom.{CassandraTable, Row}
-import shapeless.<:!<
+import shapeless.{<:!<, HNil}
 
 import scala.annotation.implicitNotFound
 
@@ -63,6 +63,7 @@ private[phantom] abstract class AbstractModifyColumn[RR](col: AbstractColumn[RR]
 }
 
 sealed class ModifyColumn[RR](col: AbstractColumn[RR]) extends AbstractModifyColumn[RR](col) {
+
   /**
     * Default setTo clause for all update queries except for map columns.
     * This differs from the standard setTo in that it will only create a set clause

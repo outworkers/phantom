@@ -119,6 +119,15 @@ class PrimitiveRoundtripTests
     roundtrip(Gen.option(dateTimeGen))
   }
 
+
+  it should "serialize and deserialize a java.sql.Timestamp primitive" in {
+    roundtrip(timestampGen)
+  }
+
+  it should "serialize and deserialize an Option[java.sql.Timestamp] primitive" in {
+    roundtrip(Gen.option(timestampGen))
+  }
+
   it should "serialize and deserialize a java.util.Date primitive" in {
     roundtrip(javaDateGen)
   }
