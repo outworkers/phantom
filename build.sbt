@@ -87,9 +87,9 @@ scalacOptions in ThisBuild ++= ScalacOptions ++ YWarnOptions
 
 lazy val Versions = new {
   val logback = "1.2.3"
-  val util = "0.38.0"
+  val util = "0.39.0"
   val json4s = "3.5.1"
-  val datastax = "3.4.0"
+  val datastax = "4.0.0-alpha3"
   val scalatest = "3.0.4"
   val shapeless = "2.3.2"
   val thrift = "0.8.0"
