@@ -32,7 +32,7 @@ import com.outworkers.phantom.builder.syntax.CQLSyntax
 import org.joda.time.{DateTime, DateTimeZone, LocalDate => JodaLocalDate}
 
 import scala.collection.generic.CanBuildFrom
-import scala.util.Try
+import scala.util.{Success, Try}
 
 object Utils {
   private[phantom] def unsupported(version: ProtocolVersion): DriverInternalError = {
@@ -552,6 +552,7 @@ object Primitives {
       value => QueryBuilder.Collections.serialize(value.map(ev.asCql)).queryString
     )
   }
+
 
   def option[T : Primitive]: Primitive[Option[T]] = {
     val ev = implicitly[Primitive[T]]

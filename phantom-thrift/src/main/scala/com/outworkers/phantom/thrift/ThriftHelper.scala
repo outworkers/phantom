@@ -15,11 +15,12 @@
  */
 package com.outworkers.phantom.thrift
 
-import com.twitter.scrooge.CompactThriftSerializer
+import com.twitter.scrooge.ThriftStructSerializer
+
 import scala.reflect.macros.blackbox
 
 trait ThriftHelper[ValueType <: ThriftStruct] {
-  def serializer: CompactThriftSerializer[ValueType]
+  def serializer: ThriftStructSerializer[ValueType]
 }
 
 object ThriftHelper {
@@ -43,9 +44,7 @@ class ThriftHelperMacro(val c: blackbox.Context) {
 
     q"""
       new $pkgRoot.ThriftHelper[$tpe] {
-        override val serializer: ${serializerTpe(tpe)} = new $scroogePkg.CompactThriftSerializer[$tpe] {
-          override val codec: $scroogePkg.ThriftStructCodec[$tpe] = $companion
-        }
+        override val serializer: ${serializerTpe(tpe)} = $scroogePkg.CompactThriftSerializer.apply[$tpe]($companion)
       }
     """
   }

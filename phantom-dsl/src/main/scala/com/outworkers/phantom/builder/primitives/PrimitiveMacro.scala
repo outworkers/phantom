@@ -312,6 +312,8 @@ class PrimitiveMacro(override val c: blackbox.Context) extends BlackboxToolbelt 
     }
   }
 
+
+
   def optionPrimitive(tpe: Type): Tree = {
     tpe.typeArgs match {
       case head :: Nil => q"$prefix.Primitives.option[$head]"
