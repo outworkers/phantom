@@ -62,7 +62,7 @@ abstract class DbOps[
   def createAsync()(
     implicit ex: ExecutionContextExecutor
   ): F[Seq[Seq[ResultSet]]] = {
-    ExecutionHelper.sequencedTraverse(tables.map(_.create.ifNotExists().delegate)) { query =>
+    ExecutionHelper.sequencedTraverse(tables.map(_.autocreate(db.space).delegate)) { query =>
       QueryContext.create(query)
     }
   }
