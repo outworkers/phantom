@@ -15,3 +15,17 @@
  */
 package com.outworkers.phantom.thrift.tests.binary
 
+import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.thrift.tests.binary
+import com.outworkers.phantom.thrift.util.ThriftTestSuite
+import org.scalatest.FlatSpec
+
+trait BinarySuite extends FlatSpec with ThriftTestSuite {
+  val thriftDb = binary.ThriftDatabase
+
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    thriftDb.create()
+  }
+}
+
