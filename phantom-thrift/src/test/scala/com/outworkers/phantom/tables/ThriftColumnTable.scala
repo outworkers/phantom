@@ -35,15 +35,15 @@ case class ThriftRecord(
 abstract class ThriftColumnTable extends Table[ThriftColumnTable, ThriftRecord] {
   object id extends UUIDColumn with PartitionKey
   object name extends StringColumn
-  object ref extends ThriftColumn[ThriftColumnTable, ThriftRecord, ThriftTest](this)
+  object ref extends Col[ThriftTest]
 
-  object thriftSet extends ThriftSetColumn[ThriftColumnTable, ThriftRecord, ThriftTest](this)
+  object thriftSet extends SetColumn[ThriftTest]
 
-  object thriftList extends ThriftListColumn[ThriftColumnTable, ThriftRecord, ThriftTest](this)
+  object thriftList extends ListColumn[ThriftTest]
 
-  object thriftMap extends ThriftMapColumn[ThriftColumnTable, ThriftRecord, String, ThriftTest](this)
+  object thriftMap extends MapColumn[String, ThriftTest]
 
-  object optionalThrift extends OptionalThriftColumn[ThriftColumnTable, ThriftRecord, ThriftTest](this)
+  object optionalThrift extends OptionalCol[ThriftTest]
 }
 
 abstract class ThriftIndexedTable extends Table[ThriftIndexedTable, ThriftRecord] {
@@ -51,15 +51,15 @@ abstract class ThriftIndexedTable extends Table[ThriftIndexedTable, ThriftRecord
   object id extends UUIDColumn
   object name extends StringColumn
 
-  object ref extends ThriftColumn[ThriftIndexedTable, ThriftRecord, ThriftTest](this) with PartitionKey
+  object ref extends Col[ThriftTest] with PartitionKey
 
-  object thriftSet extends ThriftSetColumn[ThriftIndexedTable, ThriftRecord, ThriftTest](this)
+  object thriftSet extends SetColumn[ThriftTest]
 
-  object thriftList extends ThriftListColumn[ThriftIndexedTable, ThriftRecord, ThriftTest](this)
+  object thriftList extends ListColumn[ThriftTest]
 
-  object thriftMap extends ThriftMapColumn[ThriftIndexedTable, ThriftRecord, String, ThriftTest](this)
+  object thriftMap extends MapColumn[String, ThriftTest]
 
-  object optionalThrift extends OptionalThriftColumn[ThriftIndexedTable, ThriftRecord, ThriftTest](this)
+  object optionalThrift extends OptionalCol[ThriftTest]
 }
 
 class ThriftDatabase(override val connector: CassandraConnection) extends Database[ThriftDatabase](connector) {

@@ -113,10 +113,6 @@ class ThriftSetOperationsTest extends FlatSpec with ThriftTestSuite {
       .value(_.ref, sample)
       .value(_.thriftSet, Set(sample, sample2, sample3))
 
-    val q = thriftDb
-      .thriftColumnTable.update.where(_.id eqs id)
-      .modify(_.thriftSet removeAll Set(sample2, sample3))
-
     val operation = for {
       insertDone <- insert.future()
       update <- thriftDb
