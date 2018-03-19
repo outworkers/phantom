@@ -15,20 +15,7 @@
  */
 package com.outworkers.phantom.thrift
 
-import com.twitter.scrooge.{CompactThriftSerializer, ThriftStructCodec, ThriftStructSerializer}
+import com.outworkers.phantom.thrift.columns.Ops
+import com.twitter.scrooge.BinaryThriftStructSerializer
 
-trait ThriftProtocolWrapper[TP[X] <: ThriftStructSerializer[X], T <: ThriftStruct] {
-  def protocol(codec: ThriftStructCodec[T]): TP[T]
-}
-
-object ThriftProtocolWrapper {
-  implicit def default[T <: ThriftStruct]: ThriftProtocolWrapper[CompactThriftSerializer, T] = {
-    new ThriftProtocolWrapper[CompactThriftSerializer, T] {
-      override def protocol(
-        tCodec: ThriftStructCodec[T]
-      ): ThriftProtocolWrapper[CompactThriftSerializer, T] = {
-        val serDes = CompactThriftSerializer[T](tCodec)
-      }
-    }
-  }
-}
+package object binary extends Ops[BinaryThriftStructSerializer]

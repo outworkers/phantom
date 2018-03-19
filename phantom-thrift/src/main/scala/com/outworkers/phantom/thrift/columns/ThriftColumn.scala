@@ -15,7 +15,6 @@
  */
 package com.outworkers.phantom.thrift.columns
 
-import com.outworkers.phantom.{CassandraTable, Row}
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.primitives.Primitives.StringPrimitive
@@ -23,12 +22,14 @@ import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column._
 import com.outworkers.phantom.thrift.ThriftHelper
-import com.twitter.scrooge.{CompactThriftSerializer, ThriftStruct}
+import com.outworkers.phantom.{CassandraTable, Row}
+import com.twitter.io.Buf.ByteBuffer
+import com.twitter.scrooge.{CompactThriftSerializer, ThriftStruct, ThriftStructSerializer}
 
 import scala.annotation.implicitNotFound
 import scala.util.{Success, Try}
 
-sealed trait ThriftCol[ValueType <: ThriftStruct] {
+private[phantom] trait ThriftCol[ValueType <: ThriftStruct] {
 
   /**
    * The Thrift serializer to use.
@@ -50,37 +51,43 @@ sealed trait ThriftCol[ValueType <: ThriftStruct] {
 
   def valueAsCql(v: ValueType): String = asCql(v)
 
-  val primitive = implicitly[Primitive[String]]
+  val primitive: Primitive[String] = implicitly[Primitive[String]]
 }
 
-abstract class ThriftColumn[
+abstract class RootThriftColumn[
   T <: CassandraTable[T, R],
   R,
-  V <: ThriftStruct
+  V <: ThriftStruct,
+  Serializer[X <: ThriftStruct] <: ThriftStructSerializer[X]
 ](table: CassandraTable[T, R])(
-  implicit hp: ThriftHelper[V]
+  implicit hp: ThriftHelper[V, Serializer]
 ) extends Column[T, R, V](table) with ThriftCol[V] {
 
-  val cassandraType = CQLSyntax.Types.Text
+  val cassandraType: String = CQLSyntax.Types.Text
 
-  override val serializer: CompactThriftSerializer[V] = hp.serializer
+  override val serializer: Serializer[V] = hp.serializer
 
   def parse(r: Row): Try[V] = {
     Try(StringPrimitive.deserialize(r.getBytesUnsafe(name), r.version)) map serializer.fromString
   }
 }
 
-abstract class OptionalThriftColumn[
+class OptionalRootThriftColumn[
   T <: CassandraTable[T, R],
   R,
-  V <: ThriftStruct
+  V <: ThriftStruct,
+  Serializer[X <: ThriftStruct] <: ThriftStructSerializer[X]
 ](table: CassandraTable[T, R])(
-  implicit hp: ThriftHelper[V]
+  implicit hp: ThriftHelper[V, Serializer]
 ) extends OptionalColumn[T, R, V](table) with ThriftCol[V] {
 
-  override val serializer: CompactThriftSerializer[V] = hp.serializer
+  val cassandraType: String = CQLSyntax.Types.Text
 
-  val cassandraType = CQLSyntax.Types.Text
+  override val serializer: Serializer[V] = hp.serializer
+
+  def parse(r: Row): Try[V] = {
+    Try(StringPrimitive.deserialize(r.getBytesUnsafe(name), r.version)) map serializer.fromString
+  }
 
   def asCql(v: Option[V]): String = {
     v.map(item => CQLQuery.empty.singleQuote(serializer.toString(item))).orNull
@@ -89,24 +96,24 @@ abstract class OptionalThriftColumn[
   def optional(r: Row): Try[V] = {
     Try(StringPrimitive.deserialize(r.getBytesUnsafe(name), r.version)) map serializer.fromString
   }
-
 }
 
-class ThriftSetColumn[
+class RootThriftSetColumn[
   T <: CassandraTable[T, R],
   R,
-  V <: ThriftStruct
+  V <: ThriftStruct,
+  Serializer[X <: ThriftStruct] <: ThriftStructSerializer[X]
 ](table: CassandraTable[T, R])(
-  implicit hp: ThriftHelper[V],
+  implicit hp: ThriftHelper[V, Serializer],
   ev1: Primitive[String],
   ev: Primitive[Set[String]]
 ) extends AbstractColColumn[T, R, Set, V](table) with ThriftCol[V] {
 
   override def valueAsCql(v: V): String = ev1.asCql(serializer.toString(v))
 
-  override val serializer: CompactThriftSerializer[V] = hp.serializer
+  override val serializer: Serializer[V] = hp.serializer
 
-  override val cassandraType = QueryBuilder.Collections.setType(CQLSyntax.Types.Text).queryString
+  override val cassandraType: String = QueryBuilder.Collections.setType(CQLSyntax.Types.Text).queryString
 
   override def asCql(v: Set[V]): String = ev.asCql(v map serializer.toString)
 
@@ -120,12 +127,13 @@ class ThriftSetColumn[
 }
 
 
-class ThriftListColumn[
+class RootThriftListColumn[
   T <: CassandraTable[T, R],
   R,
-  V <: ThriftStruct
+  V <: ThriftStruct,
+  Serializer[X <: ThriftStruct] <: ThriftStructSerializer[X]
 ](table: CassandraTable[T, R])(
-  implicit hp: ThriftHelper[V],
+  implicit hp: ThriftHelper[V, Serializer],
   ev: Primitive[List[String]]
 ) extends AbstractColColumn[T, R, List, V](table) with ThriftCol[V] {
 
@@ -133,9 +141,9 @@ class ThriftListColumn[
     CQLQuery.empty.singleQuote(serializer.toString(v))
   }
 
-  override val cassandraType = QueryBuilder.Collections.listType(CQLSyntax.Types.Text).queryString
+  override val cassandraType: String = QueryBuilder.Collections.listType(CQLSyntax.Types.Text).queryString
 
-  override val serializer: CompactThriftSerializer[V] = hp.serializer
+  override val serializer: Serializer[V] = hp.serializer
 
   override def parse(r: Row): Try[List[V]] = {
     if (r.isNull(name)) {
@@ -163,20 +171,21 @@ class ThriftListColumn[
 }
 
 @implicitNotFound(msg = "Type ${KeyType} must be a Cassandra primitive")
-class ThriftMapColumn[
+class RootThriftMapColumn[
   T <: CassandraTable[T, R],
   R,
   KeyType : Primitive,
-  V <: ThriftStruct
+  V <: ThriftStruct,
+  Serializer[X <: ThriftStruct] <: ThriftStructSerializer[X]
 ](table: CassandraTable[T, R])(
-  implicit hp: ThriftHelper[V],
+  implicit hp: ThriftHelper[V, Serializer],
   val keyPrimitive: Primitive[KeyType],
-  ev: Primitive[Map[KeyType, String]]
+  ev: Primitive[Map[KeyType, ByteBuffer]]
 ) extends AbstractMapColumn[T, R, KeyType, V](table) with ThriftCol[V] {
 
-  override val serializer: CompactThriftSerializer[V] = hp.serializer
+  override val serializer: Serializer[V] = hp.serializer
 
-  override val cassandraType = QueryBuilder.Collections.mapType(
+  override val cassandraType: String = QueryBuilder.Collections.mapType(
     keyPrimitive.dataType,
     CQLSyntax.Types.Text
   ).queryString
@@ -187,7 +196,7 @@ class ThriftMapColumn[
     if (r.isNull(name)) {
       Success(Map.empty[KeyType, V])
     } else {
-      Try(ev.deserialize(r.getBytesUnsafe(name), r.version).mapValues(serializer.fromString))
+      Try(ev.deserialize(r.getBytesUnsafe(name), r.version).mapValues(buf => serializer.fromBytes(buf.array())))
     }
   }
 }

@@ -499,7 +499,7 @@ object Primitives {
 
     override def asCql(value: M[RR]): String = converter(value)
 
-    override val dataType = cType
+    override val dataType: String = cType
 
     override def serialize(coll: M[RR], version: ProtocolVersion): ByteBuffer = {
       coll match {

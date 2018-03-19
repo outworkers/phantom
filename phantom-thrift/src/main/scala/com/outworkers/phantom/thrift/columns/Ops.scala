@@ -1,0 +1,65 @@
+/*
+ * Copyright 2013 - 2017 Outworkers Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.outworkers.phantom.thrift.columns
+
+import com.outworkers.phantom.CassandraTable
+import com.outworkers.phantom.builder.primitives.Primitive
+import com.outworkers.phantom.thrift.{ThriftHelper, columns}
+import com.twitter.scrooge.ThriftStructSerializer
+
+trait Ops[Serializer[X] <: ThriftStructSerializer[X]] {
+
+  type ThriftStruct = com.twitter.scrooge.ThriftStruct
+
+  implicit def thriftPrimitive[
+    T <: ThriftStruct
+  ](implicit hp: ThriftHelper[T, Serializer]): Primitive[T] = {
+    val sz = hp.serializer
+    Primitive.derive[T, String](sz.toString)(sz.fromString)
+  }
+
+  implicit class PrimitiveCompanionHelper(val obj: Primitive.type) {
+    def thrift[T <: ThriftStruct]()(implicit hp: ThriftHelper[T, Serializer]): Primitive[T] = {
+      val sz = hp.serializer
+      Primitive.derive[T, String](sz.toString)(sz.fromString)
+    }
+  }
+
+  type ThriftColumn[
+    T <: CassandraTable[T, R],
+    R,
+    V <: ThriftStruct
+  ] = columns.RootThriftColumn[T, R, V, Serializer]
+
+  type OptionalThriftColumn[
+    T <: CassandraTable[T, R],
+    R,
+    V <: ThriftStruct
+  ] = columns.OptionalRootThriftColumn[T, R, V, Serializer]
+
+  type ThriftListColumn[
+    T <: CassandraTable[T, R],
+    R,
+    V <: ThriftStruct
+  ] = columns.RootThriftListColumn[T, R, V, Serializer]
+
+  type ThriftMapColumn[
+    T <: CassandraTable[T, R],
+    R,
+    KeyType,
+    V <: ThriftStruct
+  ] = columns.RootThriftMapColumn[T, R, V, KeyType, Serializer]
+}

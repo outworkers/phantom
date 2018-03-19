@@ -13,12 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom
+package com.outworkers.phantom.thrift
 
 import com.outworkers.phantom.thrift.columns.Ops
 import com.twitter.scrooge.CompactThriftSerializer
 
-package object thrift extends Ops[CompactThriftSerializer]
-
-
-
+package object compact extends Ops[CompactThriftSerializer]
