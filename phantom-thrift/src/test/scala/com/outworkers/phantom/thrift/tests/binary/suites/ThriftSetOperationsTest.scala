@@ -17,7 +17,6 @@ package com.outworkers.phantom.thrift.tests.binary.suites
 
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.thrift.tests.binary.BinarySuite
-import com.outworkers.phantom.thrift.tests.compact.CompactSuite
 import com.outworkers.util.samplers._
 
 class ThriftSetOperationsTest extends BinarySuite {

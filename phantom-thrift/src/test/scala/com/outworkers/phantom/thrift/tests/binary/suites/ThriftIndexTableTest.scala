@@ -16,7 +16,7 @@
 package com.outworkers.phantom.thrift.tests.binary.suites
 
 import com.outworkers.phantom.finagle._
-import com.outworkers.phantom.thrift.compact._
+import com.outworkers.phantom.thrift.binary._
 import com.outworkers.phantom.thrift.tests.ThriftRecord
 import com.outworkers.phantom.thrift.tests.binary.BinarySuite
 import com.outworkers.phantom.thrift.tests.compact.CompactSuite
