@@ -18,21 +18,21 @@ package com.outworkers.phantom.thrift.columns
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.thrift.{ThriftHelper, columns}
-import com.twitter.scrooge.ThriftStructSerializer
+import com.twitter.scrooge.{ThriftStruct, ThriftStructSerializer}
 
-trait Ops[Serializer[X] <: ThriftStructSerializer[X]] {
+trait Ops[Serializer[X <: ThriftStruct] <: ThriftStructSerializer[X]] {
 
   type ThriftStruct = com.twitter.scrooge.ThriftStruct
 
   implicit def thriftPrimitive[
     T <: ThriftStruct
-  ](implicit hp: ThriftHelper[T, Serializer]): Primitive[T] = {
+  ](implicit hp: ThriftHelper[T, Serializer[T]]): Primitive[T] = {
     val sz = hp.serializer
     Primitive.derive[T, String](sz.toString)(sz.fromString)
   }
 
   implicit class PrimitiveCompanionHelper(val obj: Primitive.type) {
-    def thrift[T <: ThriftStruct]()(implicit hp: ThriftHelper[T, Serializer]): Primitive[T] = {
+    def thrift[T <: ThriftStruct]()(implicit hp: ThriftHelper[T, Serializer[T]]): Primitive[T] = {
       val sz = hp.serializer
       Primitive.derive[T, String](sz.toString)(sz.fromString)
     }
@@ -42,24 +42,32 @@ trait Ops[Serializer[X] <: ThriftStructSerializer[X]] {
     T <: CassandraTable[T, R],
     R,
     V <: ThriftStruct
-  ] = columns.RootThriftColumn[T, R, V, Serializer]
+  ] = columns.RootThriftColumn[T, R, V, Serializer[V]]
 
   type OptionalThriftColumn[
     T <: CassandraTable[T, R],
     R,
     V <: ThriftStruct
-  ] = columns.OptionalRootThriftColumn[T, R, V, Serializer]
+  ] = columns.OptionalRootThriftColumn[T, R, V, Serializer[V]]
 
   type ThriftListColumn[
     T <: CassandraTable[T, R],
     R,
     V <: ThriftStruct
-  ] = columns.RootThriftListColumn[T, R, V, Serializer]
+  ] = columns.RootThriftListColumn[T, R, V, Serializer[V]]
+
+
+  type ThriftSetColumn[
+    T <: CassandraTable[T, R],
+    R,
+    V <: ThriftStruct
+  ] = columns.RootThriftSetColumn[T, R, V, Serializer[V]]
+
 
   type ThriftMapColumn[
     T <: CassandraTable[T, R],
     R,
     KeyType,
     V <: ThriftStruct
-  ] = columns.RootThriftMapColumn[T, R, V, KeyType, Serializer]
+  ] = columns.RootThriftMapColumn[T, R, KeyType, V, Serializer[V]]
 }

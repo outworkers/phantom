@@ -21,20 +21,20 @@ import scala.reflect.macros.blackbox
 
 trait ThriftHelper[
   ValueType <: ThriftStruct,
-  Serializer[X] <: ThriftStructSerializer[X]
+  Serializer <: ThriftStructSerializer[ValueType]
 ] {
-  def serializer: Serializer[ValueType]
+  def serializer: Serializer
 }
 
 object ThriftHelper {
   def apply[
     T <: ThriftStruct,
-    Serializer[X] <: ThriftStructSerializer[X]
+    Serializer <: ThriftStructSerializer[T]
   ](implicit ev: ThriftHelper[T, Serializer]): ThriftHelper[T, Serializer] = ev
 
   implicit def materializer[
     T <: ThriftStruct,
-    Serializer[X] <: ThriftStructSerializer[X]
+    Serializer <: ThriftStructSerializer[T]
   ]: ThriftHelper[T, Serializer] = macro ThriftHelperMacro.materialize[T, Serializer]
 }
 
@@ -45,23 +45,20 @@ class ThriftHelperMacro(val c: blackbox.Context) {
 
   private[this] val pkgRoot = q"_root_.com.outworkers.phantom.thrift"
   private[this] val scroogePkg = q"_root_.com.twitter.scrooge"
-  private[this] val serializerTpe: (Type, Type) => Tree = {
-    case (sTpe, vTpe) => tq"$sTpe[$vTpe]"
-  }
 
   def materialize[
     T <: ThriftStruct : WeakTypeTag,
-    Serializer[_] : WeakTypeTag
+    Serializer : WeakTypeTag
   ]: Tree = {
     val tpe = weakTypeOf[T]
-    val sTpe = weakTypeOf[Serializer[_]]
+    val sTpe = weakTypeOf[Serializer]
     //sTpe.typeConstructor
     val valueCompanion = tpe.typeSymbol.companion
     val serializerCompanion = sTpe.typeSymbol.companion
 
     q"""
       new $pkgRoot.ThriftHelper[$tpe, $sTpe] {
-        override val serializer: ${serializerTpe(sTpe, tpe)} = {
+        override val serializer: $sTpe = {
           $scroogePkg.$serializerCompanion.apply[$tpe]($valueCompanion)
         }
       }
