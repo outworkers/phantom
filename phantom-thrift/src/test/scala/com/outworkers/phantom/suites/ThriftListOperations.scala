@@ -16,7 +16,6 @@
 package com.outworkers.phantom.suites
 
 import com.outworkers.phantom.finagle._
-import com.outworkers.phantom.tables.{ThriftDatabase, ThriftRecord}
 import com.outworkers.util.samplers._
 import com.outworkers.util.testing.twitter._
 import org.scalatest.FlatSpec

@@ -15,9 +15,8 @@
  */
 package com.outworkers.phantom.thrift.columns
 
-import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.primitives.Primitive
-import com.outworkers.phantom.thrift.{ThriftHelper, columns}
+import com.outworkers.phantom.thrift.ThriftHelper
 import com.twitter.scrooge.{ThriftStruct, ThriftStructSerializer}
 
 trait Ops[Serializer[X <: ThriftStruct] <: ThriftStructSerializer[X]] {
@@ -37,37 +36,4 @@ trait Ops[Serializer[X <: ThriftStruct] <: ThriftStructSerializer[X]] {
       Primitive.derive[T, String](sz.toString)(sz.fromString)
     }
   }
-
-  type ThriftColumn[
-    T <: CassandraTable[T, R],
-    R,
-    V <: ThriftStruct
-  ] = columns.RootThriftColumn[T, R, V, Serializer[V]]
-
-  type OptionalThriftColumn[
-    T <: CassandraTable[T, R],
-    R,
-    V <: ThriftStruct
-  ] = columns.OptionalRootThriftColumn[T, R, V, Serializer[V]]
-
-  type ThriftListColumn[
-    T <: CassandraTable[T, R],
-    R,
-    V <: ThriftStruct
-  ] = columns.RootThriftListColumn[T, R, V, Serializer[V]]
-
-
-  type ThriftSetColumn[
-    T <: CassandraTable[T, R],
-    R,
-    V <: ThriftStruct
-  ] = columns.RootThriftSetColumn[T, R, V, Serializer[V]]
-
-
-  type ThriftMapColumn[
-    T <: CassandraTable[T, R],
-    R,
-    KeyType,
-    V <: ThriftStruct
-  ] = columns.RootThriftMapColumn[T, R, KeyType, V, Serializer[V]]
 }
