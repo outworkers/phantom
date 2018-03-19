@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.suites
+package com.outworkers.phantom.thrift.tests.tjson.suites
 
-import com.outworkers.phantom.tables.ThriftRecord
 import com.outworkers.phantom.finagle._
+import com.outworkers.phantom.thrift.tests.compact.ThriftRecord
+import com.outworkers.phantom.thrift.util.ThriftTestSuite
 import com.outworkers.util.samplers._
 import org.scalatest.FlatSpec
 
-class ThriftMapColumnTest extends FlatSpec with ThriftTestSuite with TwitterFutures {
+class ThriftMapColumnTest extends FlatSpec with ThriftTestSuite {
 
   it should "put an item to a thrift map column" in {
     val sample = gen[ThriftRecord]

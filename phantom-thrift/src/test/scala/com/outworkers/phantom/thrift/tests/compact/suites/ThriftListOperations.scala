@@ -13,15 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.suites
+package com.outworkers.phantom.thrift.tests.compact.suites
 
 import com.outworkers.phantom.finagle._
-import com.outworkers.phantom.tables.ThriftRecord
+import com.outworkers.phantom.thrift.tests.ThriftRecord
+import com.outworkers.phantom.thrift.util.ThriftTestSuite
 import com.outworkers.util.samplers._
 import com.outworkers.util.testing.twitter._
 import org.scalatest.FlatSpec
 
-class ThriftListOperations extends FlatSpec with ThriftTestSuite with TwitterFutures {
+class ThriftListOperations extends FlatSpec with ThriftTestSuite {
 
   it should "prepend an item to a thrift list column" in {
     val sample = gen[ThriftRecord]
@@ -36,7 +37,7 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite with TwitterFut
       select <- thriftDb.thriftColumnTable.select(_.thriftList).where(_.id eqs sample.id).one
     } yield select
 
-    whenReady(operation) { items =>
+    whenReady(operation.asScala) { items =>
       items shouldBe defined
       items.value shouldEqual (sample2 :: sample.thriftList)
     }
@@ -77,7 +78,7 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite with TwitterFut
       select <- thriftDb.thriftColumnTable.select(_.thriftList).where(_.id eqs sample.id).one
     } yield select
 
-    whenReady(operation) { items =>
+    whenReady(operation.asScala) { items =>
       items shouldBe defined
       items.value shouldEqual prependedValues ::: sample.thriftList
     }
@@ -118,7 +119,7 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite with TwitterFut
       select <- thriftDb.thriftColumnTable.select(_.thriftList).where(_.id eqs sample.id).one
     } yield select
 
-    whenReady(operation) { items =>
+    whenReady(operation.asScala) { items =>
       items shouldBe defined
       items.value shouldEqual sample.thriftList :+ sample2
     }
@@ -156,7 +157,7 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite with TwitterFut
       select <- thriftDb.thriftColumnTable.select(_.thriftList).where(_.id eqs sample.id).one
     } yield select
 
-    whenReady(operation) { items =>
+    whenReady(operation.asScala) { items =>
       items shouldBe defined
       items.value shouldEqual (sample.thriftList ::: sample2)
     }
@@ -198,7 +199,7 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite with TwitterFut
         .one
     } yield select
 
-    whenReady(operation) { items =>
+    whenReady(operation.asScala) { items =>
       items shouldBe defined
       items.value shouldEqual (sample.thriftList diff List(sample2))
     }
@@ -240,7 +241,7 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite with TwitterFut
       select <- thriftDb.thriftColumnTable.select(_.thriftList).where(_.id eqs sample.id).one
     } yield select
 
-    whenReady(operation) { items =>
+    whenReady(operation.asScala) { items =>
       items shouldBe defined
       items.value shouldEqual (sample.thriftList diff removables)
     }
@@ -317,7 +318,7 @@ class ThriftListOperations extends FlatSpec with ThriftTestSuite with TwitterFut
       select <- thriftDb.thriftColumnTable.select(_.thriftList).where(_.id eqs sample.id).one
     } yield select
 
-    whenReady(operation) { items =>
+    whenReady(operation.asScala) { items =>
       items shouldBe defined
       items.value should contain (sample2)
     }

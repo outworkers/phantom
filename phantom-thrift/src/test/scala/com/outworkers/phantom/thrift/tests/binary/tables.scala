@@ -13,24 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.tables
+package com.outworkers.phantom.thrift.tests.binary
 
 import java.util.UUID
+
 import com.outworkers.phantom.connectors.CassandraConnection
 import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.thrift.models._
-import com.outworkers.phantom.thrift.compact._
-
-case class ThriftRecord(
-  id: UUID,
-  name: String,
-  struct: ThriftTest,
-  thriftSet: Set[ThriftTest],
-  thriftList: List[ThriftTest],
-  thriftMap: Map[String, ThriftTest],
-  optThrift: Option[ThriftTest]
-)
+import com.outworkers.phantom.thrift.binary._
+import com.outworkers.phantom.thrift.tests.ThriftRecord
 
 abstract class ThriftColumnTable extends Table[ThriftColumnTable, ThriftRecord] {
   object id extends UUIDColumn with PartitionKey
@@ -62,9 +54,9 @@ abstract class ThriftIndexedTable extends Table[ThriftIndexedTable, ThriftRecord
   object optionalThrift extends OptionalCol[ThriftTest]
 }
 
-class ThriftDatabase(override val connector: CassandraConnection) extends Database[ThriftDatabase](connector) {
+abstract class ThriftDatabase(
+  override val connector: CassandraConnection
+) extends Database[ThriftDatabase](connector) {
   object thriftColumnTable extends ThriftColumnTable with Connector
   object thriftIndexedTable extends ThriftIndexedTable with Connector
 }
-
-object ThriftDatabase extends ThriftDatabase(Connector.default)

@@ -16,12 +16,7 @@
 package com.outworkers.phantom
 
 import com.outworkers.phantom.thrift.columns.Ops
-import com.twitter.scrooge.{
-  BinaryThriftStructSerializer,
-  CompactThriftSerializer,
-  JsonThriftSerializer,
-  LazyBinaryThriftStructSerializer
-}
+import com.twitter.scrooge._
 
 package object thrift {
 
@@ -29,7 +24,7 @@ package object thrift {
 
   object binary extends Ops[BinaryThriftStructSerializer]
   object lazybinary extends Ops[LazyBinaryThriftStructSerializer]
-  object jsonthrift extends Ops[JsonThriftSerializer]
+  object tjson extends Ops[TJSONProtocolThriftSerializer]
   object compact extends Ops[CompactThriftSerializer]
 }
 

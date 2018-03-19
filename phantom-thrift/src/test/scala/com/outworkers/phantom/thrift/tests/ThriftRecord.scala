@@ -12,24 +12,20 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+package com.outworkers.phantom.thrift.tests.tjson
  */
-package com.outworkers.phantom.finagle
+package com.outworkers.phantom.thrift.tests
 
-import com.twitter.util.{Future, Return, Throw}
-import org.scalatest.concurrent.{ScalaFutures, Waiters}
+import java.util.UUID
 
-trait TwitterFutures extends Waiters with ScalaFutures {
+import com.outworkers.phantom.thrift.models.ThriftTest
 
-  implicit def twitterFutureToConcept[T](f: Future[T]): FutureConcept[T] = new FutureConcept[T] {
-    override def eitherValue: Option[Either[Throwable, T]] = f.poll match {
-      case Some(Return(ret)) => Some(Right(ret))
-      case Some(Throw(err)) => Some(Left(err))
-      case None => None
-    }
-
-    override def isExpired: Boolean = false
-
-    override def isCanceled: Boolean = false
-  }
-
-}
+case class ThriftRecord(
+  id: UUID,
+  name: String,
+  struct: ThriftTest,
+  thriftSet: Set[ThriftTest],
+  thriftList: List[ThriftTest],
+  thriftMap: Map[String, ThriftTest],
+  optThrift: Option[ThriftTest]
+)

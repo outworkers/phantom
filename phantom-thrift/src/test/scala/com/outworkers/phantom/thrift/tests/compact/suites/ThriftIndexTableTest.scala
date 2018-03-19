@@ -13,28 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.suites
+package com.outworkers.phantom.thrift.tests.compact.suites
 
-import com.outworkers.phantom.tables.{ThriftDatabase, ThriftRecord}
 import com.outworkers.util.samplers._
 import com.outworkers.util.testing.twitter._
 import com.outworkers.phantom.finagle._
 import com.outworkers.phantom.thrift.compact._
+import com.outworkers.phantom.thrift.tests.ThriftRecord
+import com.outworkers.phantom.thrift.util.ThriftTestSuite
 import org.scalatest.FlatSpec
 
-class ThriftIndexTableTest extends FlatSpec with ThriftTestSuite with TwitterFutures {
-
-  val ThriftIndexedTable = ThriftDatabase.thriftIndexedTable
+class ThriftIndexTableTest extends FlatSpec with ThriftTestSuite {
 
   it should "allow storing a thrift class inside a table indexed by a thrift struct" in {
     val sample = gen[ThriftRecord]
 
     val chain = for {
-      _ <- ThriftIndexedTable.store(sample).future()
-      get <- ThriftIndexedTable.select.where(_.ref eqs sample.struct).one()
+      _ <- thriftDb.thriftIndexedTable.store(sample).future()
+      get <- thriftDb.thriftIndexedTable.select.where(_.ref eqs sample.struct).one()
     } yield get
 
-    whenReady(chain) { res =>
+    whenReady(chain.asScala) { res =>
       res.value.id shouldEqual sample.id
       res.value.name shouldEqual sample.name
       res.value.struct shouldEqual sample.struct
@@ -51,8 +50,8 @@ class ThriftIndexTableTest extends FlatSpec with ThriftTestSuite with TwitterFut
     val sample = gen[ThriftRecord]
 
     val chain = for {
-      store <- ThriftIndexedTable.store(sample).future()
-      get <- ThriftIndexedTable.select.where(_.ref eqs sample.struct).one()
+      store <- thriftDb.thriftIndexedTable.store(sample).future()
+      get <- thriftDb.thriftIndexedTable.select.where(_.ref eqs sample.struct).one()
     } yield get
 
     whenReady(chain.asScala) { res =>

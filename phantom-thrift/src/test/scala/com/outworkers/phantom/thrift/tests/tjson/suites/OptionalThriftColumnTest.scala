@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.suites
+package com.outworkers.phantom.thrift.tests.tjson.suites
 
+import com.outworkers.phantom.finagle._
 import com.datastax.driver.core.utils.UUIDs
-import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.tables.ThriftDatabase
+import com.outworkers.phantom.thrift.util.ThriftTestSuite
 import com.outworkers.util.samplers._
 import org.scalatest.FlatSpec
 
-class OptionalThriftColumnTest extends FlatSpec with ThriftTestSuite with TwitterFutures {
+class OptionalThriftColumnTest extends FlatSpec with ThriftTestSuite {
 
   it should "find an item if it was defined" in {
 
@@ -29,7 +29,7 @@ class OptionalThriftColumnTest extends FlatSpec with ThriftTestSuite with Twitte
 
     val sample = gen[ThriftTest]
 
-    val insert = ThriftDatabase.thriftColumnTable.insert
+    val insert = thriftDb.thriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
@@ -40,7 +40,7 @@ class OptionalThriftColumnTest extends FlatSpec with ThriftTestSuite with Twitte
 
     val operation = for {
       insertDone <- insert
-      select <- ThriftDatabase.thriftColumnTable.select(_.optionalThrift).where(_.id eqs id).one
+      select <- thriftDb.thriftColumnTable.select(_.optionalThrift).where(_.id eqs id).one
     } yield select
 
     whenReady(operation) { res =>
@@ -53,7 +53,7 @@ class OptionalThriftColumnTest extends FlatSpec with ThriftTestSuite with Twitte
 
     val sample = gen[ThriftTest]
 
-    val insert = ThriftDatabase.thriftColumnTable.insert
+    val insert = thriftDb.thriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
@@ -64,7 +64,7 @@ class OptionalThriftColumnTest extends FlatSpec with ThriftTestSuite with Twitte
 
     val operation = for {
       insertDone <- insert
-      select <- ThriftDatabase.thriftColumnTable.select(_.optionalThrift).where(_.id eqs id).one
+      select <- thriftDb.thriftColumnTable.select(_.optionalThrift).where(_.id eqs id).one
     } yield select
 
     whenReady(operation) { res =>

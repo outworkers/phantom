@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.suites
+package com.outworkers.phantom.thrift.tests.compact.suites
 
 import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.thrift.util.ThriftTestSuite
 import com.outworkers.util.samplers._
 import org.scalatest.FlatSpec
 import org.scalatest.time.SpanSugar._
