@@ -23,7 +23,10 @@ import com.twitter.scrooge.{
   LazyBinaryThriftStructSerializer
 }
 
-package object thrift extends Ops[CompactThriftSerializer] {
+package object thrift {
+
+  type ThriftStruct = com.twitter.scrooge.ThriftStruct
+
   object binary extends Ops[BinaryThriftStructSerializer]
   object lazybinary extends Ops[LazyBinaryThriftStructSerializer]
   object jsonthrift extends Ops[JsonThriftSerializer]
