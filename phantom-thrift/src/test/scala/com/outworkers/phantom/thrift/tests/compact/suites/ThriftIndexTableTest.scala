@@ -20,8 +20,6 @@ import com.outworkers.phantom.finagle._
 import com.outworkers.phantom.thrift.compact._
 import com.outworkers.phantom.thrift.tests.ThriftRecord
 import com.outworkers.phantom.thrift.tests.compact.CompactSuite
-import com.outworkers.phantom.thrift.util.ThriftTestSuite
-import org.scalatest.FlatSpec
 
 class ThriftIndexTableTest extends CompactSuite {
 
