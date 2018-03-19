@@ -17,12 +17,10 @@ package com.outworkers.phantom.thrift.tests.compact.suites
 
 import com.datastax.driver.core.utils.UUIDs
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.thrift.models.ThriftTest
-import com.outworkers.phantom.thrift.util.ThriftTestSuite
+import com.outworkers.phantom.thrift.tests.compact.CompactSuite
 import com.outworkers.util.samplers._
-import org.scalatest.FlatSpec
 
-class ThriftColumnTest extends FlatSpec with ThriftTestSuite {
+class ThriftColumnTest extends CompactSuite {
 
   it should "allow storing thrift columns" in {
     val id = UUIDs.timeBased()

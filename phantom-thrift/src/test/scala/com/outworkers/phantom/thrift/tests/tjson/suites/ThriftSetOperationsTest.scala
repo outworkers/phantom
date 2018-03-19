@@ -16,11 +16,12 @@
 package com.outworkers.phantom.thrift.tests.tjson.suites
 
 import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.thrift.tests.tjson.TJsonSuite
 import com.outworkers.phantom.thrift.util.ThriftTestSuite
 import com.outworkers.util.samplers._
 import org.scalatest.FlatSpec
 
-class ThriftSetOperationsTest extends FlatSpec with ThriftTestSuite {
+class ThriftSetOperationsTest extends TJsonSuite {
 
   it should "add an item to a thrift set column" in {
 

@@ -18,20 +18,11 @@ package com.outworkers.phantom.thrift.util
 import java.util.UUID
 
 import com.outworkers.phantom.PhantomSuite
-import com.outworkers.phantom.finagle._
 import com.outworkers.phantom.thrift.tests.ThriftRecord
-import com.outworkers.phantom.thrift.tests.compact.ThriftDatabase
 import com.outworkers.util.samplers._
 import com.twitter.util.{Future, Return, Throw}
 
 trait ThriftTestSuite extends PhantomSuite {
-
-  def thriftDb: ThriftDatabase
-
-  override def beforeAll(): Unit = {
-    super.beforeAll()
-    thriftDb.create()
-  }
 
   implicit def twitterFutureToConcept[T](f: Future[T]): FutureConcept[T] = new FutureConcept[T] {
     override def eitherValue: Option[Either[Throwable, T]] = f.poll match {

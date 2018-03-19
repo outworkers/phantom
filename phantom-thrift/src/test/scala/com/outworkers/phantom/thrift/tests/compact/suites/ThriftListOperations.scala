@@ -17,12 +17,13 @@ package com.outworkers.phantom.thrift.tests.compact.suites
 
 import com.outworkers.phantom.finagle._
 import com.outworkers.phantom.thrift.tests.ThriftRecord
+import com.outworkers.phantom.thrift.tests.compact.CompactSuite
 import com.outworkers.phantom.thrift.util.ThriftTestSuite
 import com.outworkers.util.samplers._
 import com.outworkers.util.testing.twitter._
 import org.scalatest.FlatSpec
 
-class ThriftListOperations extends FlatSpec with ThriftTestSuite {
+class ThriftListOperations extends CompactSuite {
 
   it should "prepend an item to a thrift list column" in {
     val sample = gen[ThriftRecord]

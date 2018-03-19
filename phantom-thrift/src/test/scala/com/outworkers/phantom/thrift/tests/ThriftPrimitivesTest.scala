@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.thrift.tests.tjson.suites
+package com.outworkers.phantom.thrift.tests
 
 import com.datastax.driver.core.ProtocolVersion
 import com.outworkers.phantom.builder.primitives.Primitive
+import com.outworkers.phantom.tables.Connector
+import com.outworkers.phantom.thrift.util.ThriftTestSuite
 import com.outworkers.util.samplers.Sample
 import org.scalacheck.Gen
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
@@ -43,14 +45,17 @@ class ThriftPrimitivesTest extends FlatSpec with ThriftTestSuite with GeneratorD
   }
 
   it should "serialize binary thrift primitives" in {
+    import com.outworkers.phantom.thrift.binary._
     sroundtrip[ThriftTest]
   }
 
   it should "serialize lazy binary thrift primitives" in {
+    import com.outworkers.phantom.thrift.lazybinary._
     sroundtrip[ThriftTest]
   }
 
   it should "serialize JSON thrift primitives" in {
+    import com.outworkers.phantom.thrift.tjson._
     sroundtrip[ThriftTest]
   }
 }

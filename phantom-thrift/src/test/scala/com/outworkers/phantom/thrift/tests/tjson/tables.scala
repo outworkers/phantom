@@ -12,14 +12,15 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-package com.outworkers.phantom.thrift.tests.tjson
  */
+package com.outworkers.phantom.thrift.tests.tjson
 
 import com.outworkers.phantom.connectors.CassandraConnection
 import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.tables.Connector
 import com.outworkers.phantom.thrift.models._
-import com.outworkers.phantom.thrift.tests.binary.ThriftRecord
+import com.outworkers.phantom.thrift.tests.ThriftRecord
 import com.outworkers.phantom.thrift.tjson._
 
 abstract class ThriftColumnTable extends Table[ThriftColumnTable, ThriftRecord] {
@@ -58,3 +59,5 @@ abstract class ThriftDatabase(
   object thriftColumnTable extends ThriftColumnTable with Connector
   object thriftIndexedTable extends ThriftIndexedTable with Connector
 }
+
+object ThriftDatabase extends ThriftDatabase(Connector.default)

@@ -13,5 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.thrift.tests.binary
+package com.outworkers.phantom.thrift.tests.compact
 
+import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.thrift.tests.compact
+import com.outworkers.phantom.thrift.util.ThriftTestSuite
+import org.scalatest.FlatSpec
+
+trait CompactSuite extends FlatSpec with ThriftTestSuite {
+  val thriftDb = compact.ThriftDatabase
+
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    thriftDb.create()
+  }
+}

@@ -18,6 +18,7 @@ package com.outworkers.phantom.thrift.tests.compact
 import com.outworkers.phantom.connectors.CassandraConnection
 import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.tables.Connector
 import com.outworkers.phantom.thrift.models._
 import com.outworkers.phantom.thrift.compact._
 import com.outworkers.phantom.thrift.tests.ThriftRecord
@@ -58,3 +59,5 @@ abstract class ThriftDatabase(
   object thriftColumnTable extends ThriftColumnTable with Connector
   object thriftIndexedTable extends ThriftIndexedTable with Connector
 }
+
+object ThriftDatabase extends ThriftDatabase(Connector.default)

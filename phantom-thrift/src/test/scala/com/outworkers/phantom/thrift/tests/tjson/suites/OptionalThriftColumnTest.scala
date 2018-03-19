@@ -15,13 +15,12 @@
  */
 package com.outworkers.phantom.thrift.tests.tjson.suites
 
-import com.outworkers.phantom.finagle._
 import com.datastax.driver.core.utils.UUIDs
-import com.outworkers.phantom.thrift.util.ThriftTestSuite
+import com.outworkers.phantom.finagle._
+import com.outworkers.phantom.thrift.tests.tjson.TJsonSuite
 import com.outworkers.util.samplers._
-import org.scalatest.FlatSpec
 
-class OptionalThriftColumnTest extends FlatSpec with ThriftTestSuite {
+class OptionalThriftColumnTest extends TJsonSuite {
 
   it should "find an item if it was defined" in {
 

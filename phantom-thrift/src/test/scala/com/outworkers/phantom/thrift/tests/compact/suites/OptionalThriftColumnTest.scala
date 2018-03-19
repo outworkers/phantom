@@ -17,12 +17,10 @@ package com.outworkers.phantom.thrift.tests.compact.suites
 
 import com.datastax.driver.core.utils.UUIDs
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.thrift._
-import com.outworkers.phantom.thrift.util.ThriftTestSuite
+import com.outworkers.phantom.thrift.tests.compact.CompactSuite
 import com.outworkers.util.samplers._
-import org.scalatest.FlatSpec
 
-class OptionalThriftColumnTest extends FlatSpec with ThriftTestSuite {
+class OptionalThriftColumnTest extends CompactSuite {
 
   it should "find an item if it was defined" in {
 

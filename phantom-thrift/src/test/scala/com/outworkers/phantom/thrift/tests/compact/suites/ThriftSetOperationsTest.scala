@@ -16,12 +16,12 @@
 package com.outworkers.phantom.thrift.tests.compact.suites
 
 import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.thrift.tests.compact.CompactSuite
 import com.outworkers.phantom.thrift.util.ThriftTestSuite
 import com.outworkers.util.samplers._
 import org.scalatest.FlatSpec
-import org.scalatest.time.SpanSugar._
 
-class ThriftSetOperationsTest extends FlatSpec with ThriftTestSuite {
+class ThriftSetOperationsTest extends CompactSuite {
 
   it should "add an item to a thrift set column" in {
 

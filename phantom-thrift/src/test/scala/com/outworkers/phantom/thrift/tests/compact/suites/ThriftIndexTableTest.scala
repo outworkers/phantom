@@ -16,14 +16,14 @@
 package com.outworkers.phantom.thrift.tests.compact.suites
 
 import com.outworkers.util.samplers._
-import com.outworkers.util.testing.twitter._
 import com.outworkers.phantom.finagle._
 import com.outworkers.phantom.thrift.compact._
 import com.outworkers.phantom.thrift.tests.ThriftRecord
+import com.outworkers.phantom.thrift.tests.compact.CompactSuite
 import com.outworkers.phantom.thrift.util.ThriftTestSuite
 import org.scalatest.FlatSpec
 
-class ThriftIndexTableTest extends FlatSpec with ThriftTestSuite {
+class ThriftIndexTableTest extends CompactSuite {
 
   it should "allow storing a thrift class inside a table indexed by a thrift struct" in {
     val sample = gen[ThriftRecord]
@@ -33,7 +33,7 @@ class ThriftIndexTableTest extends FlatSpec with ThriftTestSuite {
       get <- thriftDb.thriftIndexedTable.select.where(_.ref eqs sample.struct).one()
     } yield get
 
-    whenReady(chain.asScala) { res =>
+    whenReady(chain) { res =>
       res.value.id shouldEqual sample.id
       res.value.name shouldEqual sample.name
       res.value.struct shouldEqual sample.struct
@@ -54,7 +54,7 @@ class ThriftIndexTableTest extends FlatSpec with ThriftTestSuite {
       get <- thriftDb.thriftIndexedTable.select.where(_.ref eqs sample.struct).one()
     } yield get
 
-    whenReady(chain.asScala) { res =>
+    whenReady(chain) { res =>
       res.value.id shouldEqual sample.id
       res.value.name shouldEqual sample.name
       res.value.struct shouldEqual sample.struct
