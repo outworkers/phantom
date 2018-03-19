@@ -16,7 +16,7 @@
 package com.outworkers.phantom.example.basics
 
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.thrift._
+import com.outworkers.phantom.thrift.compact._
 import com.outworkers.phantom.example.basics.thrift.SampleModel
 
 // Sample model here comes from the Thrift struct definition.
@@ -34,5 +34,5 @@ abstract class ThriftTable extends Table[ThriftTable, SampleRecord] {
 
   // By default, com.outworkers.phantom will use a compact Thrift serializer.
   // And store the records as strings in Cassandra.
-  object thriftModel extends ThriftColumn[ThriftTable, SampleRecord, SampleModel](this)
+  object thriftModel extends Col[SampleModel]
 }
