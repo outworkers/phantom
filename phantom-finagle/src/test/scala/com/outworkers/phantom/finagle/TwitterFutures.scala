@@ -13,16 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.thrift.util
+package com.outworkers.phantom.finagle
 
-import java.util.UUID
-
-import com.outworkers.phantom.PhantomSuite
-import com.outworkers.phantom.thrift.tests.ThriftRecord
-import com.outworkers.util.samplers._
 import com.twitter.util.{Future, Return, Throw}
+import org.scalatest.concurrent.{ScalaFutures, Waiters}
 
-trait ThriftTestSuite extends PhantomSuite {
+trait TwitterFutures extends Waiters with ScalaFutures {
 
   implicit def twitterFutureToConcept[T](f: Future[T]): FutureConcept[T] = new FutureConcept[T] {
     override def eitherValue: Option[Either[Throwable, T]] = f.poll match {
@@ -35,32 +31,4 @@ trait ThriftTestSuite extends PhantomSuite {
 
     override def isCanceled: Boolean = false
   }
-
-  type ThriftTest = com.outworkers.phantom.thrift.models.ThriftTest
-  val ThriftTest = com.outworkers.phantom.thrift.models.ThriftTest
-
-  implicit object ThriftTestSample extends Sample[ThriftTest] {
-    def sample: ThriftTest = ThriftTest(
-      gen[Int],
-      gen[String],
-      test = false
-    )
-  }
-
-  implicit object OutputSample extends Sample[ThriftRecord] {
-    def sample: ThriftRecord = {
-      ThriftRecord(
-        id = gen[UUID],
-        name = gen[String],
-        struct = gen[ThriftTest],
-        thriftSet = genList[ThriftTest]().toSet[ThriftTest],
-        thriftList = genList[ThriftTest](),
-        thriftMap = genList[ThriftTest]().map {
-          item => (item.toString, item)
-        }.toMap,
-        optThrift = genOpt[ThriftTest]
-      )
-    }
-  }
-
 }
