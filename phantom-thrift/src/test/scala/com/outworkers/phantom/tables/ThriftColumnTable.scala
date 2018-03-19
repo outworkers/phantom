@@ -20,7 +20,7 @@ import com.outworkers.phantom.connectors.CassandraConnection
 import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.thrift.models._
-import com.outworkers.phantom.thrift.jsonthrift._
+import com.outworkers.phantom.thrift.compact._
 
 case class ThriftRecord(
   id: UUID,

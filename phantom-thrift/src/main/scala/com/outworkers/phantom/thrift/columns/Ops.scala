@@ -26,14 +26,6 @@ trait Ops[Serializer[X <: ThriftStruct] <: ThriftStructSerializer[X]] {
   implicit def thriftPrimitive[
     T <: ThriftStruct
   ](implicit hp: ThriftHelper[T, Serializer[T]]): Primitive[T] = {
-    val sz = hp.serializer
-    Primitive.derive[T, String](sz.toString)(sz.fromString)
-  }
-
-  implicit class PrimitiveCompanionHelper(val obj: Primitive.type) {
-    def thrift[T <: ThriftStruct]()(implicit hp: ThriftHelper[T, Serializer[T]]): Primitive[T] = {
-      val sz = hp.serializer
-      Primitive.derive[T, String](sz.toString)(sz.fromString)
-    }
+    Primitive.derive[T, String](hp.serializer.toString)(hp.serializer.fromString)
   }
 }

@@ -23,11 +23,12 @@ import org.scalatest.{Assertion, FlatSpec}
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 
 class ThriftPrimitivesTest extends FlatSpec with ThriftTestSuite with GeneratorDrivenPropertyChecks {
-  private[this] val protocol = ProtocolVersion.V5
+
+  val protocolGen: Gen[ProtocolVersion] = Gen.oneOf(ProtocolVersion.values())
 
   def roundtrip[T : Primitive](gen: Gen[T]): Assertion = {
     val ev = Primitive[T]
-    forAll(gen) { sample =>
+    forAll(gen, protocolGen) { (sample, protocol) =>
       ev.deserialize(ev.serialize(sample, protocol), protocol) shouldEqual sample
     }
   }
@@ -36,7 +37,23 @@ class ThriftPrimitivesTest extends FlatSpec with ThriftTestSuite with GeneratorD
     roundtrip[T](Sample.arbitrary[T].arbitrary)
   }
 
+  it should "serialize compact thrift primitives" in {
+    import com.outworkers.phantom.thrift.compact._
+    sroundtrip[ThriftTest]
+  }
 
-  it should "serialize "
+  it should "serialize binary thrift primitives" in {
+    import com.outworkers.phantom.thrift.binary._
+    sroundtrip[ThriftTest]
+  }
 
+  it should "serialize lazy binary thrift primitives" in {
+    import com.outworkers.phantom.thrift.compact._
+    sroundtrip[ThriftTest]
+  }
+
+  ignore should "serialize JSON thrift primitives" in {
+    import com.outworkers.phantom.thrift.jsonthrift._
+    sroundtrip[ThriftTest]
+  }
 }
