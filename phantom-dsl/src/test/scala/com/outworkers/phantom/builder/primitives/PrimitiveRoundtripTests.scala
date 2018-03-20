@@ -51,7 +51,7 @@ class PrimitiveRoundtripTests
 
   implicit val bigDecimalArb: Arbitrary[BigDecimal] = Sample.arbitrary[BigDecimal]
 
-  val protocolGen: Gen[ProtocolVersion] = Gen.oneOf(ProtocolVersion.values())
+  val protocolGen: Gen[ProtocolVersion] = Gen.alphaStr.map(_ => ProtocolVersion.V5)
 
   def roundtrip[T : Primitive](gen: Gen[T]): Assertion = {
     val ev = Primitive[T]
