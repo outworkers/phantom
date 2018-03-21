@@ -26,7 +26,7 @@ import org.scalatest.{Assertion, FlatSpec}
 
 class ThriftTJsonSerializationTests extends FlatSpec with ThriftTestSuite with GeneratorDrivenPropertyChecks {
 
-  val protocolGen: Gen[ProtocolVersion] = Gen.oneOf(ProtocolVersion.values())
+  val protocolGen: Gen[ProtocolVersion] = Gen.alphaChar.map(_ => ProtocolVersion.V5)
 
   def roundtrip[T : Primitive](gen: Gen[T]): Assertion = {
     val ev = Primitive[T]
