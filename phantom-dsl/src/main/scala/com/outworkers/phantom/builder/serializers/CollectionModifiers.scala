@@ -178,10 +178,6 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
       .forcePad.append(CQLSyntax.Symbols.`}`)
   }
 
-  def mapType(keyType: String, valueType: String): CQLQuery = {
-    diamond(CQLSyntax.Collections.map, CQLQuery(List(keyType, valueType)).queryString)
-  }
-
   def mapType[K, V](key: Primitive[K], value: Primitive[V]): CQLQuery = {
     diamond(CQLSyntax.Collections.map, CQLQuery(
       List(frozen(key).queryString, frozen(value).queryString)
