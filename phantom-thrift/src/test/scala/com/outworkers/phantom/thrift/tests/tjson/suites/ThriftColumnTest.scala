@@ -13,26 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.suites
+package com.outworkers.phantom.thrift.tests.tjson.suites
 
 import com.datastax.driver.core.utils.UUIDs
-import com.outworkers.phantom.tables.ThriftDatabase
-import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.finagle._
+import com.outworkers.phantom.thrift.tests.tjson.TJsonSuite
 import com.outworkers.util.samplers._
-import org.scalatest.FlatSpec
 
-class ThriftColumnTest extends FlatSpec with ThriftTestSuite {
+class ThriftColumnTest extends TJsonSuite {
 
   it should "allow storing thrift columns" in {
     val id = UUIDs.timeBased()
     val sample = gen[ThriftTest]
 
-    val insert = ThriftDatabase.thriftColumnTable.insert
+    val insert = thriftDb.thriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
       .future() flatMap {
-      _ => ThriftDatabase.thriftColumnTable.select.where(_.id eqs id).one()
+      _ => thriftDb.thriftColumnTable.select.where(_.id eqs id).one()
     }
 
     whenReady(insert) { result =>
@@ -46,13 +45,13 @@ class ThriftColumnTest extends FlatSpec with ThriftTestSuite {
     val sample2 = gen[ThriftTest]
     val sampleList = Set(sample, sample2)
 
-    val insert = ThriftDatabase.thriftColumnTable.insert
+    val insert = thriftDb.thriftColumnTable.insert
       .value(_.id, id)
       .value(_.name, sample.name)
       .value(_.ref, sample)
       .value(_.thriftSet, sampleList)
       .future() flatMap {
-        _ => ThriftDatabase.thriftColumnTable.select.where(_.id eqs id).one()
+        _ => thriftDb.thriftColumnTable.select.where(_.id eqs id).one()
       }
 
     whenReady(insert) { result =>

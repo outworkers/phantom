@@ -13,20 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom
+package com.outworkers.phantom.thrift.columns
 
-import com.outworkers.phantom.thrift.columns.Ops
-import com.twitter.scrooge._
+import com.outworkers.phantom.builder.primitives.Primitive
+import com.outworkers.phantom.thrift.ThriftHelper
+import com.twitter.scrooge.{ThriftStruct, ThriftStructSerializer}
 
-package object thrift {
+trait Ops[Serializer[X <: ThriftStruct] <: ThriftStructSerializer[X]] {
 
   type ThriftStruct = com.twitter.scrooge.ThriftStruct
 
-  object binary extends Ops[BinaryThriftStructSerializer]
-  object lazybinary extends Ops[LazyBinaryThriftStructSerializer]
-  object tjson extends Ops[TJSONProtocolThriftSerializer]
-  object compact extends Ops[CompactThriftSerializer]
+  implicit def thriftPrimitive[
+    T <: ThriftStruct
+  ](implicit hp: ThriftHelper[T, Serializer[T]]): Primitive[T] = {
+    Primitive.derive[T, String](hp.serializer.toString)(hp.serializer.fromString)
+  }
 }
-
-
-

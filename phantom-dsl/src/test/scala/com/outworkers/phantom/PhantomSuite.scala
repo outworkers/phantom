@@ -19,8 +19,10 @@ import java.util.concurrent.TimeUnit
 
 import com.datastax.driver.core.VersionNumber
 import com.outworkers.phantom.database.DatabaseProvider
+import com.outworkers.phantom.dsl.{DateTime, UUID}
 import com.outworkers.phantom.tables.TestDatabase
 import com.outworkers.util.samplers._
+import io.circe.{Encoder, Json}
 import org.joda.time.{DateTime, DateTimeZone, LocalDate}
 import org.json4s.Formats
 import org.scalatest._
@@ -79,6 +81,11 @@ trait TestDatabaseProvider extends DatabaseProvider[TestDatabase] {
 }
 
 trait PhantomSuite extends FlatSpec with PhantomBaseSuite with TestDatabaseProvider {
+
+
+  implicit val datetimeEncoder: Encoder[DateTime] = Encoder.instance(dt => Json.fromLong(dt.getMillis))
+  implicit val uuidEncoder: Encoder[UUID] = Encoder.instance(uuid => Json.fromString(uuid.toString))
+
   def requireVersion[T](v: VersionNumber)(fn: => T): Unit = if (cassandraVersion.value.compareTo(v) >= 0) {
     val _ = fn
   } else {

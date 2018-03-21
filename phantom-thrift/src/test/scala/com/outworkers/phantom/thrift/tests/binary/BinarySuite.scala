@@ -13,20 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom
+package com.outworkers.phantom.thrift.tests.binary
 
-import com.outworkers.phantom.thrift.columns.Ops
-import com.twitter.scrooge._
+import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.thrift.tests.binary
+import com.outworkers.phantom.thrift.util.ThriftTestSuite
+import org.scalatest.FlatSpec
 
-package object thrift {
+trait BinarySuite extends FlatSpec with ThriftTestSuite {
+  val thriftDb = binary.ThriftDatabase
 
-  type ThriftStruct = com.twitter.scrooge.ThriftStruct
-
-  object binary extends Ops[BinaryThriftStructSerializer]
-  object lazybinary extends Ops[LazyBinaryThriftStructSerializer]
-  object tjson extends Ops[TJSONProtocolThriftSerializer]
-  object compact extends Ops[CompactThriftSerializer]
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    thriftDb.create()
+  }
 }
-
-
 

@@ -213,7 +213,7 @@ object Primitives {
         1,
         "Invalid 8-bits integer value, expecting 1 byte but got " + source.remaining()
       ) {
-        case b => source.get(source.position())
+        case _ => source.get(source.position())
       }
     }
   }
@@ -359,7 +359,7 @@ object Primitives {
     override def serialize(obj: BigDecimal, version: ProtocolVersion): ByteBuffer = {
       obj match {
         case Primitive.nullValue => Primitive.nullValue
-        case decimal =>
+        case _ =>
           val bi = obj.bigDecimal.unscaledValue
           val bibytes = bi.toByteArray
 
@@ -392,7 +392,7 @@ object Primitives {
   }
 
   object InetAddressPrimitive extends Primitive[InetAddress] {
-    override val dataType = CQLSyntax.Types.Inet
+    override val dataType: String = CQLSyntax.Types.Inet
 
     override def asCql(value: InetAddress): String = CQLQuery.empty.singleQuote(value.getHostAddress)
 
@@ -409,14 +409,14 @@ object Primitives {
             InetAddress.getByAddress(Bytes.getArray(bytes))
           catch {
             case e: UnknownHostException =>
-              throw new InvalidTypeException("Invalid bytes for inet value, got " + bytes.remaining + " bytes")
+              throw new InvalidTypeException("Invalid bytes for inet value, got " + bytes.remaining + " bytes", e)
           }
       }
     }
   }
 
   object BigIntPrimitive extends Primitive[BigInt] {
-    override val dataType = CQLSyntax.Types.Varint
+    override val dataType: String = CQLSyntax.Types.Varint
 
     override def asCql(value: BigInt): String = value.toString()
 
@@ -428,13 +428,13 @@ object Primitives {
       bytes match {
         case Primitive.nullValue => Primitive.nullValue
         case b if b.remaining() == 0 => Primitive.nullValue
-        case bt => new BigInteger(Bytes.getArray(bytes))
+        case _ => new BigInteger(Bytes.getArray(bytes))
       }
     }
   }
 
   object BlobIsPrimitive extends Primitive[ByteBuffer] {
-    override val dataType = CQLSyntax.Types.Blob
+    override val dataType: String = CQLSyntax.Types.Blob
 
     override def asCql(value: ByteBuffer): String = Bytes.toHexString(value)
 
@@ -444,9 +444,9 @@ object Primitives {
   }
 
   object LocalDateIsPrimitive extends Primitive[LocalDate] {
-    override val dataType = CQLSyntax.Types.Timestamp
+    override val dataType: String = CQLSyntax.Types.Timestamp
 
-    val codec = IntPrimitive
+    val codec: IntPrimitive.type = IntPrimitive
 
     override def asCql(value: LocalDate): String = ParseUtils.quote(value.toString)
 
@@ -461,7 +461,7 @@ object Primitives {
       bytes match {
         case Primitive.nullValue => Primitive.nullValue
         case b if b.remaining() == 0 => Primitive.nullValue
-        case b @ _ =>
+        case _ =>
           val unsigned = codec.deserialize(bytes, version)
           val signed = CodecUtils.fromUnsignedToSignedInt(unsigned)
           LocalDate.fromDaysSinceEpoch(signed)
@@ -474,7 +474,7 @@ object Primitives {
     new DateTime(_, DateTimeZone.UTC)
   )(LongPrimitive)(CQLSyntax.Types.Timestamp)
 
-  val SqlTimestampIsPrimitive = Primitive.manuallyDerive[Timestamp, Long](
+  val SqlTimestampIsPrimitive: Primitive[Timestamp] = Primitive.manuallyDerive[Timestamp, Long](
     ts => ts.getTime,
     dt => Timestamp.from(Instant.ofEpochMilli(dt))
   )(LongPrimitive)(CQLSyntax.Types.Timestamp)
@@ -499,7 +499,7 @@ object Primitives {
 
     override def asCql(value: M[RR]): String = converter(value)
 
-    override val dataType = cType
+    override val dataType: String = cType
 
     override def serialize(coll: M[RR], version: ProtocolVersion): ByteBuffer = {
       coll match {
@@ -552,6 +552,7 @@ object Primitives {
       value => QueryBuilder.Collections.serialize(value.map(ev.asCql)).queryString
     )
   }
+
 
   def option[T : Primitive]: Primitive[Option[T]] = {
     val ev = implicitly[Primitive[T]]

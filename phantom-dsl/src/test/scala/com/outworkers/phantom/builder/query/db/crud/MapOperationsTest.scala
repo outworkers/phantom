@@ -30,6 +30,24 @@ class MapOperationsTest extends PhantomSuite {
     database.scalaPrimitivesTable.createSchema()
   }
 
+  it should "support a single item map set operation" in {
+    val recipe = gen[Recipe]
+    val (key , value) = gen[(String, String)]
+
+    val operation = for {
+      insertDone <- database.recipes.store(recipe).future()
+      update <- database.recipes.update.where(_.url eqs recipe.url).modify(_.props set (key, value)).future()
+
+      select <- database.recipes.select(_.props).where(_.url eqs recipe.url).one
+    } yield select
+
+    whenReady(operation) { items =>
+      items.value.get(key) shouldBe defined
+      items.value.get(key).value shouldEqual value
+    }
+  }
+
+
   it should "support a single item map put operation" in {
     val recipe = gen[Recipe]
     val item = gen[(String, String)]

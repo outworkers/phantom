@@ -13,28 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.suites
+package com.outworkers.phantom.thrift.tests.binary.suites
 
-import com.outworkers.phantom.tables.{ThriftDatabase, ThriftRecord}
-import com.outworkers.util.samplers._
-import com.outworkers.util.testing.twitter._
 import com.outworkers.phantom.finagle._
-import com.outworkers.phantom.thrift._
-import com.outworkers.phantom.thrift.models.ThriftTest
-import org.scalatest.FlatSpec
+import com.outworkers.phantom.thrift.binary._
+import com.outworkers.phantom.thrift.tests.ThriftRecord
+import com.outworkers.phantom.thrift.tests.binary.BinarySuite
+import com.outworkers.phantom.thrift.tests.compact.CompactSuite
+import com.outworkers.util.samplers._
 
-class ThriftIndexTableTest extends FlatSpec with ThriftTestSuite with TwitterFutures {
-
-  val ThriftIndexedTable = ThriftDatabase.thriftIndexedTable
-
-  implicit val samplePrimitive = Primitive.thrift[ThriftTest]
+class ThriftIndexTableTest extends BinarySuite {
 
   it should "allow storing a thrift class inside a table indexed by a thrift struct" in {
     val sample = gen[ThriftRecord]
 
     val chain = for {
-      store <- ThriftIndexedTable.store(sample).future()
-      get <- ThriftIndexedTable.select.where(_.ref eqs sample.struct).one()
+      _ <- thriftDb.thriftIndexedTable.store(sample).future()
+      get <- thriftDb.thriftIndexedTable.select.where(_.ref eqs sample.struct).one()
     } yield get
 
     whenReady(chain) { res =>
@@ -54,11 +49,11 @@ class ThriftIndexTableTest extends FlatSpec with ThriftTestSuite with TwitterFut
     val sample = gen[ThriftRecord]
 
     val chain = for {
-      store <- ThriftIndexedTable.store(sample).future()
-      get <- ThriftIndexedTable.select.where(_.ref eqs sample.struct).one()
+      store <- thriftDb.thriftIndexedTable.store(sample).future()
+      get <- thriftDb.thriftIndexedTable.select.where(_.ref eqs sample.struct).one()
     } yield get
 
-    whenReady(chain.asScala) { res =>
+    whenReady(chain) { res =>
       res.value.id shouldEqual sample.id
       res.value.name shouldEqual sample.name
       res.value.struct shouldEqual sample.struct

@@ -13,20 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom
+package com.outworkers.phantom.thrift.tests.tjson
+import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.thrift.tests.tjson
+import com.outworkers.phantom.thrift.util.ThriftTestSuite
+import org.scalatest.FlatSpec
 
-import com.outworkers.phantom.thrift.columns.Ops
-import com.twitter.scrooge._
+trait TJsonSuite extends FlatSpec with ThriftTestSuite {
+   val thriftDb = tjson.ThriftDatabase
 
-package object thrift {
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    thriftDb.create()
+  }
 
-  type ThriftStruct = com.twitter.scrooge.ThriftStruct
-
-  object binary extends Ops[BinaryThriftStructSerializer]
-  object lazybinary extends Ops[LazyBinaryThriftStructSerializer]
-  object tjson extends Ops[TJSONProtocolThriftSerializer]
-  object compact extends Ops[CompactThriftSerializer]
 }
-
-
-

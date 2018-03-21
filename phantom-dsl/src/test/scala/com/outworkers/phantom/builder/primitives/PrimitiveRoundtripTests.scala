@@ -51,11 +51,11 @@ class PrimitiveRoundtripTests
 
   implicit val bigDecimalArb: Arbitrary[BigDecimal] = Sample.arbitrary[BigDecimal]
 
-  private[this] val protocol = ProtocolVersion.V5
+  val protocolGen: Gen[ProtocolVersion] = Gen.alphaStr.map(_ => ProtocolVersion.V5)
 
   def roundtrip[T : Primitive](gen: Gen[T]): Assertion = {
     val ev = Primitive[T]
-    forAll(gen) { sample =>
+    forAll(gen, protocolGen) { (sample, protocol) =>
       ev.deserialize(ev.serialize(sample, protocol), protocol) shouldEqual sample
     }
   }
@@ -65,10 +65,7 @@ class PrimitiveRoundtripTests
   }
 
   def roundtrip[T : Primitive : Arbitrary]: Assertion = {
-    val ev = Primitive[T]
-    forAll { sample: T =>
-      ev.deserialize(ev.serialize(sample, protocol), protocol) shouldEqual sample
-    }
+    roundtrip(implicitly[Arbitrary[T]].arbitrary)
   }
 
   it should "serialize and deserialize a String primitive" in {

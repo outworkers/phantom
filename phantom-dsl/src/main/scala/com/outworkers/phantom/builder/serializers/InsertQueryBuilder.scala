@@ -16,6 +16,7 @@
 package com.outworkers.phantom.builder.serializers
 
 import com.outworkers.phantom.builder.query.engine.CQLQuery
+import com.outworkers.phantom.builder.query.prepared.PrepareMark
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 
 private[phantom] trait InsertQueryBuilder {
@@ -37,6 +38,16 @@ private[phantom] trait InsertQueryBuilder {
    */
   def json(init: CQLQuery, jsonString: String): CQLQuery = {
     init.pad.append("JSON").pad.append(CQLQuery.escape(jsonString))
+  }
+
+  /**
+    * Creates a CQL 2.2 JSON insert clause for a prepared mark.
+    * @param init The initialization query of the Insert clause, generally comprising the "INSERT INTO tableName" part.
+    * @param mark The prepared question mark.
+    * @return A CQL query with the JSON prefix appended to the insert.
+    */
+  def json(init: CQLQuery, mark: PrepareMark): CQLQuery = {
+    init.pad.append("JSON").pad.append(mark.qb)
   }
 
   def columns(seq: Seq[CQLQuery]): CQLQuery = {

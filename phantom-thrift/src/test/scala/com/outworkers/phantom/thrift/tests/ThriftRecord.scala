@@ -12,21 +12,20 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+package com.outworkers.phantom.thrift.tests.tjson
  */
-package com.outworkers.phantom
+package com.outworkers.phantom.thrift.tests
 
-import com.outworkers.phantom.thrift.columns.Ops
-import com.twitter.scrooge._
+import java.util.UUID
 
-package object thrift {
+import com.outworkers.phantom.thrift.models.ThriftTest
 
-  type ThriftStruct = com.twitter.scrooge.ThriftStruct
-
-  object binary extends Ops[BinaryThriftStructSerializer]
-  object lazybinary extends Ops[LazyBinaryThriftStructSerializer]
-  object tjson extends Ops[TJSONProtocolThriftSerializer]
-  object compact extends Ops[CompactThriftSerializer]
-}
-
-
-
+case class ThriftRecord(
+  id: UUID,
+  name: String,
+  struct: ThriftTest,
+  thriftSet: Set[ThriftTest],
+  thriftList: List[ThriftTest],
+  thriftMap: Map[String, ThriftTest],
+  optThrift: Option[ThriftTest]
+)

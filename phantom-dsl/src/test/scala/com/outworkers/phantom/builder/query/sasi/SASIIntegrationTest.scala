@@ -61,10 +61,10 @@ class SASIIntegrationTest extends PhantomSuite {
     val samples = genList[MultiSASIRecord]().map(item => item.copy(phoneNumber = pre + item.phoneNumber))
 
     if (cassandraVersion.value >= Version.`3.4.0`) {
-      val ps = db.multiSasiTable.select.where(_.phoneNumber like prefix(?)).prepareAsync()
       val chain = for {
+        ps <- db.multiSasiTable.select.where(_.phoneNumber like prefix(?)).prepareAsync()
         _ <- db.multiSasiTable.storeRecords(samples)
-        query <- ps.flatMap(_.bind(PrefixValue(pre)).fetch())
+        query <- ps.bind(PrefixValue(pre)).fetch()
       } yield query
 
       whenReady(chain) { results =>
@@ -95,11 +95,10 @@ class SASIIntegrationTest extends PhantomSuite {
     val samples = genList[MultiSASIRecord]().map(item => item.copy(name = item.name + suf))
 
     if (cassandraVersion.value >= Version.`3.4.0`) {
-
-      val ps = db.multiSasiTable.select.where(_.name like suffix(?)).prepareAsync()
       val chain = for {
+        ps <- db.multiSasiTable.select.where(_.name like suffix(?)).prepareAsync()
         _ <- db.multiSasiTable.storeRecords(samples)
-        query <- ps.flatMap(_.bind(SuffixValue(suf)).fetch())
+        query <- ps.bind(SuffixValue(suf)).fetch()
       } yield query
 
       whenReady(chain) { results =>
@@ -180,13 +179,10 @@ class SASIIntegrationTest extends PhantomSuite {
     val samples = genList[MultiSASIRecord]().map(item => item.copy(customers = pre))
 
     if (cassandraVersion.value >= Version.`3.4.0`) {
-
-      val query = db.multiSasiTable.select.where(_.customers >= ?).prepareAsync()
-
       val chain = for {
+        bindable <- db.multiSasiTable.select.where(_.customers >= ?).prepareAsync()
         _ <- db.multiSasiTable.truncate().future()
         _ <- db.multiSasiTable.storeRecords(samples)
-        bindable <- query
         query <- bindable.bind(pre).fetch()
       } yield query
 
@@ -221,12 +217,12 @@ class SASIIntegrationTest extends PhantomSuite {
 
     if (cassandraVersion.value >= Version.`3.4.0`) {
 
-      val ps = db.multiSasiTable.select.where(_.customers <= ?).prepareAsync()
 
       val chain = for {
+        ps <- db.multiSasiTable.select.where(_.customers <= ?).prepareAsync()
         _ <- db.multiSasiTable.truncate().future()
         _ <- db.multiSasiTable.storeRecords(samples)
-        query <- ps.flatMap(_.bind(pre).fetch())
+        query <- ps.bind(pre).fetch()
       } yield query
 
       whenReady(chain) { results =>
@@ -295,12 +291,12 @@ class SASIIntegrationTest extends PhantomSuite {
     val samples = genList[MultiSASIRecord]().map(item => item.copy(customers = pre))
 
     if (cassandraVersion.value >= Version.`3.4.0`) {
-      val ps = db.multiSasiTable.select.where(_.customers > ?).prepareAsync()
 
       val chain = for {
+        ps <- db.multiSasiTable.select.where(_.customers > ?).prepareAsync()
         _ <- db.multiSasiTable.truncate().future()
         _ <- db.multiSasiTable.storeRecords(samples)
-        query <- ps.flatMap(_.bind(pre).fetch())
+        query <- ps.bind(pre).fetch()
       } yield query
 
       whenReady(chain) { results =>

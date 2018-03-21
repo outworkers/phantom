@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.suites
+package com.outworkers.phantom.thrift.tests.tjson.suites
 
 import com.outworkers.phantom.finagle._
-import com.outworkers.phantom.tables.{ThriftDatabase, ThriftRecord}
+import com.outworkers.phantom.thrift.tests.ThriftRecord
+import com.outworkers.phantom.thrift.tests.tjson.TJsonSuite
 import com.outworkers.util.samplers._
 import com.outworkers.util.testing.twitter._
-import org.scalatest.FlatSpec
 
-class ThriftListOperations extends FlatSpec with ThriftTestSuite with TwitterFutures {
+class ThriftListOperations extends TJsonSuite {
 
   it should "prepend an item to a thrift list column" in {
     val sample = gen[ThriftRecord]
