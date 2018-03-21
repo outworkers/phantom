@@ -20,6 +20,9 @@ import com.outworkers.phantom.builder.primitives.{DerivedField, DerivedTupleFiel
 import com.outworkers.phantom.dsl.{?, _}
 import com.outworkers.phantom.tables.{DerivedRecord, PrimitiveCassandra22, PrimitiveRecord, Recipe}
 import com.outworkers.util.samplers._
+import io.circe.generic.auto._
+import io.circe.syntax._
+import io.circe.{Encoder, Json}
 
 class PreparedInsertQueryTest extends PhantomSuite {
 
@@ -74,6 +77,39 @@ class PreparedInsertQueryTest extends PhantomSuite {
       store <- query.bind(sample).future()
       get <- database.recipes.select.where(_.url eqs sample.url).one()
     } yield get
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+      res.value shouldEqual sample
+    }
+  }
+
+
+  it should "execute an non-asynchronous prepared JSON insert query" in {
+    val sample = gen[Recipe]
+
+
+    val query = database.recipes.insert.json(?).prepare()
+
+    val chain = for {
+      _ <- query.bind(sample.asJson.noSpaces).future()
+      res <- database.recipes.select.where(_.url eqs sample.url).one()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+      res.value shouldEqual sample
+    }
+  }
+
+  it should "execute an asynchronous prepared JSON insert query" in {
+    val sample = gen[Recipe]
+
+    val chain = for {
+      query <- database.recipes.insert.json(?).prepareAsync()
+      _ <- query.bind(sample.asJson.noSpaces).future()
+      res <- database.recipes.select.where(_.url eqs sample.url).one()
+    } yield res
 
     whenReady(chain) { res =>
       res shouldBe defined

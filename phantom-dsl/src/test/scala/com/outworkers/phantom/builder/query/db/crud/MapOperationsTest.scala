@@ -43,6 +43,7 @@ class MapOperationsTest extends PhantomSuite {
 
     whenReady(operation) { items =>
       items.value.get(key) shouldBe defined
+      items.value.get(key).value shouldEqual value
     }
   }
 

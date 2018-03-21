@@ -99,7 +99,7 @@ class PreparedInsertQueryTest extends PhantomSuite with TwitterFutures {
       .prepare()
 
     val chain = for {
-      store <- query.bind(sample).future()
+      _ <- query.bind(sample).future()
       get <- database.primitives.select.where(_.pkey eqs sample.pkey).one()
     } yield get
 

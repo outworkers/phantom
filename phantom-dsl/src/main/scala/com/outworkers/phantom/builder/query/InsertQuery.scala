@@ -59,7 +59,7 @@ case class InsertQuery[
   final def json(value: PrepareMark): InsertJsonQuery[Table, Record, Status, String :: PS] = {
     new InsertJsonQuery[Table, Record, Status, String :: PS](
       table = table,
-      init = QueryBuilder.Insert.json(init, value.qb.queryString),
+      init = QueryBuilder.Insert.json(init, value),
       usingPart = usingPart,
       lightweightPart = lightweightPart,
       options = options
