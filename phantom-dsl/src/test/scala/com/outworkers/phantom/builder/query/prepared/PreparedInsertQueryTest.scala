@@ -85,9 +85,8 @@ class PreparedInsertQueryTest extends PhantomSuite {
   }
 
 
-  it should "execute an non-asynchronous prepared JSON insert query" in {
+  it should "execute a non-asynchronous prepared JSON insert query" in {
     val sample = gen[Recipe]
-
 
     val query = database.recipes.insert.json(?).prepare()
 
