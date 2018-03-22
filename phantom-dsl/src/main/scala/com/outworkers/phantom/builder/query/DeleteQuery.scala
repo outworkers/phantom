@@ -45,44 +45,8 @@ case class DeleteQuery[
   wherePart : WherePart = WherePart.empty,
   casPart : CompareAndSetPart = CompareAndSetPart.empty,
   usingPart: UsingPart = UsingPart.empty,
-  override val options: QueryOptions = QueryOptions.empty
-) extends Query[Table, Record, Limit, Order, Status, Chain, PS, TK](
-  table,
-  init,
-  None.orNull,
-  usingPart,
-  options
-) with Batchable {
-
-  override protected[this] type QueryType[
-    T <: CassandraTable[T, _],
-    R,
-    L <: LimitBound,
-    O <: OrderBound,
-    S <: ConsistencyBound,
-    C <: WhereBound,
-    P <: HList,
-    Token <: HList
-  ] = DeleteQuery[T, R, L, O, S, C, P, Token]
-
-  protected[this] def create[
-    T <: CassandraTable[T, _],
-    R,
-    L <: LimitBound,
-    O <: OrderBound,
-    S <: ConsistencyBound,
-    C <: WhereBound,
-    P <: HList,
-    Token <: HList
-  ](
-    t: T,
-    q: CQLQuery,
-    r: Row => R,
-    part: UsingPart,
-    options: QueryOptions
-  ): QueryType[T, R, L, O, S, C, P, Token] = {
-    new DeleteQuery[T, R, L, O, S, C, P, Token](t, q, wherePart, casPart, part, options)
-  }
+  options: QueryOptions = QueryOptions.empty
+) extends RootQuery[Table, Record, Status] with Batchable {
 
   def prepare[Rev <: HList]()(
     implicit session: Session,
@@ -125,7 +89,7 @@ case class DeleteQuery[
     * @param ev        An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
     * @return
     */
-  override def where[
+  def where[
     RR,
     HL <: HList,
     Token <: HList,
@@ -146,7 +110,7 @@ case class DeleteQuery[
     * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
     * @return
     */
-  override def and[
+  def and[
     RR,
     HL <: HList,
     Token <: HList,

@@ -45,21 +45,10 @@ case class UpdateQuery[
   wherePart: WherePart = WherePart.empty,
   private[phantom] val setPart: SetPart = SetPart.empty,
   casPart: CompareAndSetPart = CompareAndSetPart.empty,
-  override val options: QueryOptions = QueryOptions.empty
-) extends Query[Table, Record, Limit, Order, Status, Chain, PS, TK](table, init, None.orNull, usingPart, options) with Batchable {
+  options: QueryOptions = QueryOptions.empty
+) extends RootQuery[Table, Record, Status] with Batchable {
 
-  override val qb: CQLQuery = usingPart merge setPart merge wherePart build init
-
-  override protected[this] type QueryType[
-    T <: CassandraTable[T, _],
-    R,
-    L <: LimitBound,
-    O <: OrderBound,
-    S <: ConsistencyBound,
-    C <: WhereBound,
-    P <: HList,
-    Token <: HList
-  ] = UpdateQuery[T, R, L, O, S, C, P, Token]
+  val qb: CQLQuery = usingPart merge setPart merge wherePart build init
 
   def ttl(seconds: Long): UpdateQuery[Table, Record, Limit, Order, Status, Chain, PS, TK] = {
     copy(setPart = setPart append QueryBuilder.ttl(seconds.toString))
@@ -71,7 +60,7 @@ case class UpdateQuery[
     * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
     * @return
     */
-  override def where[
+  def where[
     RR,
     HL <: HList,
     Token <: HList,
@@ -81,7 +70,7 @@ case class UpdateQuery[
     ev: Chain =:= Unchainned,
     prepend: Prepend.Aux[HL, PS, Out],
     prependTk: Prepend.Aux[Token, TK, OutTk]
-  ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out, OutTk] = {
+  ): UpdateQuery[Table, Record, Limit, Order, Status, Chainned, Out, OutTk] = {
     copy(wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb))
   }
 
@@ -91,7 +80,7 @@ case class UpdateQuery[
     * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
     * @return
     */
-  override def and[
+  def and[
     RR,
     HL <: HList,
     Token <: HList,
@@ -101,7 +90,7 @@ case class UpdateQuery[
     ev: Chain =:= Chainned,
     prepend: Prepend.Aux[HL, PS, Out],
     prependTk: Prepend.Aux[Token, TK, OutTk]
-  ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out, OutTk] = {
+  ): UpdateQuery[Table, Record, Limit, Order, Status, Chainned, Out, OutTk] = {
     copy(wherePart = wherePart append QueryBuilder.Update.and(condition(table).qb))
   }
 

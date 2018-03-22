@@ -50,30 +50,14 @@ case class SelectQuery[
   protected[phantom] val filteringPart: FilteringPart = FilteringPart.empty,
   protected[phantom] val usingPart: UsingPart = UsingPart.empty,
   protected[phantom] val count: Boolean = false,
-  override val options: QueryOptions = QueryOptions.empty
-) extends Query[Table, Record, Limit, Order, Status, Chain, PS, TK](
-  table, qb = init,
-  rowFunc,
-  usingPart,
-  options
-) {
+  options: QueryOptions = QueryOptions.empty
+) extends RootQuery[Table, Record, Status] {
 
   def fromRow(row: Row): Record = rowFunc(row)
 
-  override val qb: CQLQuery = {
+  val qb: CQLQuery = {
     (wherePart merge orderPart merge limitedPart merge filteringPart merge usingPart) build init
   }
-
-  override protected[this] type QueryType[
-    T <: CassandraTable[T, _],
-    R,
-    L <: LimitBound,
-    O <: OrderBound,
-    S <: ConsistencyBound,
-    C <: WhereBound,
-    P <: HList,
-    Token <: HList
-  ] = SelectQuery[T, R, L, O, S, C, P, Token]
 
   def allowFiltering(): SelectQuery[Table, Record, Limit, Order, Status, Chain, PS, TK] = {
     copy(filteringPart = filteringPart append QueryBuilder.Select.allowFiltering())
@@ -111,14 +95,14 @@ case class SelectQuery[
     * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
     * @return
     */
-  override def where[
+  def where[
     RR,
     HL <: HList,
     Out <: HList
   ](condition: Table => QueryCondition[HL])(
     implicit ev: Chain =:= Unchainned,
     prepend: Prepend.Aux[HL, PS, Out]
-  ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out] = {
+  ): SelectQuery[Table, Record, Limit, Order, Status, Chainned, Out] = {
     copy(wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb))
   }
 
@@ -135,7 +119,7 @@ case class SelectQuery[
   ](condition: Table => QueryCondition[HL])(
     implicit ev: Chain =:= Chainned,
     prepend: Prepend.Aux[HL, PS, Out]
-  ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out] = {
+  ): SelectQuery[Table, Record, Limit, Order, Status, Chainned, Out] = {
     copy(wherePart = wherePart append QueryBuilder.Update.and(condition(table).qb))
   }
 
