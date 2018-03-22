@@ -31,8 +31,11 @@ import com.outworkers.phantom.builder.query.prepared.{ListValue, PrepareMark}
 
 case class PartitionQueryColumn[RR](name: String)(implicit p: Primitive[RR]) {
 
-  def eqs(value: RR): WhereClause.Condition = {
-    new WhereClause.Condition(QueryBuilder.Where.eqs(name, p.asCql(value)))
+  def eqs(value: RR): WhereClause.PartitionCondition[RR] = {
+    new WhereClause.PartitionCondition(
+      QueryBuilder.Where.eqs(name, p.asCql(value)),
+      p.asCql(value)
+    )
   }
 
   def eqs(value: OperatorClause.Condition): WhereClause.Condition = {

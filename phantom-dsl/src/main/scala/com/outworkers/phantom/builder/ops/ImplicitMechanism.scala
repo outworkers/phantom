@@ -159,7 +159,9 @@ private[phantom] trait ImplicitMechanism extends ModifyMechanism {
     new MapEntriesConditionals[K, V](cond)
   }
 
-  implicit def partitionColumnQueries[RR](col: AbstractColumn[RR] with PartitionKey):
+  implicit def partitionColumnQueries[RR : Primitive](
+    col: AbstractColumn[RR] with PartitionKey
+  ): PartitionQueryColumn[RR] = new PartitionQueryColumn[RR](col.name)
 
   /**
     * Definition used to cast an index map column with values indexed to a query-able definition.

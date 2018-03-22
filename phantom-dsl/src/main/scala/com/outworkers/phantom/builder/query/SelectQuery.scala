@@ -44,6 +44,7 @@ case class SelectQuery[
   protected[phantom] val table: Table,
   protected[phantom] val rowFunc: Row => Record,
   init: CQLQuery,
+  tokens: List[String] = Nil,
   protected[phantom] val wherePart: WherePart = WherePart.empty,
   protected[phantom] val orderPart: OrderPart = OrderPart.empty,
   protected[phantom] val limitedPart: LimitedPart = LimitedPart.empty,
@@ -106,7 +107,9 @@ case class SelectQuery[
     prepend: Prepend.Aux[HL, PS, Out],
     prependTk: Prepend.Aux[Token, TK, OutTk]
   ): SelectQuery[Table, Record, Limit, Order, Status, Chainned, Out, OutTk] = {
-    copy(wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb))
+    copy(
+      wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb)
+    )
   }
 
   /**
@@ -167,7 +170,7 @@ case class SelectQuery[
     copy(orderPart = orderPart append clauses.map(_(table).qb).toList)
   }
 
-  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options)
+  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options, tokens)
 }
 
 private[phantom] class RootSelectBlock[
@@ -234,6 +237,7 @@ private[phantom] class RootSelectBlock[
       table,
       f1.extractor,
       QueryBuilder.Select.select(table.tableName, keySpace.name, f1.qb),
+      Nil,
       WherePart.empty,
       OrderPart.empty,
       LimitedPart.empty,
@@ -250,6 +254,7 @@ private[phantom] class RootSelectBlock[
       table,
       f1(table).extractor,
       QueryBuilder.Select.select(table.tableName, keySpace.name, f1(table).qb),
+      Nil,
       WherePart.empty,
       OrderPart.empty,
       LimitedPart.empty,
@@ -265,6 +270,7 @@ private[phantom] class RootSelectBlock[
       table,
       extractCount,
       QueryBuilder.Select.count(table.tableName, keySpace.name),
+      Nil,
       WherePart.empty,
       OrderPart.empty,
       LimitedPart.empty,

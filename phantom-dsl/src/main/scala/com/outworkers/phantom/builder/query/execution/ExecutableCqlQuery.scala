@@ -22,7 +22,8 @@ import com.outworkers.phantom.builder.query.engine.CQLQuery
 
 case class ExecutableCqlQuery(
   qb: CQLQuery,
-  options: QueryOptions = QueryOptions.empty
+  options: QueryOptions = QueryOptions.empty,
+  tokens: List[String] = Nil
 ) {
 
   def statement()(implicit session: Session): Statement = {

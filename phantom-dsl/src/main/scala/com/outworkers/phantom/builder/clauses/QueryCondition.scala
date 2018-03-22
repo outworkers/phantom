@@ -28,7 +28,7 @@ abstract class QueryCondition[
   TL <: HList
 ](
   val qb: CQLQuery,
-  val values: TL
+  val values: List[String]
 )
 
 /**
@@ -36,8 +36,8 @@ abstract class QueryCondition[
   */
 sealed trait Clause
 
-class PreparedCondition[RR] extends QueryCondition[RR :: HNil, HNil](PrepareMark.?.qb, HNil)
-class ValueCondition[RR](val obj: RR) extends QueryCondition[HNil, HNil](CQLQuery.empty, HNil)
+class PreparedCondition[RR] extends QueryCondition[RR :: HNil, HNil](PrepareMark.?.qb, Nil)
+class ValueCondition[RR](val obj: RR) extends QueryCondition[HNil, HNil](CQLQuery.empty, Nil)
 
 class WhereClause extends Clause {
 
@@ -54,17 +54,12 @@ class WhereClause extends Clause {
    *
    * @param qb The underlying query builder of the condition.
    */
-  class Condition(override val qb: CQLQuery) extends QueryCondition[HNil, HNil](qb, HNil)
+  class Condition(override val qb: CQLQuery) extends QueryCondition[HNil, HNil](qb, Nil)
 
-  class PartitionCondition[Token <: HList](
+  class PartitionCondition[RR](
     override val qb: CQLQuery,
-    values: Token
-  ) extends QueryCondition[HNil, Token](qb, values) {
-
-    def add[A](value: A): PartitionCondition[A :: Token] = {
-      new PartitionCondition[A :: Token](qb, value :: values)
-    }
-  }
+    token: String
+  ) extends QueryCondition[HNil, RR :: HNil](qb, token :: Nil)
 
   /**
    *
@@ -72,11 +67,11 @@ class WhereClause extends Clause {
    */
   class ParametricCondition[T](
     override val qb: CQLQuery
-  ) extends QueryCondition[T :: HNil, HNil](qb, HNil)
+  ) extends QueryCondition[T :: HNil, HNil](qb, Nil)
 
   class HListCondition[HL <: HList](
     override val qb: CQLQuery
-  ) extends QueryCondition[HL, HNil](qb, HNil)
+  ) extends QueryCondition[HL, HNil](qb, Nil)
 }
 
 object WhereClause extends WhereClause
@@ -102,21 +97,21 @@ object CompareAndSetClause extends Clause {
    *
    * @param qb The underlying builder.
    */
-  class Condition(override val qb: CQLQuery) extends QueryCondition[HNil, HNil](qb, HNil)
+  class Condition(override val qb: CQLQuery) extends QueryCondition[HNil, HNil](qb, Nil)
 }
 
 object OrderingClause extends Clause {
-  class Condition(override val qb: CQLQuery) extends QueryCondition[HNil, HNil](qb, HNil)
+  class Condition(override val qb: CQLQuery) extends QueryCondition[HNil, HNil](qb, Nil)
 }
 object UsingClause extends Clause {
-  class Condition(override val qb: CQLQuery) extends QueryCondition[HNil, HNil](qb, HNil)
+  class Condition(override val qb: CQLQuery) extends QueryCondition[HNil, HNil](qb, Nil)
 }
 
 object UpdateClause extends Clause {
   class Condition[HL <: HList](
     override val qb: CQLQuery,
     val skipped: Boolean = false
-  ) extends QueryCondition[HL, HNil](qb, HNil)
+  ) extends QueryCondition[HL, HNil](qb, Nil)
 
   type Default = Condition[HNil]
 
@@ -124,15 +119,15 @@ object UpdateClause extends Clause {
 }
 
 object OperatorClause extends Clause {
-  class Condition(override val qb: CQLQuery) extends QueryCondition[HNil, HNil](qb, HNil)
+  class Condition(override val qb: CQLQuery) extends QueryCondition[HNil, HNil](qb, Nil)
 }
 
 object TypedClause extends Clause {
-  class Condition[RR](override val qb: CQLQuery, val extractor: Row => RR) extends QueryCondition(qb, HNil)
+  class Condition[RR](override val qb: CQLQuery, val extractor: Row => RR) extends QueryCondition(qb, Nil)
 }
 
 object DeleteClause extends Clause {
-  class Condition(override val qb: CQLQuery) extends QueryCondition[HNil, HNil](qb, HNil)
+  class Condition(override val qb: CQLQuery) extends QueryCondition[HNil, HNil](qb, Nil)
 }
 
 private[phantom] class OrderingColumn[RR](col: AbstractColumn[RR]) {
