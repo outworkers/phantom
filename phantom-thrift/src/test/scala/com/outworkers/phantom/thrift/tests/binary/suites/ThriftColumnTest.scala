@@ -18,7 +18,6 @@ package com.outworkers.phantom.thrift.tests.binary.suites
 import com.datastax.driver.core.utils.UUIDs
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.thrift.tests.binary.BinarySuite
-import com.outworkers.phantom.thrift.tests.compact.CompactSuite
 import com.outworkers.util.samplers._
 
 class ThriftColumnTest extends BinarySuite {

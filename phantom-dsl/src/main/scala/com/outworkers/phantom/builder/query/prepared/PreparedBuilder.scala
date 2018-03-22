@@ -135,7 +135,7 @@ class PreparedSelectBlock[
   protocolVersion: ProtocolVersion,
   fn: Row => R,
   options: QueryOptions
-)(implicit session: Session, keySpace: KeySpace) {
+) {
 
   /**
     * Method used to bind a set of arguments to a prepared query in a typesafe manner.
