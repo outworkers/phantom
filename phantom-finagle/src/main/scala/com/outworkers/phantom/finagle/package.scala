@@ -70,9 +70,10 @@ package object finagle extends TwitterQueryContext with DefaultImports {
     Order <: OrderBound,
     Status <: ConsistencyBound,
     Chain <: WhereBound,
-    PS <: HList
+    PS <: HList,
+    TK <: HList
   ](
-    val query: SelectQuery[T, Record, Limit, Order, Status, Chain, PS]
+    val query: SelectQuery[T, Record, Limit, Order, Status, Chain, PS, TK]
   ) extends AnyVal {
     /**
       * Produces a Twitter Spool of [R]ows
@@ -164,10 +165,11 @@ package object finagle extends TwitterQueryContext with DefaultImports {
     Order <: OrderBound,
     Status <: ConsistencyBound,
     Chain <: WhereBound,
-    PS <: HList
-  ](val query: UpdateQuery[T, Record, Limit, Order, Status, Chain, PS]) extends AnyVal {
+    PS <: HList,
+    TK <: HList
+  ](val query: UpdateQuery[T, Record, Limit, Order, Status, Chain, PS, TK]) extends AnyVal {
 
-    def ttl(duration: com.twitter.util.Duration): UpdateQuery[T, Record, Limit, Order, Status, Chain, PS] = {
+    def ttl(duration: com.twitter.util.Duration): UpdateQuery[T, Record, Limit, Order, Status, Chain, PS, TK] = {
       query.ttl(duration.inSeconds)
     }
   }
