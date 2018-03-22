@@ -42,7 +42,8 @@ abstract class Query[
   Order <: OrderBound,
   Status <: ConsistencyBound,
   Chain <: WhereBound,
-  PS <: HList
+  PS <: HList,
+  TK <: HList
 ](
   table: Table,
   val qb: CQLQuery,
@@ -58,8 +59,9 @@ abstract class Query[
     O <: OrderBound,
     S <: ConsistencyBound,
     C <: WhereBound,
-    P <: HList
-  ] <: Query[T, R, L, O, S, C, P]
+    P <: HList,
+    Token <: HList
+  ] <: Query[T, R, L, O, S, C, P, Token]
 
   /**
     * The where method of a select query.
@@ -70,13 +72,16 @@ abstract class Query[
   def where[
     RR,
     HL <: HList,
-    Out <: HList
+    Token <: HList,
+    Out <: HList,
+    OutTk <: HList
   ](
-    condition: Table => QueryCondition[HL]
+    condition: Table => QueryCondition[HL, Token]
   )(implicit
     ev: Chain =:= Unchainned,
-    prepend: Prepend.Aux[HL, PS, Out]
-  ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out]
+    prepend: Prepend.Aux[HL, PS, Out],
+    prependTk: Prepend.Aux[Token, TK, OutTk],
+  ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out, OutTk]
 
   /**
     * The where method of a select query.
@@ -87,13 +92,16 @@ abstract class Query[
   def and[
     RR,
     HL <: HList,
-    Out <: HList
+    Token <: HList,
+    Out <: HList,
+    OutTk <: HList
   ](
-    condition: Table => QueryCondition[HL]
+    condition: Table => QueryCondition[HL, Token]
   )(implicit
     ev: Chain =:= Chainned,
-    prepend: Prepend.Aux[HL, PS, Out]
-  ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out]
+    prepend: Prepend.Aux[HL, PS, Out],
+    prependTk: Prepend.Aux[Token, TK, OutTk]
+  ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out, OutTk]
 }
 
 trait Batchable {

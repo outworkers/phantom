@@ -37,7 +37,8 @@ case class UpdateQuery[
   Order <: OrderBound,
   Status <: ConsistencyBound,
   Chain <: WhereBound,
-  PS <: HList
+  PS <: HList,
+  TK <: HList
 ](table: Table,
   init: CQLQuery,
   usingPart: UsingPart = UsingPart.empty,
@@ -45,7 +46,7 @@ case class UpdateQuery[
   private[phantom] val setPart: SetPart = SetPart.empty,
   casPart: CompareAndSetPart = CompareAndSetPart.empty,
   override val options: QueryOptions = QueryOptions.empty
-) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, init, None.orNull, usingPart, options) with Batchable {
+) extends Query[Table, Record, Limit, Order, Status, Chain, PS, TK](table, init, None.orNull, usingPart, options) with Batchable {
 
   override val qb: CQLQuery = usingPart merge setPart merge wherePart build init
 
@@ -56,30 +57,11 @@ case class UpdateQuery[
     O <: OrderBound,
     S <: ConsistencyBound,
     C <: WhereBound,
-    P <: HList
-  ] = UpdateQuery[T, R, L, O, S, C, P]
+    P <: HList,
+    Token <: HList
+  ] = UpdateQuery[T, R, L, O, S, C, P, Token]
 
-  protected[this] def create[
-    T <: CassandraTable[T, _],
-    R,
-    L <: LimitBound,
-    O <: OrderBound,
-    S <: ConsistencyBound,
-    C <: WhereBound,
-    P <: HList
-  ](t: T, q: CQLQuery, r: Row => R, usingPart: UsingPart, options: QueryOptions): QueryType[T, R, L, O, S, C, P] = {
-    new UpdateQuery[T, R, L, O, S, C, P](
-      t,
-      q,
-      usingPart,
-      wherePart,
-      setPart,
-      casPart,
-      options
-    )
-  }
-
-  def ttl(seconds: Long): UpdateQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
+  def ttl(seconds: Long): UpdateQuery[Table, Record, Limit, Order, Status, Chain, PS, TK] = {
     copy(setPart = setPart append QueryBuilder.ttl(seconds.toString))
   }
 
@@ -92,11 +74,14 @@ case class UpdateQuery[
   override def where[
     RR,
     HL <: HList,
-    Out <: HList
-  ](condition: Table => QueryCondition[HL])(implicit
+    Token <: HList,
+    Out <: HList,
+    OutTk <: HList
+  ](condition: Table => QueryCondition[HL, Token])(implicit
     ev: Chain =:= Unchainned,
-    prepend: Prepend.Aux[HL, PS, Out]
-  ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out] = {
+    prepend: Prepend.Aux[HL, PS, Out],
+    prependTk: Prepend.Aux[Token, TK, OutTk]
+  ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out, OutTk] = {
     copy(wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb))
   }
 
@@ -109,11 +94,14 @@ case class UpdateQuery[
   override def and[
     RR,
     HL <: HList,
-    Out <: HList
-  ](condition: Table => QueryCondition[HL])(implicit
+    Token <: HList,
+    Out <: HList,
+    OutTk <: HList
+  ](condition: Table => QueryCondition[HL, Token])(implicit
     ev: Chain =:= Chainned,
-    prepend: Prepend.Aux[HL, PS, Out]
-  ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out] = {
+    prepend: Prepend.Aux[HL, PS, Out],
+    prependTk: Prepend.Aux[Token, TK, OutTk]
+  ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out, OutTk] = {
     copy(wherePart = wherePart append QueryBuilder.Update.and(condition(table).qb))
   }
 
@@ -157,7 +145,7 @@ case class UpdateQuery[
   def consistencyLevel_=(level: ConsistencyLevel)(
     implicit ev: Status =:= Unspecified,
     session: Session
-  ): UpdateQuery[Table, Record, Limit, Order, Specified, Chain, PS] = {
+  ): UpdateQuery[Table, Record, Limit, Order, Specified, Chain, PS, TK] = {
     if (session.protocolConsistency) {
       copy(options = options.consistencyLevel_=(level))
     } else {
@@ -392,10 +380,10 @@ sealed case class ConditionalQuery[
 
 object UpdateQuery {
 
-  type Default[T <: CassandraTable[T, _], R] = UpdateQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, HNil]
+  type Default[T <: CassandraTable[T, _], R] = UpdateQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, HNil, HNil]
 
   def apply[T <: CassandraTable[T, _], R](table: T)(implicit keySpace: KeySpace): UpdateQuery.Default[T, R] = {
-    new UpdateQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, HNil](
+    new UpdateQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, HNil, HNil](
       table,
       QueryBuilder.Update.update(
         QueryBuilder.keyspace(keySpace.name, table.tableName).queryString

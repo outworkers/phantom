@@ -38,7 +38,8 @@ case class SelectQuery[
   Order <: OrderBound,
   Status <: ConsistencyBound,
   Chain <: WhereBound,
-  PS <: HList
+  PS <: HList,
+  TK <: HList
 ](
   protected[phantom] val table: Table,
   protected[phantom] val rowFunc: Row => Record,
@@ -50,7 +51,7 @@ case class SelectQuery[
   protected[phantom] val usingPart: UsingPart = UsingPart.empty,
   protected[phantom] val count: Boolean = false,
   override val options: QueryOptions = QueryOptions.empty
-) extends Query[Table, Record, Limit, Order, Status, Chain, PS](
+) extends Query[Table, Record, Limit, Order, Status, Chain, PS, TK](
   table, qb = init,
   rowFunc,
   usingPart,
@@ -70,10 +71,11 @@ case class SelectQuery[
     O <: OrderBound,
     S <: ConsistencyBound,
     C <: WhereBound,
-    P <: HList
-  ] = SelectQuery[T, R, L, O, S, C, P]
+    P <: HList,
+    Token <: HList
+  ] = SelectQuery[T, R, L, O, S, C, P, Token]
 
-  def allowFiltering(): SelectQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
+  def allowFiltering(): SelectQuery[Table, Record, Limit, Order, Status, Chain, PS, TK] = {
     copy(filteringPart = filteringPart append QueryBuilder.Select.allowFiltering())
   }
 

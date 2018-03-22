@@ -23,15 +23,18 @@ import com.outworkers.phantom.Row
 import com.outworkers.phantom.builder.query.prepared.PrepareMark
 import shapeless.{::, HList, HNil}
 
-abstract class QueryCondition[T <: HList](val qb: CQLQuery)
+abstract class QueryCondition[
+  PS <: HList,
+  TL <: HList
+](val qb: CQLQuery)
 
 /**
   * A query that can be used inside "WHERE", "AND", and conditional compare-and-set type queries.
   */
 sealed trait Clause
 
-class PreparedCondition[RR] extends QueryCondition[RR :: HNil](PrepareMark.?.qb)
-class ValueCondition[RR](val obj: RR) extends QueryCondition[HNil](CQLQuery.empty)
+class PreparedCondition[RR] extends QueryCondition[RR :: HNil, HNil](PrepareMark.?.qb)
+class ValueCondition[RR](val obj: RR) extends QueryCondition[HNil, HNil](CQLQuery.empty)
 
 class WhereClause extends Clause {
 
@@ -48,15 +51,17 @@ class WhereClause extends Clause {
    *
    * @param qb The underlying query builder of the condition.
    */
-  class Condition(override val qb: CQLQuery) extends QueryCondition[HNil](qb)
+  class Condition(override val qb: CQLQuery) extends QueryCondition[HNil, HNil](qb)
+
+  class PartitionCondition[ColType](override val qb: CQLQuery) extends QueryCondition[HNil, ColType :: HNil](qb)
 
   /**
    *
    * @tparam T Type of argument
    */
-  class ParametricCondition[T](override val qb: CQLQuery) extends QueryCondition[T :: HNil](qb)
+  class ParametricCondition[T](override val qb: CQLQuery) extends QueryCondition[T :: HNil, HNil](qb)
 
-  class HListCondition[HL <: HList](override val qb: CQLQuery) extends QueryCondition[HL](qb)
+  class HListCondition[HL <: HList](override val qb: CQLQuery) extends QueryCondition[HL, HNil](qb)
 }
 
 object WhereClause extends WhereClause

@@ -38,14 +38,21 @@ case class DeleteQuery[
   Order <: OrderBound,
   Status <: ConsistencyBound,
   Chain <: WhereBound,
-  PS <: HList
+  PS <: HList,
+  TK <: HList
 ](table: Table,
   init: CQLQuery,
   wherePart : WherePart = WherePart.empty,
   casPart : CompareAndSetPart = CompareAndSetPart.empty,
   usingPart: UsingPart = UsingPart.empty,
   override val options: QueryOptions = QueryOptions.empty
-) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, init, None.orNull, usingPart, options) with Batchable {
+) extends Query[Table, Record, Limit, Order, Status, Chain, PS, TK](
+  table,
+  init,
+  None.orNull,
+  usingPart,
+  options
+) with Batchable {
 
   override protected[this] type QueryType[
     T <: CassandraTable[T, _],
@@ -54,8 +61,9 @@ case class DeleteQuery[
     O <: OrderBound,
     S <: ConsistencyBound,
     C <: WhereBound,
-    P <: HList
-  ] = DeleteQuery[T, R, L, O, S, C, P]
+    P <: HList,
+    Token <: HList
+  ] = DeleteQuery[T, R, L, O, S, C, P, Token]
 
   protected[this] def create[
     T <: CassandraTable[T, _],
@@ -64,15 +72,16 @@ case class DeleteQuery[
     O <: OrderBound,
     S <: ConsistencyBound,
     C <: WhereBound,
-    P <: HList
+    P <: HList,
+    Token <: HList
   ](
     t: T,
     q: CQLQuery,
     r: Row => R,
     part: UsingPart,
     options: QueryOptions
-  ): QueryType[T, R, L, O, S, C, P] = {
-    new DeleteQuery[T, R, L, O, S, C, P](t, q, wherePart, casPart, part, options)
+  ): QueryType[T, R, L, O, S, C, P, Token] = {
+    new DeleteQuery[T, R, L, O, S, C, P, Token](t, q, wherePart, casPart, part, options)
   }
 
   def prepare[Rev <: HList]()(
@@ -101,11 +110,11 @@ case class DeleteQuery[
     }
   }
 
-  def timestamp(time: Long): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
+  def timestamp(time: Long): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, PS, TK] = {
     copy(usingPart = usingPart append QueryBuilder.timestamp(time))
   }
 
-  def timestamp(time: DateTime): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
+  def timestamp(time: DateTime): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, PS, TK] = {
     timestamp(time.getMillis)
   }
 
@@ -119,11 +128,14 @@ case class DeleteQuery[
   override def where[
     RR,
     HL <: HList,
-    Out <: HList
-  ](condition: (Table) => QueryCondition[HL])(
+    Token <: HList,
+    Out <: HList,
+    OutTk <: HList
+  ](condition: (Table) => QueryCondition[HL, Token])(
     implicit ev: =:=[Chain, Unchainned],
-    prepend: Prepend.Aux[HL, PS, Out]
-  ): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, Out] = {
+    prepend: Prepend.Aux[HL, PS, Out],
+    prependTk: Prepend.Aux[Token, TK, OutTk]
+  ): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, Out, OutTk] = {
     copy(wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb))
   }
 
@@ -131,23 +143,26 @@ case class DeleteQuery[
     * The where method of a select query.
     *
     * @param condition A where clause condition restricted by path dependant types.
-    * @param ev        An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
+    * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
     * @return
     */
   override def and[
     RR,
     HL <: HList,
-    Out <: HList
-  ](condition: (Table) => QueryCondition[HL])(
+    Token <: HList,
+    Out <: HList,
+    OutTk <: HList
+  ](condition: (Table) => QueryCondition[HL, Token])(
     implicit ev: Chain =:= Chainned,
-    prepend: Prepend.Aux[HL, PS, Out]
-  ): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, Out] = {
+    prepend: Prepend.Aux[HL, PS, Out],
+    prependTk: Prepend.Aux[Token, TK, OutTk]
+  ): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, Out, OutTk] = {
     copy(wherePart = wherePart append QueryBuilder.Update.and(condition(table).qb))
   }
 
   def consistencyLevel_=(level: ConsistencyLevel)(
     implicit ev: Status =:= Unspecified, session: Session
-  ): DeleteQuery[Table, Record, Limit, Order, Specified, Chain, PS] = {
+  ): DeleteQuery[Table, Record, Limit, Order, Specified, Chain, PS, TK] = {
     if (session.protocolConsistency) {
       copy(options = options.consistencyLevel_=(level))
     } else {
@@ -155,7 +170,7 @@ case class DeleteQuery[
     }
   }
 
-  def ifExists: DeleteQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
+  def ifExists: DeleteQuery[Table, Record, Limit, Order, Status, Chain, PS, TK] = {
     copy(casPart = casPart append QueryBuilder.Update.ifExists)
   }
 
@@ -197,7 +212,7 @@ trait DeleteImplicits {
 
 object DeleteQuery {
 
-  type Default[T <: CassandraTable[T, _], R] = DeleteQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, HNil]
+  type Default[T <: CassandraTable[T, _], R] = DeleteQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, HNil, HNil]
 
   def apply[T <: CassandraTable[T, _], R](table: T)(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = {
     new DeleteQuery(table, QueryBuilder.Delete.delete(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString))
