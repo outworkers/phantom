@@ -16,11 +16,11 @@
 
 package com.outworkers.phantom.builder.query.execution
 
-import com.datastax.driver.core.policies.TokenAwarePolicy
 import com.datastax.driver.core.{Session, SimpleStatement, Statement}
 import com.outworkers.phantom.builder.ops.TokenizerKey
-import com.outworkers.phantom.builder.query.QueryOptions
 import com.outworkers.phantom.builder.query.engine.CQLQuery
+import com.outworkers.phantom.builder.query.{QueryOptions, RoutingKeyModifier}
+
 
 case class ExecutableCqlQuery(
   qb: CQLQuery,
@@ -29,22 +29,7 @@ case class ExecutableCqlQuery(
 ) {
 
   def statement()(implicit session: Session): Statement = {
-
-    val policy = session.getCluster.getConfiguration.getPolicies.getLoadBalancingPolicy
-
-    val root = new SimpleStatement(qb.terminate.queryString)
-
-    val routed = if (policy.isInstanceOf[TokenAwarePolicy] && tokens.nonEmpty) {
-      setTokens(root.setKeyspace(session.getLoggedKeyspace))
-    } else {
-      root
-    }
-
-    options(routed)
-  }
-
-  def setTokens(st: SimpleStatement)(implicit session: Session): SimpleStatement = {
-    st.setRoutingKey(tokens.map(_.apply(session)): _*)
+    options(RoutingKeyModifier(tokens).apply(new SimpleStatement(qb.terminate.queryString)))
   }
 }
 

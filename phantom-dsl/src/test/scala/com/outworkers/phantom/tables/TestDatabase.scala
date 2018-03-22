@@ -16,6 +16,7 @@
 package com.outworkers.phantom.tables
 
 import com.datastax.driver.core.SocketOptions
+import com.datastax.driver.core.policies.{RoundRobinPolicy, TokenAwarePolicy}
 import com.outworkers.phantom.builder.query.CreateQuery
 import com.outworkers.phantom.builder.query.bugs.UserSchemaTable
 import com.outworkers.phantom.connectors
@@ -112,11 +113,12 @@ class TestDatabase(
 
 object Connector {
   val default: CassandraConnection = connectors.ContactPoint.local
-    .withClusterBuilder(_.withSocketOptions(
+    .withClusterBuilder(
+    _.withSocketOptions(
       new SocketOptions()
         .setConnectTimeoutMillis(20000)
         .setReadTimeoutMillis(20000)
-      )
+      ).withLoadBalancingPolicy(new TokenAwarePolicy(new RoundRobinPolicy()))
     ).noHeartbeat().keySpace(
       KeySpace("phantom").ifNotExists().`with`(
         replication eqs SimpleStrategy.replication_factor(1)
