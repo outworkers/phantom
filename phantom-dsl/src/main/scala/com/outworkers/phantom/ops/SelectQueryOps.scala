@@ -39,7 +39,7 @@ class SelectQueryOps[
   PS <: HList,
   TK <: HList
 ](
-  val query: SelectQuery[Table, Record, Limit, Order, Status, Chain, PS, TK]
+  val query: SelectQuery[Table, Record, Limit, Order, Status, Chain, PS]
 )(
   implicit adapter: GuavaAdapter[F],
   fMonad: FutureMonad[F]

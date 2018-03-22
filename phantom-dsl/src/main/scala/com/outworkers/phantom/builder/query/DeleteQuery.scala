@@ -38,8 +38,7 @@ case class DeleteQuery[
   Order <: OrderBound,
   Status <: ConsistencyBound,
   Chain <: WhereBound,
-  PS <: HList,
-  TK <: HList
+  PS <: HList
 ](table: Table,
   init: CQLQuery,
   tokens: List[TokenizerKey] = Nil,
@@ -75,11 +74,11 @@ case class DeleteQuery[
     }
   }
 
-  def timestamp(time: Long): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, PS, TK] = {
+  def timestamp(time: Long): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
     copy(usingPart = usingPart append QueryBuilder.timestamp(time))
   }
 
-  def timestamp(time: DateTime): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, PS, TK] = {
+  def timestamp(time: DateTime): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
     timestamp(time.getMillis)
   }
 
@@ -96,11 +95,10 @@ case class DeleteQuery[
     Token <: HList,
     Out <: HList,
     OutTk <: HList
-  ](condition: (Table) => QueryCondition[HL, Token])(
+  ](condition: (Table) => QueryCondition[HL])(
     implicit ev: =:=[Chain, Unchainned],
-    prepend: Prepend.Aux[HL, PS, Out],
-    prependTk: Prepend.Aux[Token, TK, OutTk]
-  ): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, Out, OutTk] = {
+    prepend: Prepend.Aux[HL, PS, Out]
+  ): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, Out] = {
     copy(
       wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb),
       tokens = tokens ::: condition(table).tokens
@@ -117,14 +115,11 @@ case class DeleteQuery[
   def and[
     RR,
     HL <: HList,
-    Token <: HList,
-    Out <: HList,
-    OutTk <: HList
-  ](condition: (Table) => QueryCondition[HL, Token])(
+    Out <: HList
+  ](condition: (Table) => QueryCondition[HL])(
     implicit ev: Chain =:= Chainned,
-    prepend: Prepend.Aux[HL, PS, Out],
-    prependTk: Prepend.Aux[Token, TK, OutTk]
-  ): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, Out, OutTk] = {
+    prepend: Prepend.Aux[HL, PS, Out]
+  ): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, Out] = {
     copy(
       wherePart = wherePart append QueryBuilder.Update.and(condition(table).qb),
       tokens = tokens ::: condition(table).tokens
@@ -133,7 +128,7 @@ case class DeleteQuery[
 
   def consistencyLevel_=(level: ConsistencyLevel)(
     implicit ev: Status =:= Unspecified, session: Session
-  ): DeleteQuery[Table, Record, Limit, Order, Specified, Chain, PS, TK] = {
+  ): DeleteQuery[Table, Record, Limit, Order, Specified, Chain, PS] = {
     if (session.protocolConsistency) {
       copy(options = options.consistencyLevel_=(level))
     } else {
@@ -141,7 +136,7 @@ case class DeleteQuery[
     }
   }
 
-  def ifExists: DeleteQuery[Table, Record, Limit, Order, Status, Chain, PS, TK] = {
+  def ifExists: DeleteQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
     copy(casPart = casPart append QueryBuilder.Update.ifExists)
   }
 
@@ -184,7 +179,7 @@ trait DeleteImplicits {
 
 object DeleteQuery {
 
-  type Default[T <: CassandraTable[T, _], R] = DeleteQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, HNil, HNil]
+  type Default[T <: CassandraTable[T, _], R] = DeleteQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, HNil]
 
   def apply[T <: CassandraTable[T, _], R](table: T)(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = {
     new DeleteQuery(table, QueryBuilder.Delete.delete(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString))

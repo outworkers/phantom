@@ -101,9 +101,8 @@ case class SelectQuery[
   def where[
     RR,
     HL <: HList,
-    Token <: HList,
     Out <: HList
-  ](condition: Table => QueryCondition[HL, Token])(
+  ](condition: Table => QueryCondition[HL])(
     implicit ev: Chain =:= Unchainned,
     prepend: Prepend.Aux[HL, PS, Out]
   ): SelectQuery[Table, Record, Limit, Order, Status, Chainned, Out] = {
@@ -123,7 +122,7 @@ case class SelectQuery[
     RR,
     HL <: HList,
     Out <: HList,
-  ](condition: Table => QueryCondition[HL, Token])(
+  ](condition: Table => QueryCondition[HL])(
     implicit ev: Chain =:= Chainned,
     prepend: Prepend.Aux[HL, PS, Out]
   ): SelectQuery[Table, Record, Limit, Order, Status, Chainned, Out] = {
@@ -291,7 +290,7 @@ object RootSelectBlock {
 
 object SelectQuery {
 
-  type Default[T <: CassandraTable[T, _], R] = SelectQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, HNil, HNil]
+  type Default[T <: CassandraTable[T, _], R] = SelectQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, HNil]
 
   def apply[T <: CassandraTable[T, _], R](table: T, qb: CQLQuery, row: Row => R): SelectQuery.Default[T, R] = {
     new SelectQuery(table, row, qb)

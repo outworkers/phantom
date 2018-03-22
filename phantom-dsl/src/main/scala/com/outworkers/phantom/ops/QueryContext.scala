@@ -112,9 +112,8 @@ abstract class QueryContext[P[_], F[_], Timeout](
     O <: OrderBound,
     S <: ConsistencyBound,
     Chain <: WhereBound,
-    PS <: HList,
-    Token <: HList
-  ](query: UpdateQuery[T, R, L, O, S, Chain, PS, Token]): UpdateIncompleteQueryOps[P, F] = {
+    PS <: HList
+  ](query: UpdateQuery[T, R, L, O, S, Chain, PS]): UpdateIncompleteQueryOps[P, F] = {
     new UpdateIncompleteQueryOps(query.executableQuery, query.setPart)
   }
 
@@ -152,10 +151,9 @@ abstract class QueryContext[P[_], F[_], Timeout](
     Order <: OrderBound,
     Status <: ConsistencyBound,
     Chain <: WhereBound,
-    PS <: HList,
-    Token <: HList
+    PS <: HList
   ](
-    override val query: SelectQuery[Table, Record, Limit, Order, Status, Chain, PS, Token]
+    override val query: SelectQuery[Table, Record, Limit, Order, Status, Chain, PS]
   ) extends SelectQueryOps(query) {
     override def executableQuery: ExecutableCqlQuery = query.executableQuery
   }
