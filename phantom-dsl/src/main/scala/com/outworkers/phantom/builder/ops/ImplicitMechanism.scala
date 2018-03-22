@@ -131,7 +131,6 @@ sealed class MapConditionals[T <: CassandraTable[T, R], R, K, V](val col: Abstra
   }
 }
 
-
 private[phantom] trait ImplicitMechanism extends ModifyMechanism {
 
   // implicit lazy val context: ExecutionContextExecutor = Manager.scalaExecutor
@@ -159,6 +158,8 @@ private[phantom] trait ImplicitMechanism extends ModifyMechanism {
   ](cond: MapKeyUpdateClause[K, V]): MapEntriesConditionals[K, V] = {
     new MapEntriesConditionals[K, V](cond)
   }
+
+  implicit def partitionColumnQueries[RR](col: AbstractColumn[RR] with PartitionKey):
 
   /**
     * Definition used to cast an index map column with values indexed to a query-able definition.

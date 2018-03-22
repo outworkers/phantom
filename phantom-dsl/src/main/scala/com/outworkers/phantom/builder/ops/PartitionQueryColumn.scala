@@ -16,19 +16,20 @@
 package com.outworkers.phantom.builder.ops
 
 import com.outworkers.phantom.builder.QueryBuilder
-import com.outworkers.phantom.builder.clauses._
+import com.outworkers.phantom.builder.clauses.{OperatorClause, WhereClause}
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.prepared.{ListValue, PrepareMark}
 
 /**
- * A class enforcing columns used in where clauses to be indexed.
- * Using an implicit mechanism, only columns that are indexed can be converted into Indexed columns.
- * This enforces a Cassandra limitation at compile time.
- * It prevents a user from querying and using where operators on a column without any index.
- * @param name The name of the column.
- * @tparam RR The type of the value the column holds.
- */
-abstract class RootQueryColumn[RR](val name: String)(implicit p: Primitive[RR]) {
+  * A class enforcing columns used in where clauses to be indexed.
+  * Using an implicit mechanism, only columns that are indexed can be converted into Indexed columns.
+  * This enforces a Cassandra limitation at compile time.
+  * It prevents a user from querying and using where operators on a column without any index.
+  * @param name The name of the column.
+  * @tparam RR The type of the value the column holds.
+  */
+
+case class PartitionQueryColumn[RR](name: String)(implicit p: Primitive[RR]) {
 
   def eqs(value: RR): WhereClause.Condition = {
     new WhereClause.Condition(QueryBuilder.Where.eqs(name, p.asCql(value)))
@@ -111,24 +112,24 @@ abstract class RootQueryColumn[RR](val name: String)(implicit p: Primitive[RR]) 
   }
 
   /**
-   * Equals clause defined for the prepared statement.
-   * When this prepared clause is applied, the value specified in the WHERE clause can be binded at a later stage.
-   *
-   * {{{
-   *   Example usage:
-   *
-   *   Table.select.where(_.id eqs ?)
-   *
-   *   Will produce
-   *
-   *   SELECT * FROM KEYSPACE.TABLE WHERE ID = ?
-   *
-   * }}}
-   *
-   *
-   * @param value The prepare mark value to use, the "?" singleton.
-   * @return A where clause with a parametric condition specified.
-   */
+    * Equals clause defined for the prepared statement.
+    * When this prepared clause is applied, the value specified in the WHERE clause can be binded at a later stage.
+    *
+    * {{{
+    *   Example usage:
+    *
+    *   Table.select.where(_.id eqs ?)
+    *
+    *   Will produce
+    *
+    *   SELECT * FROM KEYSPACE.TABLE WHERE ID = ?
+    *
+    * }}}
+    *
+    *
+    * @param value The prepare mark value to use, the "?" singleton.
+    * @return A where clause with a parametric condition specified.
+    */
   final def eqs(value: PrepareMark): WhereClause.ParametricCondition[RR] = {
     new WhereClause.ParametricCondition[RR](QueryBuilder.Where.eqs(name, value.symbol))
   }
@@ -157,54 +158,3 @@ abstract class RootQueryColumn[RR](val name: String)(implicit p: Primitive[RR]) 
 
   final def >=(value: PrepareMark): WhereClause.ParametricCondition[RR] = gte(value)
 }
-
-/**
-  * Class used to provide serialization ability for updating specific keys of a map column.
-  * This CQL syntax allows users to manipulate the content of a Cassandra map column.
-  *
-  * Example: {{{
-  *   Database.table.update.where(_.id eqs id).modify(_.map(key) setTo value).future()
-  * }}}
-  *
-  * @param column The name of the column to update, derived from MapColumn.apply.
-  * @param key The type of the key required, strongly typed.
-  * @tparam K The strong type of the key in the map.
-  * @tparam V The strong type of the value in the map.
-  */
-class MapKeyUpdateClause[K : Primitive, V : Primitive](val column: String, val key: K) {
-
-  def keyName: String = Primitive[K].asCql(key)
-
-  def setTo(v: V): UpdateClause.Default = {
-    val qb = QueryBuilder.Update.updateMapColumn(
-      column,
-      Primitive[K].asCql(key),
-      Primitive[V].asCql(v)
-    )
-
-    new UpdateClause.Condition(qb)
-  }
-
-  /**
-    * Overloaded variants of setTo that allows using prepared statements for map key updates.
-    * This will only accept the ? global singleton found in [[com.outworkers.phantom.dsl]].
-    * When used, the final "bind" to the prepared clause will require an additional V type
-    * in the provided tuple to match the type of the MapColumn being updated.
-    *
-    * @param mark The value of the prepared mark used.
-    * @return A parametric condition on the value type of the map.
-    */
-  final def setTo(mark: PrepareMark): WhereClause.ParametricCondition[V] = {
-    new WhereClause.ParametricCondition[V](
-      QueryBuilder.Update.updateMapColumn(
-        column,
-        Primitive[K].asCql(key),
-        mark.symbol
-      )
-    )
-  }
-}
-
-class QueryColumn[RR](
-  override val name: String
-)(implicit pv: Primitive[RR]) extends RootQueryColumn[RR](name)

@@ -26,15 +26,18 @@ import shapeless.{::, HList, HNil}
 abstract class QueryCondition[
   PS <: HList,
   TL <: HList
-](val qb: CQLQuery)
+](
+  val qb: CQLQuery,
+  val values: TL
+)
 
 /**
   * A query that can be used inside "WHERE", "AND", and conditional compare-and-set type queries.
   */
 sealed trait Clause
 
-class PreparedCondition[RR] extends QueryCondition[RR :: HNil, HNil](PrepareMark.?.qb)
-class ValueCondition[RR](val obj: RR) extends QueryCondition[HNil, HNil](CQLQuery.empty)
+class PreparedCondition[RR] extends QueryCondition[RR :: HNil, HNil](PrepareMark.?.qb, HNil)
+class ValueCondition[RR](val obj: RR) extends QueryCondition[HNil, HNil](CQLQuery.empty, HNil)
 
 class WhereClause extends Clause {
 
@@ -51,17 +54,29 @@ class WhereClause extends Clause {
    *
    * @param qb The underlying query builder of the condition.
    */
-  class Condition(override val qb: CQLQuery) extends QueryCondition[HNil, HNil](qb)
+  class Condition(override val qb: CQLQuery) extends QueryCondition[HNil, HNil](qb, HNil)
 
-  class PartitionCondition[ColType](override val qb: CQLQuery) extends QueryCondition[HNil, ColType :: HNil](qb)
+  class PartitionCondition[Token <: HList](
+    override val qb: CQLQuery,
+    values: Token
+  ) extends QueryCondition[HNil, Token](qb, values) {
+
+    def add[A](value: A): PartitionCondition[A :: Token] = {
+      new PartitionCondition[A :: Token](qb, value :: values)
+    }
+  }
 
   /**
    *
    * @tparam T Type of argument
    */
-  class ParametricCondition[T](override val qb: CQLQuery) extends QueryCondition[T :: HNil, HNil](qb)
+  class ParametricCondition[T](
+    override val qb: CQLQuery
+  ) extends QueryCondition[T :: HNil, HNil](qb, HNil)
 
-  class HListCondition[HL <: HList](override val qb: CQLQuery) extends QueryCondition[HL, HNil](qb)
+  class HListCondition[HL <: HList](
+    override val qb: CQLQuery
+  ) extends QueryCondition[HL, HNil](qb, HNil)
 }
 
 object WhereClause extends WhereClause
@@ -87,21 +102,21 @@ object CompareAndSetClause extends Clause {
    *
    * @param qb The underlying builder.
    */
-  class Condition(override val qb: CQLQuery) extends QueryCondition[HNil, HNil](qb)
+  class Condition(override val qb: CQLQuery) extends QueryCondition[HNil, HNil](qb, HNil)
 }
 
 object OrderingClause extends Clause {
-  class Condition(override val qb: CQLQuery) extends QueryCondition[HNil, HNil](qb)
+  class Condition(override val qb: CQLQuery) extends QueryCondition[HNil, HNil](qb, HNil)
 }
 object UsingClause extends Clause {
-  class Condition(override val qb: CQLQuery) extends QueryCondition[HNil, HNil](qb)
+  class Condition(override val qb: CQLQuery) extends QueryCondition[HNil, HNil](qb, HNil)
 }
 
 object UpdateClause extends Clause {
   class Condition[HL <: HList](
     override val qb: CQLQuery,
     val skipped: Boolean = false
-  ) extends QueryCondition[HL, HNil](qb)
+  ) extends QueryCondition[HL, HNil](qb, HNil)
 
   type Default = Condition[HNil]
 
@@ -109,23 +124,31 @@ object UpdateClause extends Clause {
 }
 
 object OperatorClause extends Clause {
-  class Condition(override val qb: CQLQuery) extends QueryCondition[HNil, HNil](qb)
+  class Condition(override val qb: CQLQuery) extends QueryCondition[HNil, HNil](qb, HNil)
 }
 
 object TypedClause extends Clause {
-  class Condition[RR](override val qb: CQLQuery, val extractor: Row => RR) extends QueryCondition(qb)
+  class Condition[RR](override val qb: CQLQuery, val extractor: Row => RR) extends QueryCondition(qb, HNil)
 }
 
 object DeleteClause extends Clause {
-  class Condition(override val qb: CQLQuery) extends QueryCondition[HNil, HNil](qb)
+  class Condition(override val qb: CQLQuery) extends QueryCondition[HNil, HNil](qb, HNil)
 }
 
 private[phantom] class OrderingColumn[RR](col: AbstractColumn[RR]) {
 
-  def asc: OrderingClause.Condition = new OrderingClause.Condition(QueryBuilder.Select.Ordering.ascending(col.name))
-  def ascending: OrderingClause.Condition = new OrderingClause.Condition(QueryBuilder.Select.Ordering.ascending(col.name))
-  def desc: OrderingClause.Condition = new OrderingClause.Condition(QueryBuilder.Select.Ordering.descending(col.name))
-  def descending: OrderingClause.Condition = new OrderingClause.Condition(QueryBuilder.Select.Ordering.descending(col.name))
+  def asc: OrderingClause.Condition = {
+    new OrderingClause.Condition(QueryBuilder.Select.Ordering.ascending(col.name))
+  }
+  def ascending: OrderingClause.Condition = {
+    new OrderingClause.Condition(QueryBuilder.Select.Ordering.ascending(col.name))
+  }
+  def desc: OrderingClause.Condition = {
+    new OrderingClause.Condition(QueryBuilder.Select.Ordering.descending(col.name))
+  }
+  def descending: OrderingClause.Condition = {
+    new OrderingClause.Condition(QueryBuilder.Select.Ordering.descending(col.name))
+  }
 }
 
 trait UsingClauseOperations {
