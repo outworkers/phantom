@@ -16,6 +16,8 @@
 
 package com.outworkers.phantom.builder.query.execution
 
+import java.nio.ByteBuffer
+
 import com.datastax.driver.core.{Session, SimpleStatement, Statement}
 import com.outworkers.phantom.builder.query.QueryOptions
 import com.outworkers.phantom.builder.query.engine.CQLQuery
@@ -23,7 +25,7 @@ import com.outworkers.phantom.builder.query.engine.CQLQuery
 case class ExecutableCqlQuery(
   qb: CQLQuery,
   options: QueryOptions = QueryOptions.empty,
-  tokens: List[String] = Nil
+  tokens: List[ByteBuffer] = Nil
 ) {
 
   def statement()(implicit session: Session): Statement = {

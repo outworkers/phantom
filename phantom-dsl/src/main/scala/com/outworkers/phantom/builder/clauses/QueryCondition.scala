@@ -15,11 +15,15 @@
  */
 package com.outworkers.phantom.builder.clauses
 
+import java.nio.ByteBuffer
+
+import com.datastax.driver.core.Session
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.Row
+import com.outworkers.phantom.builder.ops.TokenizerKey
 import com.outworkers.phantom.builder.query.prepared.PrepareMark
 import shapeless.{::, HList, HNil}
 
@@ -28,7 +32,7 @@ abstract class QueryCondition[
   TL <: HList
 ](
   val qb: CQLQuery,
-  val values: List[String]
+  val values: List[TokenizerKey]
 )
 
 /**
@@ -58,8 +62,8 @@ class WhereClause extends Clause {
 
   class PartitionCondition[RR](
     override val qb: CQLQuery,
-    token: String
-  ) extends QueryCondition[HNil, RR :: HNil](qb, token :: Nil)
+    tokenCreator: TokenizerKey
+  ) extends QueryCondition[HNil, RR :: HNil](qb, tokenCreator :: Nil)
 
   /**
    *

@@ -15,10 +15,16 @@
  */
 package com.outworkers.phantom.builder.ops
 
+import java.nio.ByteBuffer
+
+import com.datastax.driver.core.Session
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.{OperatorClause, WhereClause}
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.prepared.{ListValue, PrepareMark}
+import com.outworkers.phantom.connectors.SessionAugmenterImplicits
+
+trait TokenizerKey extends (Session => ByteBuffer)
 
 /**
   * A class enforcing columns used in where clauses to be indexed.
@@ -28,13 +34,14 @@ import com.outworkers.phantom.builder.query.prepared.{ListValue, PrepareMark}
   * @param name The name of the column.
   * @tparam RR The type of the value the column holds.
   */
-
-case class PartitionQueryColumn[RR](name: String)(implicit p: Primitive[RR]) {
+case class PartitionQueryColumn[RR](name: String)(
+  implicit p: Primitive[RR]
+) extends SessionAugmenterImplicits {
 
   def eqs(value: RR): WhereClause.PartitionCondition[RR] = {
     new WhereClause.PartitionCondition(
       QueryBuilder.Where.eqs(name, p.asCql(value)),
-      p.asCql(value)
+      session => p.serialize(value, session.protocolVersion)
     )
   }
 

@@ -15,6 +15,8 @@
  */
 package com.outworkers.phantom.builder.query
 
+import java.nio.ByteBuffer
+
 import com.datastax.driver.core.{ConsistencyLevel, Session}
 import com.outworkers.phantom.builder.clauses._
 import com.outworkers.phantom.builder.primitives.Primitives.{LongPrimitive, StringPrimitive}
@@ -44,7 +46,7 @@ case class SelectQuery[
   protected[phantom] val table: Table,
   protected[phantom] val rowFunc: Row => Record,
   init: CQLQuery,
-  tokens: List[String] = Nil,
+  tokens: List[ByteBuffer] = Nil,
   protected[phantom] val wherePart: WherePart = WherePart.empty,
   protected[phantom] val orderPart: OrderPart = OrderPart.empty,
   protected[phantom] val limitedPart: LimitedPart = LimitedPart.empty,
