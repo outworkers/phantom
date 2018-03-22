@@ -15,7 +15,6 @@
  */
 package com.outworkers.phantom.builder.query.prepared
 
-import com.datastax.driver.core.{QueryOptions => _, _}
 import com.outworkers.phantom.builder.LimitBound
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query._
