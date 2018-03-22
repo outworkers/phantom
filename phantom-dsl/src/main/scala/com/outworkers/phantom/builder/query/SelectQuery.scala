@@ -98,11 +98,14 @@ case class SelectQuery[
   def where[
     RR,
     HL <: HList,
-    Out <: HList
-  ](condition: Table => QueryCondition[HL])(
+    Token <: HList,
+    Out <: HList,
+    OutTk <: HList
+  ](condition: Table => QueryCondition[HL, Token])(
     implicit ev: Chain =:= Unchainned,
-    prepend: Prepend.Aux[HL, PS, Out]
-  ): SelectQuery[Table, Record, Limit, Order, Status, Chainned, Out] = {
+    prepend: Prepend.Aux[HL, PS, Out],
+    prependTk: Prepend.Aux[Token, TK, OutTk]
+  ): SelectQuery[Table, Record, Limit, Order, Status, Chainned, Out, OutTk] = {
     copy(wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb))
   }
 
@@ -115,22 +118,25 @@ case class SelectQuery[
   override def and[
     RR,
     HL <: HList,
-    Out <: HList
-  ](condition: Table => QueryCondition[HL])(
+    Token <: HList,
+    Out <: HList,
+    OutTk <: HList
+  ](condition: Table => QueryCondition[HL, Token])(
     implicit ev: Chain =:= Chainned,
-    prepend: Prepend.Aux[HL, PS, Out]
-  ): SelectQuery[Table, Record, Limit, Order, Status, Chainned, Out] = {
+    prepend: Prepend.Aux[HL, PS, Out],
+    prependTk: Prepend.Aux[Token, TK, OutTk]
+  ): SelectQuery[Table, Record, Limit, Order, Status, Chainned, Out, OutTk] = {
     copy(wherePart = wherePart append QueryBuilder.Update.and(condition(table).qb))
   }
 
-  def using(clause: UsingClause.Condition): SelectQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
+  def using(clause: UsingClause.Condition): SelectQuery[Table, Record, Limit, Order, Status, Chainned, PS, TK] = {
     copy(usingPart = usingPart append clause.qb)
   }
 
   def consistencyLevel_=(level: ConsistencyLevel)(
     implicit ev: Status =:= Unspecified,
     session: Session
-  ): SelectQuery[Table, Record, Limit, Order, Specified, Chain, PS] = {
+  ): SelectQuery[Table, Record, Limit, Order, Specified, Chain, PS, TK] = {
     if (session.protocolConsistency) {
       copy(options = options.consistencyLevel_=(level))
     } else {
@@ -141,7 +147,7 @@ case class SelectQuery[
   @implicitNotFound("A limit was already specified for this query.")
   final def limit(ps: PrepareMark)(
     implicit ev: Limit =:= Unlimited
-  ): QueryType[Table, Record, Limited, Order, Status, Chain, Int ::PS] = {
+  ): SelectQuery[Table, Record, Limited, Order, Status, Chain, Int :: PS, TK] = {
     copy(limitedPart = limitedPart append QueryBuilder.limit(ps.qb.queryString))
   }
 
@@ -149,7 +155,7 @@ case class SelectQuery[
   @implicitNotFound("A limit was already specified for this query.")
   def limit(limit: Int)(
     implicit ev: Limit =:= Unlimited
-  ): QueryType[Table, Record, Limited, Order, Status, Chain, PS] = {
+  ): SelectQuery[Table, Record, Limited, Order, Status, Chain, PS, TK] = {
     copy(limitedPart = limitedPart append QueryBuilder.limit(limit.toString))
   }
 
@@ -157,7 +163,7 @@ case class SelectQuery[
   @implicitNotFound("You have already defined an ordering clause on this query.")
   final def orderBy(clauses: (Table => OrderingClause.Condition)*)(
     implicit ev: Order =:= Unordered
-  ): SelectQuery[Table, Record, Limit, Ordered, Status, Chain, PS] = {
+  ): SelectQuery[Table, Record, Limit, Ordered, Status, Chain, PS, TK] = {
     copy(orderPart = orderPart append clauses.map(_(table).qb).toList)
   }
 
@@ -278,7 +284,7 @@ object RootSelectBlock {
 
 object SelectQuery {
 
-  type Default[T <: CassandraTable[T, _], R] = SelectQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, HNil]
+  type Default[T <: CassandraTable[T, _], R] = SelectQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, HNil, HNil]
 
   def apply[T <: CassandraTable[T, _], R](table: T, qb: CQLQuery, row: Row => R): SelectQuery.Default[T, R] = {
     new SelectQuery(table, row, qb)
