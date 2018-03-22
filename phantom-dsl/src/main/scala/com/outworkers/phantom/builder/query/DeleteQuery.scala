@@ -16,15 +16,15 @@
 package com.outworkers.phantom.builder.query
 
 import com.datastax.driver.core.{ConsistencyLevel, Session}
+import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.clauses._
-import com.outworkers.phantom.builder.query.execution._
 import com.outworkers.phantom.builder.ops.{MapKeyUpdateClause, TokenizerKey}
 import com.outworkers.phantom.builder.query.engine.CQLQuery
+import com.outworkers.phantom.builder.query.execution._
 import com.outworkers.phantom.builder.query.prepared.{PreparedBlock, PreparedFlattener}
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.KeySpace
-import com.outworkers.phantom.{CassandraTable, Row}
 import org.joda.time.DateTime
 import shapeless.ops.hlist.{Prepend, Reverse}
 import shapeless.{=:!=, HList, HNil}
@@ -168,7 +168,7 @@ case class DeleteQuery[
 
   val qb: CQLQuery = (usingPart merge wherePart merge casPart) build init
 
-  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options)
+  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options, tokens)
 }
 
 
@@ -222,5 +222,5 @@ sealed case class ConditionalDeleteQuery[
     )
   }
 
-  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options)
+  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options, tokens)
 }

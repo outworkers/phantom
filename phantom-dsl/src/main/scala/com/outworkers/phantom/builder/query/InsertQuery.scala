@@ -208,7 +208,7 @@ case class InsertQuery[
     copy(lightweightPart = lightweightPart append CQLQuery(CQLSyntax.ifNotExists))
   }
 
-  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options)
+  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options, Nil)
 }
 
 object InsertQuery {
@@ -264,7 +264,7 @@ class InsertJsonQuery[
 
   val qb: CQLQuery = (lightweightPart merge usingPart) build init
 
-  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options)
+  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options, Nil)
 }
 
 

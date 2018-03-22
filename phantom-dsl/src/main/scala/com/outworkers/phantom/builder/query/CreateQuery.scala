@@ -135,7 +135,7 @@ case class CreateQuery[
 
   val qb: CQLQuery = (withClause merge WithPart.empty merge usingPart) build init
 
-  def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options)
+  def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options, Nil)
 
   def queryString: String = qb.queryString
 
@@ -144,17 +144,29 @@ case class CreateQuery[
 
     new QueryCollection(table.secondaryKeys map { key =>
       if (key.isMapKeyIndex) {
-        ExecutableCqlQuery(QueryBuilder.Create.mapIndex(table.tableName, name, key.name))
+        ExecutableCqlQuery(
+          qb = QueryBuilder.Create.mapIndex(table.tableName, name, key.name),
+          options = QueryOptions.empty,
+          tokens = Nil
+        )
       } else if (key.isMapEntryIndex) {
-        ExecutableCqlQuery(QueryBuilder.Create.mapEntries(table.tableName, name, key.name))
+        ExecutableCqlQuery(
+          qb = QueryBuilder.Create.mapEntries(table.tableName, name, key.name),
+          options = QueryOptions.empty,
+          tokens = Nil
+        )
       } else {
-        ExecutableCqlQuery(QueryBuilder.Create.index(table.tableName, name, key.name))
+        ExecutableCqlQuery(
+          QueryBuilder.Create.index(table.tableName, name, key.name),
+          QueryOptions.empty,
+          Nil
+        )
       }
     })
   }
 
   def delegate: DelegatedCreateQuery = DelegatedCreateQuery(
-    executable = ExecutableCqlQuery(qb, options),
+    executable = ExecutableCqlQuery(qb, options, Nil),
     indexList = indexList,
     sasiIndexes = table.sasiQueries
   )

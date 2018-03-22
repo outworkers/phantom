@@ -24,7 +24,7 @@ import com.outworkers.phantom.builder.query.engine.CQLQuery
 case class ExecutableCqlQuery(
   qb: CQLQuery,
   options: QueryOptions = QueryOptions.empty,
-  tokens: List[TokenizerKey] = Nil
+  tokens: List[TokenizerKey]
 ) {
 
   def statement()(implicit session: Session): Statement = {
@@ -37,5 +37,5 @@ case class ExecutableCqlQuery(
 }
 
 object ExecutableCqlQuery {
-  def empty: ExecutableCqlQuery = ExecutableCqlQuery(CQLQuery.empty, QueryOptions.empty)
+  def empty: ExecutableCqlQuery = ExecutableCqlQuery(CQLQuery.empty, QueryOptions.empty, Nil)
 }

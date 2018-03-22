@@ -121,7 +121,7 @@ class AlterQuery[
     new AlterQuery(table, QueryBuilder.Where.and(qb, clause.qb), options)
   }
 
-  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options)
+  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options, Nil)
 }
 
 object AlterQuery {

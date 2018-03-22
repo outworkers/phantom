@@ -45,7 +45,7 @@ class ExecutablePreparedQuery(
   val options: QueryOptions
 ) extends Batchable {
 
-  override def executableQuery: ExecutableCqlQuery = new ExecutableCqlQuery(CQLQuery.empty, options) {
+  override def executableQuery: ExecutableCqlQuery = new ExecutableCqlQuery(CQLQuery.empty, options, Nil) {
     override def statement()(implicit session: Session): Statement = st
   }
 }

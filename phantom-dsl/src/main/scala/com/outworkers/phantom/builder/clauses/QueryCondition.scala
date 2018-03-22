@@ -15,16 +15,13 @@
  */
 package com.outworkers.phantom.builder.clauses
 
-import java.nio.ByteBuffer
-
-import com.datastax.driver.core.Session
+import com.outworkers.phantom.Row
 import com.outworkers.phantom.builder.QueryBuilder
+import com.outworkers.phantom.builder.ops.TokenizerKey
 import com.outworkers.phantom.builder.query.engine.CQLQuery
+import com.outworkers.phantom.builder.query.prepared.PrepareMark
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.column.AbstractColumn
-import com.outworkers.phantom.Row
-import com.outworkers.phantom.builder.ops.TokenizerKey
-import com.outworkers.phantom.builder.query.prepared.PrepareMark
 import shapeless.{::, HList, HNil}
 
 abstract class QueryCondition[

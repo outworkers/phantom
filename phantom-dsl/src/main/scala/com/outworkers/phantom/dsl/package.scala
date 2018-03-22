@@ -48,7 +48,7 @@ package object dsl extends ScalaQueryContext with DefaultImports {
     str: CQLQuery,
     options: QueryOptions
   ): QueryInterface[Future] = new QueryInterface[Future]()(promiseInterface.adapter) {
-    override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(str, options)
+    override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(str, options, Nil)
   }
 
   /**

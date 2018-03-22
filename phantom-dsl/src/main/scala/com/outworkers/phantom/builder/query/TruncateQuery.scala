@@ -33,7 +33,9 @@ class TruncateQuery[
   protected[phantom] val usingPart: UsingPart = UsingPart.empty
 ) extends RootQuery[Table, Record, Status] {
 
-  def consistencyLevel_=(level: ConsistencyLevel)(implicit session: Session): TruncateQuery[Table, Record, Specified] = {
+  def consistencyLevel_=(
+    level: ConsistencyLevel
+  )(implicit session: Session): TruncateQuery[Table, Record, Specified] = {
     if (session.protocolConsistency) {
       new TruncateQuery(table, init, options.consistencyLevel_=(level))
     } else {
@@ -43,7 +45,7 @@ class TruncateQuery[
 
   def qb: CQLQuery = usingPart build init
 
-  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options)
+  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options, Nil)
 }
 
 
