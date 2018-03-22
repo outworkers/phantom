@@ -16,6 +16,7 @@
 
 package com.outworkers.phantom.builder.query.execution
 
+import com.datastax.driver.core.policies.TokenAwarePolicy
 import com.datastax.driver.core.{Session, SimpleStatement, Statement}
 import com.outworkers.phantom.builder.ops.TokenizerKey
 import com.outworkers.phantom.builder.query.QueryOptions
@@ -28,7 +29,18 @@ case class ExecutableCqlQuery(
 ) {
 
   def statement()(implicit session: Session): Statement = {
-    options(new SimpleStatement(qb.terminate.queryString))
+
+    val policy = session.getCluster.getConfiguration.getPolicies.getLoadBalancingPolicy
+
+    val root = new SimpleStatement(qb.terminate.queryString)
+
+    val routed = if (policy.isInstanceOf[TokenAwarePolicy] && tokens.nonEmpty) {
+      setTokens(root.setKeyspace(session.getLoggedKeyspace))
+    } else {
+      root
+    }
+
+    options(routed)
   }
 
   def setTokens(st: SimpleStatement)(implicit session: Session): SimpleStatement = {

@@ -46,7 +46,7 @@ package object finagle extends TwitterQueryContext with DefaultImports {
     str: CQLQuery,
     options: QueryOptions
   ): QueryInterface[Future] = new QueryInterface[Future]() {
-    override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(str, options)
+    override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(str, options, Nil)
   }
 
   /**

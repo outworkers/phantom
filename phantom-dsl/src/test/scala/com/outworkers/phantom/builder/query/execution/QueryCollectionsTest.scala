@@ -24,7 +24,7 @@ class QueryCollectionsTest extends FlatSpec with Matchers {
 
   it should "create a simple collection of queries from an input source" in {
     val source = genSet[String]().map(CQLQuery.apply)
-    val col = new QueryCollection[Set](source.map(ExecutableCqlQuery.apply(_, QueryOptions.empty)))
+    val col = new QueryCollection[Set](source.map(ExecutableCqlQuery.apply(_, QueryOptions.empty, Nil)))
 
     col.size shouldEqual source.size
     col.queries.map(_.qb) should contain theSameElementsAs source
@@ -33,8 +33,8 @@ class QueryCollectionsTest extends FlatSpec with Matchers {
   it should "append another collection to an existing QueryCollection" in {
     val source = genSet[String]().map(CQLQuery.apply)
     val appendable = genSet[String]().map(CQLQuery.apply)
-    val col = new QueryCollection[Set](source.map(ExecutableCqlQuery.apply(_, QueryOptions.empty)))
-    val colAppendable = appendable.map(ExecutableCqlQuery.apply(_, QueryOptions.empty))
+    val col = new QueryCollection[Set](source.map(ExecutableCqlQuery.apply(_, QueryOptions.empty, Nil)))
+    val colAppendable = appendable.map(ExecutableCqlQuery.apply(_, QueryOptions.empty, Nil))
 
     col.size shouldEqual source.size
     col.queries.map(_.qb) should contain theSameElementsAs source
