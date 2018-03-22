@@ -115,7 +115,7 @@ case class SelectQuery[
     * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
     * @return
     */
-  override def and[
+  def and[
     RR,
     HL <: HList,
     Token <: HList,

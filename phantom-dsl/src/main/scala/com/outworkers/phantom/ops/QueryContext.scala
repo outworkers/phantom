@@ -112,8 +112,9 @@ abstract class QueryContext[P[_], F[_], Timeout](
     O <: OrderBound,
     S <: ConsistencyBound,
     Chain <: WhereBound,
-    PS <: HList
-  ](query: UpdateQuery[T, R, L, O, S, Chain, PS]): UpdateIncompleteQueryOps[P, F] = {
+    PS <: HList,
+    Token <: HList
+  ](query: UpdateQuery[T, R, L, O, S, Chain, PS, Token]): UpdateIncompleteQueryOps[P, F] = {
     new UpdateIncompleteQueryOps(query.executableQuery, query.setPart)
   }
 
@@ -151,9 +152,10 @@ abstract class QueryContext[P[_], F[_], Timeout](
     Order <: OrderBound,
     Status <: ConsistencyBound,
     Chain <: WhereBound,
-    PS <: HList
+    PS <: HList,
+    Token <: HList
   ](
-    override val query: SelectQuery[Table, Record, Limit, Order, Status, Chain, PS]
+    override val query: SelectQuery[Table, Record, Limit, Order, Status, Chain, PS, Token]
   ) extends SelectQueryOps(query) {
     override def executableQuery: ExecutableCqlQuery = query.executableQuery
   }
@@ -310,7 +312,13 @@ abstract class QueryContext[P[_], F[_], Timeout](
       ev: Out ==:== Repr
     ): F[ResultSet] = promiseInterface.adapter.fromGuava(table.store(input).executableQuery)
 
-    def storeRecords[M[X] <: TraversableOnce[X], V1, Repr <: HList, HL <: HList, Out <: HList](inputs: M[V1])(
+    def storeRecords[
+      M[X] <: TraversableOnce[X],
+      V1,
+      Repr <: HList,
+      HL <: HList,
+      Out <: HList
+    ](inputs: M[V1])(
       implicit keySpace: KeySpace,
       session: Session,
       thl: TableHelper.Aux[T, R, Repr],

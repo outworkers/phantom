@@ -87,18 +87,21 @@ object CompareAndSetClause extends Clause {
    *
    * @param qb The underlying builder.
    */
-  class Condition(override val qb: CQLQuery) extends QueryCondition[HNil](qb)
+  class Condition(override val qb: CQLQuery) extends QueryCondition[HNil, HNil](qb)
 }
 
 object OrderingClause extends Clause {
-  class Condition(override val qb: CQLQuery) extends QueryCondition[HNil](qb)
+  class Condition(override val qb: CQLQuery) extends QueryCondition[HNil, HNil](qb)
 }
 object UsingClause extends Clause {
-  class Condition(override val qb: CQLQuery) extends QueryCondition[HNil](qb)
+  class Condition(override val qb: CQLQuery) extends QueryCondition[HNil, HNil](qb)
 }
 
 object UpdateClause extends Clause {
-  class Condition[HL <: HList](override val qb: CQLQuery, val skipped: Boolean = false) extends QueryCondition[HL](qb)
+  class Condition[HL <: HList](
+    override val qb: CQLQuery,
+    val skipped: Boolean = false
+  ) extends QueryCondition[HL, HNil](qb)
 
   type Default = Condition[HNil]
 
@@ -106,7 +109,7 @@ object UpdateClause extends Clause {
 }
 
 object OperatorClause extends Clause {
-  class Condition(override val qb: CQLQuery) extends QueryCondition[HNil](qb)
+  class Condition(override val qb: CQLQuery) extends QueryCondition[HNil, HNil](qb)
 }
 
 object TypedClause extends Clause {
@@ -114,7 +117,7 @@ object TypedClause extends Clause {
 }
 
 object DeleteClause extends Clause {
-  class Condition(override val qb: CQLQuery) extends QueryCondition[HNil](qb)
+  class Condition(override val qb: CQLQuery) extends QueryCondition[HNil, HNil](qb)
 }
 
 private[phantom] class OrderingColumn[RR](col: AbstractColumn[RR]) {
