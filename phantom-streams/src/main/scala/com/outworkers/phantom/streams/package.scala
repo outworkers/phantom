@@ -184,9 +184,8 @@ package object streams {
     Order <: OrderBound,
     Status <: ConsistencyBound,
     Chain <: WhereBound,
-    PS <: HList,
-    TK <: HList
-  ](val query: SelectQuery[T, R, Limit, Order, Status, Chain, PS, TK]) extends AnyVal {
+    PS <: HList
+  ](val query: SelectQuery[T, R, Limit, Order, Status, Chain, PS]) extends AnyVal {
 
     /**
       * Produces an Enumerator for [R]ows
