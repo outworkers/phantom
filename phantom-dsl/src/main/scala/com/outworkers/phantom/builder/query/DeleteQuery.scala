@@ -19,7 +19,7 @@ import com.datastax.driver.core.{ConsistencyLevel, Session}
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.clauses._
 import com.outworkers.phantom.builder.query.execution._
-import com.outworkers.phantom.builder.ops.MapKeyUpdateClause
+import com.outworkers.phantom.builder.ops.{MapKeyUpdateClause, TokenizerKey}
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.prepared.{PreparedBlock, PreparedFlattener}
 import com.outworkers.phantom.column.AbstractColumn
@@ -42,6 +42,7 @@ case class DeleteQuery[
   TK <: HList
 ](table: Table,
   init: CQLQuery,
+  tokens: List[TokenizerKey] = Nil,
   wherePart : WherePart = WherePart.empty,
   casPart : CompareAndSetPart = CompareAndSetPart.empty,
   usingPart: UsingPart = UsingPart.empty,
@@ -100,7 +101,10 @@ case class DeleteQuery[
     prepend: Prepend.Aux[HL, PS, Out],
     prependTk: Prepend.Aux[Token, TK, OutTk]
   ): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, Out, OutTk] = {
-    copy(wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb))
+    copy(
+      wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb),
+      tokens = tokens ::: condition(table).tokens
+    )
   }
 
   /**
@@ -121,7 +125,10 @@ case class DeleteQuery[
     prepend: Prepend.Aux[HL, PS, Out],
     prependTk: Prepend.Aux[Token, TK, OutTk]
   ): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, Out, OutTk] = {
-    copy(wherePart = wherePart append QueryBuilder.Update.and(condition(table).qb))
+    copy(
+      wherePart = wherePart append QueryBuilder.Update.and(condition(table).qb),
+      tokens = tokens ::: condition(table).tokens
+    )
   }
 
   def consistencyLevel_=(level: ConsistencyLevel)(
@@ -151,6 +158,7 @@ case class DeleteQuery[
     ConditionalDeleteQuery(
       table = table,
       init = init,
+      tokens,
       wherePart = wherePart,
       casPart = casPart append QueryBuilder.Update.onlyIf(clause(table).qb),
       usingPart = usingPart,
@@ -197,6 +205,7 @@ sealed case class ConditionalDeleteQuery[
   PS <: HList
 ](table: Table,
   init: CQLQuery,
+  tokens: List[TokenizerKey],
   wherePart : WherePart = WherePart.empty,
   casPart : CompareAndSetPart = CompareAndSetPart.empty,
   usingPart: UsingPart = UsingPart.empty,
@@ -208,7 +217,9 @@ sealed case class ConditionalDeleteQuery[
   final def and(
     clause: Table => CompareAndSetClause.Condition
   ): ConditionalDeleteQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
-    copy(casPart = casPart append QueryBuilder.Update.and(clause(table).qb))
+    copy(
+      casPart = casPart append QueryBuilder.Update.and(clause(table).qb),
+    )
   }
 
   override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options)

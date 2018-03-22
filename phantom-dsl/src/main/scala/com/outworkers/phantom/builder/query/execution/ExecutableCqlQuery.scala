@@ -16,20 +16,23 @@
 
 package com.outworkers.phantom.builder.query.execution
 
-import java.nio.ByteBuffer
-
 import com.datastax.driver.core.{Session, SimpleStatement, Statement}
+import com.outworkers.phantom.builder.ops.TokenizerKey
 import com.outworkers.phantom.builder.query.QueryOptions
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 
 case class ExecutableCqlQuery(
   qb: CQLQuery,
   options: QueryOptions = QueryOptions.empty,
-  tokens: List[ByteBuffer] = Nil
+  tokens: List[TokenizerKey] = Nil
 ) {
 
   def statement()(implicit session: Session): Statement = {
     options(new SimpleStatement(qb.terminate.queryString))
+  }
+
+  def setTokens(st: SimpleStatement)(implicit session: Session): SimpleStatement = {
+    st.setRoutingKey(tokens.map(_.apply(session)): _*)
   }
 }
 

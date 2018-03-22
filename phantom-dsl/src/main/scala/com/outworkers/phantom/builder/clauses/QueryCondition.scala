@@ -32,7 +32,7 @@ abstract class QueryCondition[
   TL <: HList
 ](
   val qb: CQLQuery,
-  val values: List[TokenizerKey]
+  val tokens: List[TokenizerKey]
 )
 
 /**

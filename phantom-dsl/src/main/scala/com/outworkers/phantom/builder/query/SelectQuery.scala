@@ -19,6 +19,7 @@ import java.nio.ByteBuffer
 
 import com.datastax.driver.core.{ConsistencyLevel, Session}
 import com.outworkers.phantom.builder.clauses._
+import com.outworkers.phantom.builder.ops.TokenizerKey
 import com.outworkers.phantom.builder.primitives.Primitives.{LongPrimitive, StringPrimitive}
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.execution._
@@ -46,7 +47,7 @@ case class SelectQuery[
   protected[phantom] val table: Table,
   protected[phantom] val rowFunc: Row => Record,
   init: CQLQuery,
-  tokens: List[ByteBuffer] = Nil,
+  tokens: List[TokenizerKey] = Nil,
   protected[phantom] val wherePart: WherePart = WherePart.empty,
   protected[phantom] val orderPart: OrderPart = OrderPart.empty,
   protected[phantom] val limitedPart: LimitedPart = LimitedPart.empty,
@@ -110,7 +111,8 @@ case class SelectQuery[
     prependTk: Prepend.Aux[Token, TK, OutTk]
   ): SelectQuery[Table, Record, Limit, Order, Status, Chainned, Out, OutTk] = {
     copy(
-      wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb)
+      wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb),
+      tokens = tokens ::: condition(table).tokens
     )
   }
 
@@ -131,7 +133,10 @@ case class SelectQuery[
     prepend: Prepend.Aux[HL, PS, Out],
     prependTk: Prepend.Aux[Token, TK, OutTk]
   ): SelectQuery[Table, Record, Limit, Order, Status, Chainned, Out, OutTk] = {
-    copy(wherePart = wherePart append QueryBuilder.Update.and(condition(table).qb))
+    copy(
+      wherePart = wherePart append QueryBuilder.Update.and(condition(table).qb),
+      tokens = tokens ::: condition(table).tokens
+    )
   }
 
   def using(clause: UsingClause.Condition): SelectQuery[Table, Record, Limit, Order, Status, Chainned, PS, TK] = {
