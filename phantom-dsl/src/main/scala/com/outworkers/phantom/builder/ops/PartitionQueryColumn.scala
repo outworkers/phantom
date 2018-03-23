@@ -60,65 +60,49 @@ case class PartitionQueryColumn[RR](name: String)(
     operator(value)(QueryBuilder.Where.lt)
   }
 
-  def <(value: RR): WhereClause.PartitionCondition = {
-    operator(value)(QueryBuilder.Where.lt)
-  }
+  def <(value: RR): WhereClause.PartitionCondition = lt(value)
 
   def lt(value: OperatorClause.Condition): WhereClause.Condition = {
     new WhereClause.Condition(QueryBuilder.Where.lt(name, value.qb.queryString))
   }
 
-  def <(value: OperatorClause.Condition): WhereClause.Condition = {
-    new WhereClause.Condition(QueryBuilder.Where.lt(name, value.qb.queryString))
-  }
+  def <(value: OperatorClause.Condition): WhereClause.Condition = lt(value)
 
   def lte(value: RR): WhereClause.PartitionCondition = {
     operator(value)(QueryBuilder.Where.lte)
   }
 
-  def <=(value: RR): WhereClause.PartitionCondition = {
-    operator(value)(QueryBuilder.Where.lte)
-  }
+  def <=(value: RR): WhereClause.PartitionCondition = lte(value)
 
   def lte(value: OperatorClause.Condition): WhereClause.Condition = {
     new WhereClause.Condition(QueryBuilder.Where.lte(name, value.qb.queryString))
   }
 
-  def <=(value: OperatorClause.Condition): WhereClause.Condition = {
-    new WhereClause.Condition(QueryBuilder.Where.lte(name, value.qb.queryString))
-  }
+  def <=(value: OperatorClause.Condition): WhereClause.Condition = lte(value)
 
   def gt(value: RR): WhereClause.PartitionCondition = {
     operator(value)(QueryBuilder.Where.gt)
   }
 
-  def >(value: RR): WhereClause.PartitionCondition = {
-    operator(value)(QueryBuilder.Where.gt)
-  }
+  def >(value: RR): WhereClause.PartitionCondition = gt(value)
 
   def gt(value: OperatorClause.Condition): WhereClause.Condition = {
     new WhereClause.Condition(QueryBuilder.Where.gt(name, value.qb.queryString))
   }
 
-  def >(value: OperatorClause.Condition): WhereClause.Condition = {
-    new WhereClause.Condition(QueryBuilder.Where.gt(name, value.qb.queryString))
-  }
+  def >(value: OperatorClause.Condition): WhereClause.Condition = gt(value)
 
   def gte(value: RR): WhereClause.PartitionCondition = {
     operator(value)(QueryBuilder.Where.gte)
   }
 
-  def >=(value: RR): WhereClause.PartitionCondition = {
-    operator(value)(QueryBuilder.Where.gte)
-  }
+  def >=(value: RR): WhereClause.PartitionCondition = gte(value)
 
   def gte(value: OperatorClause.Condition): WhereClause.Condition = {
     new WhereClause.Condition(QueryBuilder.Where.gte(name, value.qb.queryString))
   }
 
-  def >=(value: OperatorClause.Condition): WhereClause.Condition = {
-    new WhereClause.Condition(QueryBuilder.Where.gte(name, value.qb.queryString))
-  }
+  def >=(value: OperatorClause.Condition): WhereClause.Condition = gte(value)
 
   def in(values: List[RR]): WhereClause.PartitionCondition = {
     new WhereClause.PartitionCondition(
