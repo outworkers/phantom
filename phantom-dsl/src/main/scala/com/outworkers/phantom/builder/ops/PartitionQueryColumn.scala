@@ -21,6 +21,7 @@ import com.datastax.driver.core.Session
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.{OperatorClause, WhereClause}
 import com.outworkers.phantom.builder.primitives.Primitive
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.prepared.{ListValue, PrepareMark}
 import com.outworkers.phantom.connectors.SessionAugmenterImplicits
 
@@ -38,23 +39,29 @@ case class PartitionQueryColumn[RR](name: String)(
   implicit p: Primitive[RR]
 ) extends SessionAugmenterImplicits {
 
-  def eqs(value: RR): WhereClause.PartitionCondition[RR] = {
+  protected[this] def operator[R : Primitive](
+    value: R
+  )(fn: (String, String) => CQLQuery)(implicit pp: Primitive[R]): WhereClause.PartitionCondition = {
     new WhereClause.PartitionCondition(
-      QueryBuilder.Where.eqs(name, p.asCql(value)),
-      session => p.serialize(value, session.protocolVersion)
+      fn(name, pp.asCql(value)),
+      session => pp.serialize(value, session.protocolVersion)
     )
+  }
+
+  def eqs(value: RR): WhereClause.PartitionCondition = {
+    operator(value)(QueryBuilder.Where.eqs)
   }
 
   def eqs(value: OperatorClause.Condition): WhereClause.Condition = {
     new WhereClause.Condition(QueryBuilder.Where.eqs(name, value.qb.queryString))
   }
 
-  def lt(value: RR): WhereClause.Condition = {
-    new WhereClause.Condition(QueryBuilder.Where.lt(name, p.asCql(value)))
+  def lt(value: RR): WhereClause.PartitionCondition = {
+    operator(value)(QueryBuilder.Where.lt)
   }
 
-  def <(value: RR): WhereClause.Condition = {
-    new WhereClause.Condition(QueryBuilder.Where.lt(name, p.asCql(value)))
+  def <(value: RR): WhereClause.PartitionCondition = {
+    operator(value)(QueryBuilder.Where.lt)
   }
 
   def lt(value: OperatorClause.Condition): WhereClause.Condition = {
@@ -65,12 +72,12 @@ case class PartitionQueryColumn[RR](name: String)(
     new WhereClause.Condition(QueryBuilder.Where.lt(name, value.qb.queryString))
   }
 
-  def lte(value: RR): WhereClause.Condition = {
-    new WhereClause.Condition(QueryBuilder.Where.lte(name, implicitly[Primitive[RR]].asCql(value)))
+  def lte(value: RR): WhereClause.PartitionCondition = {
+    operator(value)(QueryBuilder.Where.lte)
   }
 
-  def <=(value: RR): WhereClause.Condition = {
-    new WhereClause.Condition(QueryBuilder.Where.lte(name, implicitly[Primitive[RR]].asCql(value)))
+  def <=(value: RR): WhereClause.PartitionCondition = {
+    operator(value)(QueryBuilder.Where.lte)
   }
 
   def lte(value: OperatorClause.Condition): WhereClause.Condition = {
@@ -81,12 +88,12 @@ case class PartitionQueryColumn[RR](name: String)(
     new WhereClause.Condition(QueryBuilder.Where.lte(name, value.qb.queryString))
   }
 
-  def gt(value: RR): WhereClause.Condition = {
-    new WhereClause.Condition(QueryBuilder.Where.gt(name, p.asCql(value)))
+  def gt(value: RR): WhereClause.PartitionCondition = {
+    operator(value)(QueryBuilder.Where.gt)
   }
 
-  def >(value: RR): WhereClause.Condition = {
-    new WhereClause.Condition(QueryBuilder.Where.gt(name, p.asCql(value)))
+  def >(value: RR): WhereClause.PartitionCondition = {
+    operator(value)(QueryBuilder.Where.gt)
   }
 
   def gt(value: OperatorClause.Condition): WhereClause.Condition = {
@@ -97,12 +104,12 @@ case class PartitionQueryColumn[RR](name: String)(
     new WhereClause.Condition(QueryBuilder.Where.gt(name, value.qb.queryString))
   }
 
-  def gte(value: RR): WhereClause.Condition = {
-    new WhereClause.Condition(QueryBuilder.Where.gte(name, p.asCql(value)))
+  def gte(value: RR): WhereClause.PartitionCondition = {
+    operator(value)(QueryBuilder.Where.gte)
   }
 
-  def >=(value: RR): WhereClause.Condition = {
-    new WhereClause.Condition(QueryBuilder.Where.gte(name, p.asCql(value)))
+  def >=(value: RR): WhereClause.PartitionCondition = {
+    operator(value)(QueryBuilder.Where.gte)
   }
 
   def gte(value: OperatorClause.Condition): WhereClause.Condition = {
@@ -113,8 +120,11 @@ case class PartitionQueryColumn[RR](name: String)(
     new WhereClause.Condition(QueryBuilder.Where.gte(name, value.qb.queryString))
   }
 
-  def in(values: List[RR]): WhereClause.Condition = {
-    new WhereClause.Condition(QueryBuilder.Where.in(name, values.map(p.asCql)))
+  def in(values: List[RR]): WhereClause.PartitionCondition = {
+    new WhereClause.PartitionCondition(
+      QueryBuilder.Where.in(name, values.map(p.asCql)),
+      session => Primitive[ListValue[RR]].serialize(ListValue(values), session.protocolVersion)
+    )
   }
 
   final def in(value: PrepareMark): WhereClause.ParametricCondition[ListValue[RR]] = {

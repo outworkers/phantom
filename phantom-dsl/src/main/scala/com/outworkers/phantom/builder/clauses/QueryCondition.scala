@@ -56,7 +56,7 @@ class WhereClause extends Clause {
    */
   class Condition(override val qb: CQLQuery) extends QueryCondition[HNil](qb, Nil)
 
-  class PartitionCondition[RR](
+  class PartitionCondition(
     override val qb: CQLQuery,
     tokenCreator: TokenizerKey
   ) extends QueryCondition[HNil](qb, tokenCreator :: Nil)
