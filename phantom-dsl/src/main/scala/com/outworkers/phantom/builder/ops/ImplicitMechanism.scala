@@ -161,7 +161,7 @@ private[phantom] trait ImplicitMechanism extends ModifyMechanism {
   }
 
   implicit def partitionColumnQueries[RR : Primitive](
-    col: AbstractColumn[RR] with PartitionKey,
+    col: AbstractColumn[RR] with PartitionKey
   ): PartitionQueryColumn[RR] = new PartitionQueryColumn[RR](col.name)
 
   /**

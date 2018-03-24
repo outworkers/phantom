@@ -213,7 +213,7 @@ sealed case class ConditionalDeleteQuery[
     clause: Table => CompareAndSetClause.Condition
   ): ConditionalDeleteQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
     copy(
-      casPart = casPart append QueryBuilder.Update.and(clause(table).qb),
+      casPart = casPart append QueryBuilder.Update.and(clause(table).qb)
     )
   }
 

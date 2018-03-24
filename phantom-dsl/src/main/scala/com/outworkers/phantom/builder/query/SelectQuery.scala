@@ -121,7 +121,7 @@ case class SelectQuery[
   def and[
     RR,
     HL <: HList,
-    Out <: HList,
+    Out <: HList
   ](condition: Table => QueryCondition[HL])(
     implicit ev: Chain =:= Chainned,
     prepend: Prepend.Aux[HL, PS, Out]

@@ -15,7 +15,7 @@ before_cache:
 - find $HOME/.sbt -name "*.lock" -delete
 env:
   global:
-  - TARGET_SCALA_VERSION: 2.12.4
+  - TARGET_SCALA_VERSION: 2.12.5
   - GH_REF: github.com/outworkers/phantom.git
   - secure: WwLG0fkVV1DS5P6GeLOHjPJ2z+GP9UaLzX27DuHBEXRxNPPw27y7jag0gbbf6E80kYwGB4zfBx9YjcJFVFdGCCcAjDJHMP8kLQirUak1jzuoWZFUEtTkF7ev/OVs0PmMHrOGuysT4W/UaL9MZD/mYO5lO9oavycTQ0kbOwZJwUg=
   - secure: Qtr5ULJ90s5pfLBaXRKFLMPBcDSYBQfUVz+abgjlG/um8iWE/OJswYn2n3zylAqnI4bSKhPobl6bBYzt8f6k9kzMqpR4t/4gWFV1LJUas0eAsTnrjV1He4nbPvO9RVEkvuQcTCqmus2AgYEnwdKhGWwktok5PAoJ22ycy4HK8C8=
@@ -37,7 +37,7 @@ jdk:
 - oraclejdk8
 matrix:
   include:
-  - scala: 2.12.4
+  - scala: 2.12.5
     jdk: oraclejdk8
 addons:
   apt:

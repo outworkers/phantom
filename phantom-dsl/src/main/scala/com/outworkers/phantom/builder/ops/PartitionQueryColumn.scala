@@ -25,8 +25,6 @@ import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.prepared.{ListValue, PrepareMark}
 import com.outworkers.phantom.connectors.SessionAugmenterImplicits
 
-trait TokenizerKey extends (Session => ByteBuffer)
-
 /**
   * A class enforcing columns used in where clauses to be indexed.
   * Using an implicit mechanism, only columns that are indexed can be converted into Indexed columns.
@@ -43,8 +41,9 @@ case class PartitionQueryColumn[RR](name: String)(
     value: R
   )(fn: (String, String) => CQLQuery)(implicit pp: Primitive[R]): WhereClause.PartitionCondition = {
     new WhereClause.PartitionCondition(
-      fn(name, pp.asCql(value)),
-      session => pp.serialize(value, session.protocolVersion)
+      fn(name, pp.asCql(value)), {
+        session: Session => pp.serialize(value, session.protocolVersion)
+      }
     )
   }
 
@@ -106,8 +105,9 @@ case class PartitionQueryColumn[RR](name: String)(
 
   def in(values: List[RR]): WhereClause.PartitionCondition = {
     new WhereClause.PartitionCondition(
-      QueryBuilder.Where.in(name, values.map(p.asCql)),
-      session => Primitive[ListValue[RR]].serialize(ListValue(values), session.protocolVersion)
+      QueryBuilder.Where.in(name, values.map(p.asCql)), {
+        session: Session => Primitive[ListValue[RR]].serialize(ListValue(values), session.protocolVersion)
+      }
     )
   }
 
