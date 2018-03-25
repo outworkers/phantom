@@ -15,8 +15,11 @@
  */
 package com.outworkers.phantom.builder.query
 
+import java.nio.ByteBuffer
+
 import com.datastax.driver.core.{ConsistencyLevel, Session}
 import com.outworkers.phantom.builder.clauses._
+import com.outworkers.phantom.builder.ops.TokenizerKey
 import com.outworkers.phantom.builder.primitives.Primitives.{LongPrimitive, StringPrimitive}
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.execution._
@@ -43,35 +46,21 @@ case class SelectQuery[
   protected[phantom] val table: Table,
   protected[phantom] val rowFunc: Row => Record,
   init: CQLQuery,
+  tokens: List[TokenizerKey] = Nil,
   protected[phantom] val wherePart: WherePart = WherePart.empty,
   protected[phantom] val orderPart: OrderPart = OrderPart.empty,
   protected[phantom] val limitedPart: LimitedPart = LimitedPart.empty,
   protected[phantom] val filteringPart: FilteringPart = FilteringPart.empty,
   protected[phantom] val usingPart: UsingPart = UsingPart.empty,
   protected[phantom] val count: Boolean = false,
-  override val options: QueryOptions = QueryOptions.empty
-) extends Query[Table, Record, Limit, Order, Status, Chain, PS](
-  table, qb = init,
-  rowFunc,
-  usingPart,
-  options
-) {
+  options: QueryOptions = QueryOptions.empty
+) extends RootQuery[Table, Record, Status] {
 
   def fromRow(row: Row): Record = rowFunc(row)
 
-  override val qb: CQLQuery = {
+  val qb: CQLQuery = {
     (wherePart merge orderPart merge limitedPart merge filteringPart merge usingPart) build init
   }
-
-  override protected[this] type QueryType[
-    T <: CassandraTable[T, _],
-    R,
-    L <: LimitBound,
-    O <: OrderBound,
-    S <: ConsistencyBound,
-    C <: WhereBound,
-    P <: HList
-  ] = SelectQuery[T, R, L, O, S, C, P]
 
   def allowFiltering(): SelectQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
     copy(filteringPart = filteringPart append QueryBuilder.Select.allowFiltering())
@@ -109,15 +98,18 @@ case class SelectQuery[
     * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
     * @return
     */
-  override def where[
+  def where[
     RR,
     HL <: HList,
     Out <: HList
   ](condition: Table => QueryCondition[HL])(
     implicit ev: Chain =:= Unchainned,
     prepend: Prepend.Aux[HL, PS, Out]
-  ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out] = {
-    copy(wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb))
+  ): SelectQuery[Table, Record, Limit, Order, Status, Chainned, Out] = {
+    copy(
+      wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb),
+      tokens = tokens ::: condition(table).tokens
+    )
   }
 
   /**
@@ -126,15 +118,18 @@ case class SelectQuery[
     * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
     * @return
     */
-  override def and[
+  def and[
     RR,
     HL <: HList,
     Out <: HList
   ](condition: Table => QueryCondition[HL])(
     implicit ev: Chain =:= Chainned,
     prepend: Prepend.Aux[HL, PS, Out]
-  ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out] = {
-    copy(wherePart = wherePart append QueryBuilder.Update.and(condition(table).qb))
+  ): SelectQuery[Table, Record, Limit, Order, Status, Chainned, Out] = {
+    copy(
+      wherePart = wherePart append QueryBuilder.Update.and(condition(table).qb),
+      tokens = tokens ::: condition(table).tokens
+    )
   }
 
   def using(clause: UsingClause.Condition): SelectQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
@@ -155,7 +150,7 @@ case class SelectQuery[
   @implicitNotFound("A limit was already specified for this query.")
   final def limit(ps: PrepareMark)(
     implicit ev: Limit =:= Unlimited
-  ): QueryType[Table, Record, Limited, Order, Status, Chain, Int ::PS] = {
+  ): SelectQuery[Table, Record, Limited, Order, Status, Chain, Int :: PS] = {
     copy(limitedPart = limitedPart append QueryBuilder.limit(ps.qb.queryString))
   }
 
@@ -163,7 +158,7 @@ case class SelectQuery[
   @implicitNotFound("A limit was already specified for this query.")
   def limit(limit: Int)(
     implicit ev: Limit =:= Unlimited
-  ): QueryType[Table, Record, Limited, Order, Status, Chain, PS] = {
+  ): SelectQuery[Table, Record, Limited, Order, Status, Chain, PS] = {
     copy(limitedPart = limitedPart append QueryBuilder.limit(limit.toString))
   }
 
@@ -175,7 +170,7 @@ case class SelectQuery[
     copy(orderPart = orderPart append clauses.map(_(table).qb).toList)
   }
 
-  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options)
+  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options, tokens)
 }
 
 private[phantom] class RootSelectBlock[
@@ -242,6 +237,7 @@ private[phantom] class RootSelectBlock[
       table,
       f1.extractor,
       QueryBuilder.Select.select(table.tableName, keySpace.name, f1.qb),
+      Nil,
       WherePart.empty,
       OrderPart.empty,
       LimitedPart.empty,
@@ -258,6 +254,7 @@ private[phantom] class RootSelectBlock[
       table,
       f1(table).extractor,
       QueryBuilder.Select.select(table.tableName, keySpace.name, f1(table).qb),
+      Nil,
       WherePart.empty,
       OrderPart.empty,
       LimitedPart.empty,
@@ -273,6 +270,7 @@ private[phantom] class RootSelectBlock[
       table,
       extractCount,
       QueryBuilder.Select.count(table.tableName, keySpace.name),
+      Nil,
       WherePart.empty,
       OrderPart.empty,
       LimitedPart.empty,

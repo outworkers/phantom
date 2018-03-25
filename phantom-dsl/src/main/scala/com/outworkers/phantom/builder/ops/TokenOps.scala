@@ -35,7 +35,8 @@ sealed trait TokenValueApplyOps {
     new TokenConstructor(Seq(ev.asCql(value)))
   }
 
-  def apply[RR](value: PrepareMark)(
+  final def apply[RR](
+    value: PrepareMark
   ): TokenConstructor[RR :: HNil, TokenTypes.ValueToken] = {
     new TokenConstructor(Seq(value.qb.queryString))
   }

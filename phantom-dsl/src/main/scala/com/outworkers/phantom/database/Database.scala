@@ -17,6 +17,7 @@ package com.outworkers.phantom.database
 
 import com.datastax.driver.core.Session
 import com.outworkers.phantom.CassandraTable
+import com.outworkers.phantom.builder.query.QueryOptions
 import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, QueryCollection}
 import com.outworkers.phantom.connectors.{CassandraConnection, KeySpace}
 import com.outworkers.phantom.macros.DatabaseHelper
@@ -72,7 +73,7 @@ abstract class Database[
    */
   private[phantom] def autodrop(): QueryCollection[Seq] = {
     new QueryCollection(tables.map { table =>
-      ExecutableCqlQuery(table.alter().drop().qb)
+      ExecutableCqlQuery(table.alter().drop().qb, QueryOptions.empty, Nil)
     })
   }
 
@@ -89,6 +90,8 @@ abstract class Database[
    *         execute an entire sequence of queries.
    */
   private[phantom] def autotruncate(): QueryCollection[Seq] = {
-    new QueryCollection(tables.map(table => ExecutableCqlQuery(table.truncate().qb)))
+    new QueryCollection(
+      tables.map(table => ExecutableCqlQuery(table.truncate().qb, QueryOptions.empty, Nil))
+    )
   }
 }

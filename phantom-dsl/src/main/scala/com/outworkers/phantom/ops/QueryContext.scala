@@ -310,7 +310,13 @@ abstract class QueryContext[P[_], F[_], Timeout](
       ev: Out ==:== Repr
     ): F[ResultSet] = promiseInterface.adapter.fromGuava(table.store(input).executableQuery)
 
-    def storeRecords[M[X] <: TraversableOnce[X], V1, Repr <: HList, HL <: HList, Out <: HList](inputs: M[V1])(
+    def storeRecords[
+      M[X] <: TraversableOnce[X],
+      V1,
+      Repr <: HList,
+      HL <: HList,
+      Out <: HList
+    ](inputs: M[V1])(
       implicit keySpace: KeySpace,
       session: Session,
       thl: TableHelper.Aux[T, R, Repr],

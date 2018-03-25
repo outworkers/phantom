@@ -13,23 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.builder.query.execution
+package com.outworkers.phantom.tables.bugs
 
-import scala.collection.generic.CanBuildFrom
+import java.util.UUID
+import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.builder.serializers.datatypes.PasswordInfo
 
-class QueryCollection[M[X] <: TraversableOnce[X]](val queries: M[ExecutableCqlQuery])(
-  implicit cbf: CanBuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]]
-) {
+case class TuplePartitionRecord(
+  id: PasswordInfo,
+  rec: UUID,
+  props: Map[String, String]
+)
 
-  def isEmpty: Boolean = queries.isEmpty
-
-  def size: Int = queries.size
-
-  def appendAll(appendable: M[ExecutableCqlQuery]): QueryCollection[M] = {
-    val builder = cbf(queries)
-
-    for (q <- queries) builder += q
-    for (q <- appendable) builder += q
-    new QueryCollection(builder.result())
-  }
+abstract class TuplePartitionTable extends Table[TuplePartitionTable, TuplePartitionRecord] {
+  object id extends Col[PasswordInfo] with PartitionKey
+  object rec extends Col[UUID]
+  object props extends Col[Map[String, String]]
 }

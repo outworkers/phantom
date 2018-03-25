@@ -92,9 +92,9 @@ class PreparedDeleteQueryTest extends PhantomSuite {
 
     val chain = for {
       query <- database.articlesByAuthor.delete.where(_.category eqs ?).and(_.author_id eqs ?).prepareAsync()
-      store <- database.articlesByAuthor.store(author, cat, article).future()
+      _ <- database.articlesByAuthor.store(author, cat, article).future()
       get <- database.articlesByAuthor.select.where(_.category eqs cat).and(_.author_id eqs author).one()
-      delete <- query.bind(cat, author).future()
+      _ <- query.bind(cat, author).future()
       get2 <- database.articlesByAuthor.select.where(_.category eqs cat).and(_.author_id eqs author).one()
     } yield (get, get2)
 

@@ -16,15 +16,15 @@
 package com.outworkers.phantom.builder.query
 
 import com.datastax.driver.core.{ConsistencyLevel, Session}
+import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.clauses._
-import com.outworkers.phantom.builder.query.execution._
-import com.outworkers.phantom.builder.ops.MapKeyUpdateClause
+import com.outworkers.phantom.builder.ops.{MapKeyUpdateClause, TokenizerKey}
 import com.outworkers.phantom.builder.query.engine.CQLQuery
+import com.outworkers.phantom.builder.query.execution._
 import com.outworkers.phantom.builder.query.prepared.{PreparedBlock, PreparedFlattener}
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.KeySpace
-import com.outworkers.phantom.{CassandraTable, Row}
 import org.joda.time.DateTime
 import shapeless.ops.hlist.{Prepend, Reverse}
 import shapeless.{=:!=, HList, HNil}
@@ -41,39 +41,12 @@ case class DeleteQuery[
   PS <: HList
 ](table: Table,
   init: CQLQuery,
+  tokens: List[TokenizerKey] = Nil,
   wherePart : WherePart = WherePart.empty,
   casPart : CompareAndSetPart = CompareAndSetPart.empty,
   usingPart: UsingPart = UsingPart.empty,
-  override val options: QueryOptions = QueryOptions.empty
-) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, init, None.orNull, usingPart, options) with Batchable {
-
-  override protected[this] type QueryType[
-    T <: CassandraTable[T, _],
-    R,
-    L <: LimitBound,
-    O <: OrderBound,
-    S <: ConsistencyBound,
-    C <: WhereBound,
-    P <: HList
-  ] = DeleteQuery[T, R, L, O, S, C, P]
-
-  protected[this] def create[
-    T <: CassandraTable[T, _],
-    R,
-    L <: LimitBound,
-    O <: OrderBound,
-    S <: ConsistencyBound,
-    C <: WhereBound,
-    P <: HList
-  ](
-    t: T,
-    q: CQLQuery,
-    r: Row => R,
-    part: UsingPart,
-    options: QueryOptions
-  ): QueryType[T, R, L, O, S, C, P] = {
-    new DeleteQuery[T, R, L, O, S, C, P](t, q, wherePart, casPart, part, options)
-  }
+  options: QueryOptions = QueryOptions.empty
+) extends RootQuery[Table, Record, Status] with Batchable {
 
   def prepare[Rev <: HList]()(
     implicit session: Session,
@@ -116,25 +89,30 @@ case class DeleteQuery[
     * @param ev        An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
     * @return
     */
-  override def where[
+  def where[
     RR,
     HL <: HList,
-    Out <: HList
+    Token <: HList,
+    Out <: HList,
+    OutTk <: HList
   ](condition: (Table) => QueryCondition[HL])(
     implicit ev: =:=[Chain, Unchainned],
     prepend: Prepend.Aux[HL, PS, Out]
   ): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, Out] = {
-    copy(wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb))
+    copy(
+      wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb),
+      tokens = tokens ::: condition(table).tokens
+    )
   }
 
   /**
     * The where method of a select query.
     *
     * @param condition A where clause condition restricted by path dependant types.
-    * @param ev        An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
+    * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
     * @return
     */
-  override def and[
+  def and[
     RR,
     HL <: HList,
     Out <: HList
@@ -142,7 +120,10 @@ case class DeleteQuery[
     implicit ev: Chain =:= Chainned,
     prepend: Prepend.Aux[HL, PS, Out]
   ): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, Out] = {
-    copy(wherePart = wherePart append QueryBuilder.Update.and(condition(table).qb))
+    copy(
+      wherePart = wherePart append QueryBuilder.Update.and(condition(table).qb),
+      tokens = tokens ::: condition(table).tokens
+    )
   }
 
   def consistencyLevel_=(level: ConsistencyLevel)(
@@ -172,6 +153,7 @@ case class DeleteQuery[
     ConditionalDeleteQuery(
       table = table,
       init = init,
+      tokens,
       wherePart = wherePart,
       casPart = casPart append QueryBuilder.Update.onlyIf(clause(table).qb),
       usingPart = usingPart,
@@ -179,9 +161,9 @@ case class DeleteQuery[
     )
   }
 
-  override val qb: CQLQuery = (usingPart merge wherePart merge casPart) build init
+  val qb: CQLQuery = (usingPart merge wherePart merge casPart) build init
 
-  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options)
+  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options, tokens)
 }
 
 
@@ -218,6 +200,7 @@ sealed case class ConditionalDeleteQuery[
   PS <: HList
 ](table: Table,
   init: CQLQuery,
+  tokens: List[TokenizerKey],
   wherePart : WherePart = WherePart.empty,
   casPart : CompareAndSetPart = CompareAndSetPart.empty,
   usingPart: UsingPart = UsingPart.empty,
@@ -229,8 +212,10 @@ sealed case class ConditionalDeleteQuery[
   final def and(
     clause: Table => CompareAndSetClause.Condition
   ): ConditionalDeleteQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
-    copy(casPart = casPart append QueryBuilder.Update.and(clause(table).qb))
+    copy(
+      casPart = casPart append QueryBuilder.Update.and(clause(table).qb)
+    )
   }
 
-  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options)
+  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options, tokens)
 }

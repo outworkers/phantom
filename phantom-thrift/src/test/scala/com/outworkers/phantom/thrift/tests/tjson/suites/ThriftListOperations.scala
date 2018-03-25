@@ -19,7 +19,6 @@ import com.outworkers.phantom.finagle._
 import com.outworkers.phantom.thrift.tests.ThriftRecord
 import com.outworkers.phantom.thrift.tests.tjson.TJsonSuite
 import com.outworkers.util.samplers._
-import com.outworkers.util.testing.twitter._
 
 class ThriftListOperations extends TJsonSuite {
 
@@ -55,7 +54,7 @@ class ThriftListOperations extends TJsonSuite {
       select <- thriftDb.thriftColumnTable.select(_.thriftList).where(_.id eqs sample.id).one()
     } yield select
 
-    whenReady(operation.asScala) { items =>
+    whenReady(operation) { items =>
       items shouldBe defined
       items.value shouldEqual (sample2 :: sample.thriftList)
     }
@@ -99,7 +98,7 @@ class ThriftListOperations extends TJsonSuite {
       select <- thriftDb.thriftColumnTable.select(_.thriftList).where(_.id eqs sample.id).one()
     } yield select
 
-    whenReady(operation.asScala) { items =>
+    whenReady(operation) { items =>
       items shouldBe defined
       items.value shouldEqual prependedValues ::: sample.thriftList
     }
@@ -137,7 +136,7 @@ class ThriftListOperations extends TJsonSuite {
       select <- thriftDb.thriftColumnTable.select(_.thriftList).where(_.id eqs sample.id).one()
     } yield select
 
-    whenReady(operation.asScala) { items =>
+    whenReady(operation) { items =>
       items shouldBe defined
       items.value shouldEqual sample.thriftList :+ sample2
     }
@@ -175,7 +174,7 @@ class ThriftListOperations extends TJsonSuite {
       select <- thriftDb.thriftColumnTable.select(_.thriftList).where(_.id eqs sample.id).one()
     } yield select
 
-    whenReady(operation.asScala) { items =>
+    whenReady(operation) { items =>
       items shouldBe defined
       items.value shouldEqual (sample.thriftList ::: sample2)
     }
@@ -221,7 +220,7 @@ class ThriftListOperations extends TJsonSuite {
         .one()
     } yield select
 
-    whenReady(operation.asScala) { items =>
+    whenReady(operation) { items =>
       items shouldBe defined
       items.value shouldEqual (sample.thriftList diff List(sample2))
     }
@@ -259,7 +258,7 @@ class ThriftListOperations extends TJsonSuite {
       select <- thriftDb.thriftColumnTable.select(_.thriftList).where(_.id eqs sample.id).one()
     } yield select
 
-    whenReady(operation.asScala) { items =>
+    whenReady(operation) { items =>
       items shouldBe defined
       items.value shouldEqual (sample.thriftList diff removables)
     }
@@ -300,7 +299,7 @@ class ThriftListOperations extends TJsonSuite {
       select <- thriftDb.thriftColumnTable.select(_.thriftList).where(_.id eqs sample.id).one()
     } yield select
 
-    whenReady(operation.asScala) { items =>
+    whenReady(operation) { items =>
       items shouldBe defined
       items.value should contain (sample2)
     }
@@ -334,7 +333,7 @@ class ThriftListOperations extends TJsonSuite {
       select <- thriftDb.thriftColumnTable.select(_.thriftList).where(_.id eqs sample.id).one()
     } yield select
 
-    whenReady(operation.asScala) { items =>
+    whenReady(operation) { items =>
       items shouldBe defined
       items.value should contain (sample2)
     }

@@ -15,7 +15,7 @@
  */
 package com.outworkers.phantom.builder.query.prepared
 
-import com.datastax.driver.core.{QueryOptions => _, _}
+import com.datastax.driver.core.{PreparedStatement, ProtocolVersion, Session, Statement}
 import com.outworkers.phantom.builder.LimitBound
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query._
@@ -25,7 +25,8 @@ import com.outworkers.phantom.connectors.{KeySpace, SessionAugmenterImplicits}
 import com.outworkers.phantom.macros.BindHelper
 import com.outworkers.phantom.{CassandraTable, Row}
 import shapeless.ops.hlist.Tupler
-import shapeless.{Generic, HList, HNil, ::}
+import shapeless.{::, Generic, HList, HNil}
+
 import scala.concurrent.{ExecutionContextExecutor, blocking}
 
 private[phantom] trait PrepareMark {
@@ -44,7 +45,7 @@ class ExecutablePreparedQuery(
   val options: QueryOptions
 ) extends Batchable {
 
-  override def executableQuery: ExecutableCqlQuery = new ExecutableCqlQuery(CQLQuery.empty, options) {
+  override def executableQuery: ExecutableCqlQuery = new ExecutableCqlQuery(CQLQuery.empty, options, Nil) {
     override def statement()(implicit session: Session): Statement = st
   }
 }
@@ -134,7 +135,7 @@ class PreparedSelectBlock[
   protocolVersion: ProtocolVersion,
   fn: Row => R,
   options: QueryOptions
-)(implicit session: Session, keySpace: KeySpace) {
+) {
 
   /**
     * Method used to bind a set of arguments to a prepared query in a typesafe manner.

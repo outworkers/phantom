@@ -55,10 +55,10 @@ abstract class JsonPreparedTable extends Table[JsonPreparedTable, NestedJsonReco
     .p_value(_.name, ?)
     .p_value(_.description, ?)
     .p_value(_.user, ?)
-    .prepare()
+    .prepareAsync()
 
   def insertItem(item: NestedJsonRecord): Future[ResultSet] =
-    preparedInsert.bind(item).future()
+    preparedInsert.flatMap(_.bind(item).future())
 
   def findById(id: Int): Future[Option[NestedJsonRecord]] = {
     select.where(_.id eqs id).one()

@@ -96,7 +96,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
         QueryBuilder.Create.sasiIndexName(tableName, index.name),
         index.name,
         index.analyzer.qb
-      ))
+      ), QueryOptions.empty, Nil)
     }
     new QueryCollection[Seq](queries)
   }

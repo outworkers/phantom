@@ -36,7 +36,8 @@ class SelectQueryOps[
   Order <: OrderBound,
   Status <: ConsistencyBound,
   Chain <: WhereBound,
-  PS <: HList
+  PS <: HList,
+  TK <: HList
 ](
   val query: SelectQuery[Table, Record, Limit, Order, Status, Chain, PS]
 )(

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.builder.serializers
+package com.outworkers.phantom.builder.serializers.datatypes
 
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.primitives.Primitive
@@ -127,4 +127,11 @@ class DataTypeSerializationTest extends FlatSpec with Matchers with Serializatio
 
     listP.cassandraType shouldEqual s"frozen<list<frozen<list<${stringP.dataType}>>>>"
   }
+
+
+  it should "freeze a partition key wrapped tuple derived type" in {
+    val primitive = Primitive[PasswordInfo]
+    primitive.cassandraType shouldEqual s"frozen<tuple<text, text, text>>"
+  }
+
 }

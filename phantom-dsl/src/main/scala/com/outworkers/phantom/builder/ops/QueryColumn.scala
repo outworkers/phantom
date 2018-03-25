@@ -34,7 +34,6 @@ abstract class RootQueryColumn[RR](val name: String)(implicit p: Primitive[RR]) 
     new WhereClause.Condition(QueryBuilder.Where.eqs(name, p.asCql(value)))
   }
 
-
   def eqs(value: OperatorClause.Condition): WhereClause.Condition = {
     new WhereClause.Condition(QueryBuilder.Where.eqs(name, value.qb.queryString))
   }
@@ -206,5 +205,6 @@ class MapKeyUpdateClause[K : Primitive, V : Primitive](val column: String, val k
   }
 }
 
-class QueryColumn[RR](override val name: String)(implicit pv: Primitive[RR]) extends RootQueryColumn[RR](name)
-class DeleteQueryColumn[RR](override val name: String)(implicit pv: Primitive[RR]) extends RootQueryColumn[RR](name)
+class QueryColumn[RR](
+  override val name: String
+)(implicit pv: Primitive[RR]) extends RootQueryColumn[RR](name)

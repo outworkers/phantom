@@ -35,67 +35,6 @@ abstract class RootQuery[
   def executableQuery: ExecutableCqlQuery
 }
 
-abstract class Query[
-  Table <: CassandraTable[Table, _],
-  Record,
-  Limit <: LimitBound,
-  Order <: OrderBound,
-  Status <: ConsistencyBound,
-  Chain <: WhereBound,
-  PS <: HList
-](
-  table: Table,
-  val qb: CQLQuery,
-  row: Row => Record,
-  usingPart: UsingPart = UsingPart.empty,
-  val options: QueryOptions
-) extends RootQuery[Table, Record, Status] {
-
-  protected[this] type QueryType[
-    T <: CassandraTable[T, _],
-    R,
-    L <: LimitBound,
-    O <: OrderBound,
-    S <: ConsistencyBound,
-    C <: WhereBound,
-    P <: HList
-  ] <: Query[T, R, L, O, S, C, P]
-
-  /**
-    * The where method of a select query.
-    * @param condition A where clause condition restricted by path dependant types.
-    * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
-    * @return
-    */
-  def where[
-    RR,
-    HL <: HList,
-    Out <: HList
-  ](
-    condition: Table => QueryCondition[HL]
-  )(implicit
-    ev: Chain =:= Unchainned,
-    prepend: Prepend.Aux[HL, PS, Out]
-  ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out]
-
-  /**
-    * The where method of a select query.
-    * @param condition A where clause condition restricted by path dependant types.
-    * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
-    * @return
-    */
-  def and[
-    RR,
-    HL <: HList,
-    Out <: HList
-  ](
-    condition: Table => QueryCondition[HL]
-  )(implicit
-    ev: Chain =:= Chainned,
-    prepend: Prepend.Aux[HL, PS, Out]
-  ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out]
-}
-
 trait Batchable {
   def executableQuery: ExecutableCqlQuery
 }

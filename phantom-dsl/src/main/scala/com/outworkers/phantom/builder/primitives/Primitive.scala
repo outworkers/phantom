@@ -228,5 +228,4 @@ object Primitive {
     * @return A reference to a concrete materialised implementation of a primitive for the given type.
     */
   def apply[RR]()(implicit ev: Primitive[RR]): Primitive[RR] = ev
-
 }

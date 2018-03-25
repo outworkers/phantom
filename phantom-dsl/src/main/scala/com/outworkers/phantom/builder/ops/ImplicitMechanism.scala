@@ -15,6 +15,7 @@
  */
 package com.outworkers.phantom.builder.ops
 
+import com.datastax.driver.core.Session
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.{CompareAndSetClause, OrderingColumn, WhereClause}
@@ -131,7 +132,6 @@ sealed class MapConditionals[T <: CassandraTable[T, R], R, K, V](val col: Abstra
   }
 }
 
-
 private[phantom] trait ImplicitMechanism extends ModifyMechanism {
 
   // implicit lazy val context: ExecutionContextExecutor = Manager.scalaExecutor
@@ -159,6 +159,10 @@ private[phantom] trait ImplicitMechanism extends ModifyMechanism {
   ](cond: MapKeyUpdateClause[K, V]): MapEntriesConditionals[K, V] = {
     new MapEntriesConditionals[K, V](cond)
   }
+
+  implicit def partitionColumnQueries[RR : Primitive](
+    col: AbstractColumn[RR] with PartitionKey
+  ): PartitionQueryColumn[RR] = new PartitionQueryColumn[RR](col.name)
 
   /**
     * Definition used to cast an index map column with values indexed to a query-able definition.

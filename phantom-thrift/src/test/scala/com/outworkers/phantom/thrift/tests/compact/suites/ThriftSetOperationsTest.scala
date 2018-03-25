@@ -17,9 +17,7 @@ package com.outworkers.phantom.thrift.tests.compact.suites
 
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.thrift.tests.compact.CompactSuite
-import com.outworkers.phantom.thrift.util.ThriftTestSuite
 import com.outworkers.util.samplers._
-import org.scalatest.FlatSpec
 
 class ThriftSetOperationsTest extends CompactSuite {
 

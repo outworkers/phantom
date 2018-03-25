@@ -168,11 +168,11 @@ trait RootMacro extends HListHelpers with WhiteboxToolbelt {
     def withoutMatch(m: RecordMatch): TableDescriptor = withMatch(m)
 
     def unmatched: Seq[Unmatched] = matches.collect {
-      case u @ Unmatched(records, reason) => u
+      case u: Unmatched => u
     }
 
     def matched: Seq[MatchedField] = matches.collect {
-      case m @ MatchedField(left, right) => m
+      case m: MatchedField => m
     }
 
     def fromRow: Option[Tree] = {
@@ -247,11 +247,11 @@ trait RootMacro extends HListHelpers with WhiteboxToolbelt {
       }
     }
 
-    protected[this] def unmatchedValue(field: Column.Field, ref: Tree) = {
+    protected[this] def unmatchedValue(field: Column.Field, ref: Tree): Tree = {
       q"$enginePkg.CQLQuery($tableTerm.${field.name}.asCql($ref))"
     }
 
-    protected[this] def valueTerm(field: MatchedField, refTerm: Option[Tree]) = {
+    protected[this] def valueTerm(field: MatchedField, refTerm: Option[Tree]): Tree = {
       refTerm match {
         case Some(ref) => q"$enginePkg.CQLQuery($tableTerm.${field.right.name}.asCql($ref.${field.left.name}))"
         case None => q"$enginePkg.CQLQuery($tableTerm.${field.right.name}.asCql($inputTerm.${field.left.name}))"

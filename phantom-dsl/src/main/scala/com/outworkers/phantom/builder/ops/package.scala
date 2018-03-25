@@ -13,23 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.builder.query.execution
+package com.outworkers.phantom.builder
 
-import scala.collection.generic.CanBuildFrom
+import java.nio.ByteBuffer
 
-class QueryCollection[M[X] <: TraversableOnce[X]](val queries: M[ExecutableCqlQuery])(
-  implicit cbf: CanBuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]]
-) {
+import com.datastax.driver.core.Session
 
-  def isEmpty: Boolean = queries.isEmpty
-
-  def size: Int = queries.size
-
-  def appendAll(appendable: M[ExecutableCqlQuery]): QueryCollection[M] = {
-    val builder = cbf(queries)
-
-    for (q <- queries) builder += q
-    for (q <- appendable) builder += q
-    new QueryCollection(builder.result())
-  }
+package object ops {
+  type TokenizerKey = (Session => ByteBuffer)
 }

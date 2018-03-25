@@ -28,7 +28,9 @@ object Indexed {
     new QueryColumn(col.name)
   }
 
-  implicit def optionalIndexToQueryColumn[T : Primitive](col: AbstractColumn[Option[T]] with Indexed): QueryColumn[T] = new QueryColumn(col.name)
+  implicit def optionalIndexToQueryColumn[
+    T : Primitive
+  ](col: AbstractColumn[Option[T]] with Indexed): QueryColumn[T] = new QueryColumn(col.name)
 }
 
 private[phantom] trait Key[KeyType <: Key[KeyType]] {
@@ -40,7 +42,7 @@ trait PrimaryKey extends Key[PrimaryKey] with Unmodifiable with Indexed with Und
   abstract override def isPrimary: Boolean = true
 }
 
-trait PartitionKey extends Key[PartitionKey] with Unmodifiable with Indexed with Undroppable {
+trait PartitionKey extends Key[PartitionKey] with Unmodifiable with Undroppable {
   self: AbstractColumn[_] =>
   abstract override def isPartitionKey: Boolean = true
   abstract override def isPrimary: Boolean = true
