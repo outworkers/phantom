@@ -108,6 +108,7 @@ class TestDatabase(
   // table to test a schema bug for using RootSelectBlockOps on select projections with no other clauses
   object userSchema extends UserSchemaTable with Connector
   object verizonSchema extends VerizonSchema with Connector
+  object tuplePartitionKeyTable extends TuplePartitionTable with Connector
 }
 
 

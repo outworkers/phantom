@@ -24,7 +24,7 @@ import com.outworkers.phantom.tables.bugs.SchemaBugSecondaryIndex
 
 object TestConnector {
 
-  val specialTests = connectors.ContactPoint.local
+  val specialTests: CassandraConnection = connectors.ContactPoint.local
     .withClusterBuilder(_.withSocketOptions(
       new SocketOptions()
         .setConnectTimeoutMillis(20000)

@@ -31,7 +31,7 @@ case class PasswordInfo(
 )
 
 object PasswordInfo{
-  implicit val conversion : Primitive[PasswordInfo] = {
+  implicit val conversion: Primitive[PasswordInfo] = {
     Primitive.derive[PasswordInfo, (String, String, Option[String])](pi => (pi.hasher, pi.password, pi.salt)) { x =>
       val (a, b, c) = x
       PasswordInfo(a, b, c)

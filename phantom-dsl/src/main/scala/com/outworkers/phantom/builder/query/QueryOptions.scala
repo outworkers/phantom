@@ -30,8 +30,6 @@ case class RoutingKeyModifier(
 
     val policy = session.getCluster.getConfiguration.getPolicies.getLoadBalancingPolicy
 
-    Console.println(s"Found ${tokens.size} tokens; TokenAware: ${policy.isInstanceOf[TokenAwarePolicy] }")
-
     if (policy.isInstanceOf[TokenAwarePolicy] && tokens.nonEmpty) {
       st
         .setRoutingKey(tokens.map(_.apply(session)): _*)

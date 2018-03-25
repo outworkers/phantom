@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.builder.serializers.select
+package com.outworkers.phantom.builder.serializers
 
 import com.outworkers.phantom.builder.query.SerializationTest
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.TestDatabase
-import org.scalatest.{FlatSpec, Matchers}
 import com.outworkers.util.samplers._
+import org.scalatest.{FlatSpec, Matchers}
 
 class TokenQuerySerialisationTest extends FlatSpec with SerializationTest with Matchers {
 
