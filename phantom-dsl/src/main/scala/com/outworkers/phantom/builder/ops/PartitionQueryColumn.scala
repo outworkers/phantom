@@ -15,8 +15,6 @@
  */
 package com.outworkers.phantom.builder.ops
 
-import java.nio.ByteBuffer
-
 import com.datastax.driver.core.Session
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.{OperatorClause, WhereClause}
@@ -103,10 +101,12 @@ case class PartitionQueryColumn[RR](name: String)(
 
   def >=(value: OperatorClause.Condition): WhereClause.Condition = gte(value)
 
-  def in(values: List[RR]): WhereClause.PartitionCondition = {
+  def in(values: List[RR])(
+    implicit ev: Primitive[ListValue[RR]]
+  ): WhereClause.PartitionCondition = {
     new WhereClause.PartitionCondition(
       QueryBuilder.Where.in(name, values.map(p.asCql)), {
-        session: Session => Primitive[ListValue[RR]].serialize(ListValue(values), session.protocolVersion)
+        session: Session => ev.serialize(ListValue(values), session.protocolVersion)
       }
     )
   }
