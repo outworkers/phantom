@@ -35,11 +35,20 @@ package object jdk8 {
   type JdkLocalDateTime = java.time.LocalDateTime
 
   implicit val OffsetDateTimeIsPrimitive: Primitive[OffsetDateTime] = {
-    Primitive.derive[OffsetDateTime, (Long, String)](
-      offsetDt => offsetDt.toInstant.toEpochMilli -> offsetDt.getOffset.getId
-    ) { case (timestamp, zone) =>
-      OffsetDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneOffset.of(zone))
-    }
+    val tuplePremitive = implicitly[Primitive[(Long, String)]]
+    Primitive.manuallyDerive[OffsetDateTime, (Long, String)](
+      offsetDt => offsetDt.toInstant.toEpochMilli -> offsetDt.getOffset.getId,
+      {
+        case (timestamp, zone) => OffsetDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneOffset.of(zone))
+      }
+    )(tuplePremitive)(
+      CQLSyntax.Collections.tuple +
+        CQLSyntax.Symbols.`<` +
+        CQLSyntax.Types.Timestamp +
+        CQLSyntax.Symbols.`,` +
+        CQLSyntax.Types.Text +
+        CQLSyntax.Symbols.`>`
+    )
   }
 
   implicit val zonePrimitive: Primitive[ZoneId] = Primitive.derive[ZoneId, String](_.getId)(ZoneId.of)
@@ -56,9 +65,20 @@ package object jdk8 {
   )(Primitives.LocalDateIsPrimitive)(CQLSyntax.Types.Date)
 
   implicit val zonedDateTimePrimitive: Primitive[ZonedDateTime] = {
-    Primitive.derive[ZonedDateTime, (Long, String)](dt => dt.toInstant.toEpochMilli -> dt.getZone.getId) {
-      case (timestamp, zone) => ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.of(zone))
-    }
+    val tuplePremitive = implicitly[Primitive[(Long, String)]]
+    Primitive.manuallyDerive[ZonedDateTime, (Long, String)](
+      dt => dt.toInstant.toEpochMilli -> dt.getZone.getId,
+      {
+        case (timestamp, zone) => ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.of(zone))
+      }
+    )(tuplePremitive)(
+      CQLSyntax.Collections.tuple +
+        CQLSyntax.Symbols.`<` +
+        CQLSyntax.Types.Timestamp +
+        CQLSyntax.Symbols.`,` +
+        CQLSyntax.Types.Text +
+        CQLSyntax.Symbols.`>`
+    )
   }
 
   implicit val JdkLocalDateTimeIsPrimitive: Primitive[JavaLocalDateTime] = {
