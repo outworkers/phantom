@@ -25,6 +25,7 @@ import java.time.{LocalDate => JavaLocalDate, LocalDateTime => JavaLocalDateTime
 import com.datastax.driver.core.{LocalDate => DatastaxLocalDate}
 import com.outworkers.phantom.builder.primitives.{Primitive, Primitives}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
+import com.outworkers.phantom.builder.QueryBuilder
 import org.joda.time.{DateTime, DateTimeZone}
 
 package object jdk8 {
@@ -42,12 +43,7 @@ package object jdk8 {
         case (timestamp, zone) => OffsetDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneOffset.of(zone))
       }
     )(tuplePremitive)(
-      CQLSyntax.Collections.tuple +
-        CQLSyntax.Symbols.`<` +
-        CQLSyntax.Types.Timestamp +
-        CQLSyntax.Symbols.`,` +
-        CQLSyntax.Types.Text +
-        CQLSyntax.Symbols.`>`
+      QueryBuilder.Collections.tupleType(CQLSyntax.Types.Timestamp, CQLSyntax.Types.Text).queryString
     )
   }
 
@@ -72,12 +68,7 @@ package object jdk8 {
         case (timestamp, zone) => ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.of(zone))
       }
     )(tuplePremitive)(
-      CQLSyntax.Collections.tuple +
-        CQLSyntax.Symbols.`<` +
-        CQLSyntax.Types.Timestamp +
-        CQLSyntax.Symbols.`,` +
-        CQLSyntax.Types.Text +
-        CQLSyntax.Symbols.`>`
+      QueryBuilder.Collections.tupleType(CQLSyntax.Types.Timestamp, CQLSyntax.Types.Text).queryString
     )
   }
 
