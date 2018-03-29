@@ -25,6 +25,7 @@ import java.time.{LocalDate => JavaLocalDate, LocalDateTime => JavaLocalDateTime
 import com.datastax.driver.core.{LocalDate => DatastaxLocalDate}
 import com.outworkers.phantom.builder.primitives.{Primitive, Primitives}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
+import com.outworkers.phantom.builder.QueryBuilder
 import org.joda.time.{DateTime, DateTimeZone}
 
 package object jdk8 {
@@ -35,11 +36,15 @@ package object jdk8 {
   type JdkLocalDateTime = java.time.LocalDateTime
 
   implicit val OffsetDateTimeIsPrimitive: Primitive[OffsetDateTime] = {
-    Primitive.derive[OffsetDateTime, (Long, String)](
-      offsetDt => offsetDt.toInstant.toEpochMilli -> offsetDt.getOffset.getId
-    ) { case (timestamp, zone) =>
-      OffsetDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneOffset.of(zone))
-    }
+    val tuplePremitive = implicitly[Primitive[(Long, String)]]
+    Primitive.manuallyDerive[OffsetDateTime, (Long, String)](
+      offsetDt => offsetDt.toInstant.toEpochMilli -> offsetDt.getOffset.getId,
+      {
+        case (timestamp, zone) => OffsetDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneOffset.of(zone))
+      }
+    )(tuplePremitive)(
+      QueryBuilder.Collections.tupleType(CQLSyntax.Types.Timestamp, CQLSyntax.Types.Text).queryString
+    )
   }
 
   implicit val zonePrimitive: Primitive[ZoneId] = Primitive.derive[ZoneId, String](_.getId)(ZoneId.of)
@@ -56,9 +61,15 @@ package object jdk8 {
   )(Primitives.LocalDateIsPrimitive)(CQLSyntax.Types.Date)
 
   implicit val zonedDateTimePrimitive: Primitive[ZonedDateTime] = {
-    Primitive.derive[ZonedDateTime, (Long, String)](dt => dt.toInstant.toEpochMilli -> dt.getZone.getId) {
-      case (timestamp, zone) => ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.of(zone))
-    }
+    val tuplePremitive = implicitly[Primitive[(Long, String)]]
+    Primitive.manuallyDerive[ZonedDateTime, (Long, String)](
+      dt => dt.toInstant.toEpochMilli -> dt.getZone.getId,
+      {
+        case (timestamp, zone) => ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.of(zone))
+      }
+    )(tuplePremitive)(
+      QueryBuilder.Collections.tupleType(CQLSyntax.Types.Timestamp, CQLSyntax.Types.Text).queryString
+    )
   }
 
   implicit val JdkLocalDateTimeIsPrimitive: Primitive[JavaLocalDateTime] = {

@@ -24,11 +24,10 @@ import org.joda.time.{DateTime, DateTimeZone}
 
 package object indexed {
 
-  implicit val OffsetDateTimeIsPrimitive: Primitive[OffsetDateTime] = {
-    Primitive.derive[OffsetDateTime, Long](_.toInstant.toEpochMilli) { timestamp =>
-      OffsetDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneOffset.UTC)
-    }
-  }
+  implicit val OffsetDateTimeIsPrimitive: Primitive[OffsetDateTime] = Primitive.manuallyDerive[OffsetDateTime, Long](
+    _.toInstant.toEpochMilli,
+    millis => OffsetDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneOffset.UTC)
+  )(Primitives.LongPrimitive)(CQLSyntax.Types.Timestamp)
 
   implicit val zonePrimitive: Primitive[ZoneId] = Primitive.derive[ZoneId, String](_.getId)(ZoneId.of)
 
@@ -43,11 +42,10 @@ package object indexed {
 
   )(Primitives.LocalDateIsPrimitive)(CQLSyntax.Types.Date)
 
-  implicit val zonedDateTimePrimitive: Primitive[ZonedDateTime] = {
-    Primitive.derive[ZonedDateTime, Long](_.toInstant.toEpochMilli) {
-      ts => ZonedDateTime.ofInstant(Instant.ofEpochMilli(ts), ZoneOffset.UTC)
-    }
-  }
+  implicit val zonedDateTimePrimitive: Primitive[ZonedDateTime] = Primitive.manuallyDerive[ZonedDateTime, Long](
+    _.toInstant.toEpochMilli,
+    ts => ZonedDateTime.ofInstant(Instant.ofEpochMilli(ts), ZoneOffset.UTC)
+  )(Primitives.LongPrimitive)(CQLSyntax.Types.Timestamp)
 
   implicit val JdkLocalDateTimeIsPrimitive: Primitive[JavaLocalDateTime] = {
     Primitive.derive[JavaLocalDateTime, DateTime](jd =>
