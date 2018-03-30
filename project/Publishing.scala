@@ -66,10 +66,10 @@ object Publishing {
     ).getOrElse("Docs folder [%s] is outside of this VCS repository with base directory [%s]!" format(docsFolder, base))
 
 
-    vcs(st).add(relativePath) !! log
-    vcs(st).add(relativeDocsPath) !! log
+    vcs(st).add(relativePath, relativeDocsPath) !! log
     val status = (vcs(st).status !!) trim
 
+    status !! log
     val newState = if (status.nonEmpty) {
       val (state, msg) = settings.runTask(releaseCommitMessage, st)
       vcs(state).commit(msg, sign) ! log
