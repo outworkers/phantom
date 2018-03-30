@@ -187,7 +187,11 @@ object Publishing {
         </developers>
   )
 
-  def effectiveSettings: Seq[Def.Setting[_]] = releaseSettings ++ mavenSettings
+  def effectiveSettings: Seq[Def.Setting[_]] = releaseSettings ++ if (publishToMaven) {
+    mavenSettings
+  } else {
+    bintraySettings
+  }
 
   /**
    * This exists because SBT is not capable of reloading publishing configuration during tasks or commands.
