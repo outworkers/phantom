@@ -65,17 +65,16 @@ object Publishing {
       docsFolder
     ).getOrElse("Docs folder [%s] is outside of this VCS repository with base directory [%s]!" format(docsFolder, base))
 
-
-    vcs(st).add(relativePath) !! log
-    vcs(st).add(relativeDocsPath) !! log
+    vcs(st).add(relativePath, relativeDocsPath) !! log
     val status = (vcs(st).status !!) trim
 
+    status !! log
     val newState = if (status.nonEmpty) {
       val (state, msg) = settings.runTask(releaseCommitMessage, st)
       vcs(state).commit(msg, sign) ! log
       state
     } else {
-      // nothing to commit. this happens if the version.sbt file hasn't changed.
+      // nothing to commit. this happens if the version.sbt file hasn't changed or no docs have been added.
       st
     }
     newState
@@ -187,7 +186,13 @@ object Publishing {
         </developers>
   )
 
-  def effectiveSettings: Seq[Def.Setting[_]] = releaseSettings ++ mavenSettings
+  def effectiveSettings: Seq[Def.Setting[_]] = releaseSettings ++ {
+    if (publishToMaven) {
+      mavenSettings
+    } else {
+      bintraySettings
+    }
+  }
 
   /**
    * This exists because SBT is not capable of reloading publishing configuration during tasks or commands.
