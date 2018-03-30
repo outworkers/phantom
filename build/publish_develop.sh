@@ -50,13 +50,9 @@ function prepare_maven_release {
 }
 
 function publish_to_bintray {
-    if [[ $COMMIT_MSG == *"$COMMIT_SKIP_MESSAGE"* ]];
-    then
-        echo "Not publishing to Bintray"
-    else
-        echo "Publishing new version to bintray"
-        sbt "such publish"
-    fi
+    export MAVEN_PUBLISH="false"
+    echo "Publishing new version to bintray"
+    sbt "such publish"
 }
 
 function setup_credentials {
@@ -127,7 +123,7 @@ then
         sbt "project readme" tut
         sbt "release with-defaults"
 
-        #publish_to_bintray
+        publish_to_bintray
 
     else
         echo "Only publishing version for Scala $TARGET_SCALA_VERSION and Oracle JDK 8 to prevent multiple artifacts"

@@ -187,10 +187,12 @@ object Publishing {
         </developers>
   )
 
-  def effectiveSettings: Seq[Def.Setting[_]] = releaseSettings ++ if (publishToMaven) {
-    mavenSettings
-  } else {
-    bintraySettings
+  def effectiveSettings: Seq[Def.Setting[_]] = releaseSettings ++ {
+    if (publishToMaven) {
+      mavenSettings
+    } else {
+      bintraySettings
+    }
   }
 
   /**
