@@ -65,7 +65,6 @@ object Publishing {
       docsFolder
     ).getOrElse("Docs folder [%s] is outside of this VCS repository with base directory [%s]!" format(docsFolder, base))
 
-
     vcs(st).add(relativePath, relativeDocsPath) !! log
     val status = (vcs(st).status !!) trim
 
@@ -75,7 +74,7 @@ object Publishing {
       vcs(state).commit(msg, sign) ! log
       state
     } else {
-      // nothing to commit. this happens if the version.sbt file hasn't changed.
+      // nothing to commit. this happens if the version.sbt file hasn't changed or no docs have been added.
       st
     }
     newState
