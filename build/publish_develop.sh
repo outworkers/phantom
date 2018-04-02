@@ -106,14 +106,11 @@ then
         fix_git
         setup_git_credentials
 
-        COMMIT_MSG=$(git log -1 --pretty=%B 2>&1)
-        COMMIT_SKIP_MESSAGE="[version skip]"
-
         prepare_maven_release
         sbt "project readme" tut
         sbt "release with-defaults"
 
-        publish_to_bintray
+        # publish_to_bintray
 
     else
         echo "Only publishing version for Scala $TARGET_SCALA_VERSION and Oracle JDK 8 to prevent multiple artifacts"
