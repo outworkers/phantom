@@ -41,3 +41,5 @@ project/plugins/project/
 # Atom editor specific
 _config.yml
 project/project/
+build/deploy.asc
+build/git_credentials.asc
