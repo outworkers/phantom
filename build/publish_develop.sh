@@ -108,6 +108,8 @@ then
 
         prepare_maven_release
         sbt "project readme" tut
+
+        git status
         sbt "release with-defaults"
 
         # publish_to_bintray
