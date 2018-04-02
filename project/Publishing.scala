@@ -79,6 +79,8 @@ object Publishing {
       // nothing to commit. this happens if the version.sbt file hasn't changed or no docs have been added.
       st
     }
+    vcs(newState).status !! log
+    
     println(s"VCS modified files: ${vcs(newState).hasModifiedFiles}")
 
     newState
