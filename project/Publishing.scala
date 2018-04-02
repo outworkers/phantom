@@ -68,15 +68,19 @@ object Publishing {
     vcs(st).add(relativePath, relativeDocsPath) !! log
     val status = (vcs(st).status !!) trim
 
+    vcs(st)
+
     status !! log
     val newState = if (status.nonEmpty) {
       val (state, msg) = settings.runTask(releaseCommitMessage, st)
-      vcs(state).commit(msg, sign) ! log
+      vcs(state).commit(msg, sign) !! log
       state
     } else {
       // nothing to commit. this happens if the version.sbt file hasn't changed or no docs have been added.
       st
     }
+    println(s"VCS modified files: ${vcs(newState).hasModifiedFiles}")
+
     newState
   }
 
