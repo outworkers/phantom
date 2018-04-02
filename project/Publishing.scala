@@ -51,46 +51,42 @@ object Publishing {
     val settings = Project.extract(st)
     println(s"Found modified files: ${vcs(st).hasModifiedFiles}")
 
-    if (vcs(st).hasModifiedFiles) {
-      val log = toProcessLogger(st)
-      val versionsFile = settings.get(releaseVersionFile).getCanonicalFile
-      val docsFolder = settings.get(releaseTutFolder).getCanonicalFile
+    val log = toProcessLogger(st)
+    val versionsFile = settings.get(releaseVersionFile).getCanonicalFile
+    val docsFolder = settings.get(releaseTutFolder).getCanonicalFile
 
-      println(s"Docs folder path : ${docsFolder.getPath}")
-      println(s"Docs folder path : ${docsFolder.getAbsolutePath}")
-      val base = vcs(st).baseDir.getCanonicalFile
-      val sign = settings.get(releaseVcsSign)
+    println(s"Docs folder path : ${docsFolder.getPath}")
+    println(s"Docs folder path : ${docsFolder.getAbsolutePath}")
+    val base = vcs(st).baseDir.getCanonicalFile
+    val sign = settings.get(releaseVcsSign)
 
-      val relativePath = IO.relativize(
-        base,
-        versionsFile
-      ).getOrElse("Version file [%s] is outside of this VCS repository with base directory [%s]!" format(versionsFile, base))
+    val relativePath = IO.relativize(
+      base,
+      versionsFile
+    ).getOrElse("Version file [%s] is outside of this VCS repository with base directory [%s]!" format(versionsFile, base))
 
-      val relativeDocsPath = IO.relativize(
-        base,
-        docsFolder
-      ).getOrElse("Docs folder [%s] is outside of this VCS repository with base directory [%s]!" format(docsFolder, base))
+    val relativeDocsPath = IO.relativize(
+      base,
+      docsFolder
+    ).getOrElse("Docs folder [%s] is outside of this VCS repository with base directory [%s]!" format(docsFolder, base))
 
-      vcs(st).add(relativePath, relativeDocsPath) !! log
-      val status = (vcs(st).status !!) trim
+    vcs(st).add(relativePath, relativeDocsPath) !! log
+    val status = (vcs(st).status !!) trim
 
-      vcs(st)
+    vcs(st)
 
-      status !! log
-      val newState = if (status.nonEmpty) {
-        val (state, msg) = settings.runTask(releaseCommitMessage, st)
-        vcs(state).commit(msg, sign) !! log
-        state
-      } else {
-        // nothing to commit. this happens if the version.sbt file hasn't changed or no docs have been added.
-        st
-      }
-      vcs(newState).status !! log
-
-      newState
+    status !! log
+    val newState = if (status.nonEmpty) {
+      val (state, msg) = settings.runTask(releaseCommitMessage, st)
+      vcs(state).commit(msg, sign) !! log
+      state
     } else {
+      // nothing to commit. this happens if the version.sbt file hasn't changed or no docs have been added.
       st
     }
+    vcs(newState).status !! log
+
+    newState
   }
 
   val releaseSettings = Seq(
@@ -100,7 +96,6 @@ object Publishing {
     releaseTagComment := s"Releasing ${(version in ThisBuild).value} $ciSkipSequence",
     releaseCommitMessage := s"Setting version to ${(version in ThisBuild).value} $ciSkipSequence",
     releaseProcess := Seq[ReleaseStep](
-      commitTutFilesAndVersion,
       checkSnapshotDependencies,
       inquireVersions,
       setReleaseVersion,
