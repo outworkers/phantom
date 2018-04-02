@@ -135,7 +135,7 @@ object Publishing {
   lazy val bintraySettings: Seq[Def.Setting[_]] = Seq(
     publishMavenStyle := true,
     bintrayOrganization := Some("outworkers"),
-    bintrayRepository := { if (scalaVersion.value.trim.endsWith("SNAPSHOT")) "oss-snapshots" else "oss-releases" },
+    bintrayRepository := { if (version.value.trim.endsWith("SNAPSHOT")) "oss-snapshots" else "oss-releases" },
     bintrayReleaseOnPublish in ThisBuild := true,
     publishArtifact in Test := false,
     pomIncludeRepository := { _ => true},
