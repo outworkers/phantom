@@ -49,11 +49,15 @@ object Publishing {
 
   def commitTutFilesAndVersion: ReleaseStep = ReleaseStep { st: State =>
     val settings = Project.extract(st)
+    println(s"Found modified files: ${vcs(st).hasModifiedFiles)}")
 
     if (vcs(st).hasModifiedFiles) {
       val log = toProcessLogger(st)
       val versionsFile = settings.get(releaseVersionFile).getCanonicalFile
       val docsFolder = settings.get(releaseTutFolder).getCanonicalFile
+
+      println(s"Docs folder path : ${docsFolder.getPath}")
+      println(s"Docs folder path : ${docsFolder.getAbsolutePath}")
       val base = vcs(st).baseDir.getCanonicalFile
       val sign = settings.get(releaseVcsSign)
 
