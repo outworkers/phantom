@@ -49,7 +49,7 @@ object Publishing {
 
   def commitTutFilesAndVersion: ReleaseStep = ReleaseStep { st: State =>
     val settings = Project.extract(st)
-    println(s"Found modified files: ${vcs(st).hasModifiedFiles)}")
+    println(s"Found modified files: ${vcs(st).hasModifiedFiles}")
 
     if (vcs(st).hasModifiedFiles) {
       val log = toProcessLogger(st)
