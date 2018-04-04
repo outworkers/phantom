@@ -49,7 +49,7 @@ package object jdk8 {
 
   implicit val zonePrimitive: Primitive[ZoneId] = Primitive.derive[ZoneId, String](_.getId)(ZoneId.of)
 
-  implicit val LocalDateIsPrimitive = Primitive.manuallyDerive[JavaLocalDate, DatastaxLocalDate](
+  implicit val LocalDateIsPrimitive: Primitive[JavaLocalDate] = Primitive.manuallyDerive[JavaLocalDate, DatastaxLocalDate](
     l => {
       val off = OffsetDateTime.of(l.atTime(0, 0), ZoneOffset.UTC)
       DatastaxLocalDate.fromYearMonthDay(off.getYear, off.getMonthValue, off.getDayOfMonth)

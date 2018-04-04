@@ -15,7 +15,7 @@
  */
 package com.outworkers.phantom.jdk8.tables
 
-import java.time.{LocalDate, LocalDateTime, OffsetDateTime}
+import java.time.{LocalDate => _, OffsetDateTime => _, ZonedDateTime => _, _}
 
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.jdk8._
@@ -26,8 +26,8 @@ case class OptionalJdk8Row(
   pkey: String,
   offsetDateTime: Option[OffsetDateTime],
   zonedDateTime: Option[ZonedDateTime],
-  localDate: Option[LocalDate],
-  localDateTime: Option[LocalDateTime]
+  localDate: Option[JdkLocalDate],
+  localDateTime: Option[JdkLocalDateTime]
 )
 
 abstract class OptionalPrimitivesJdk8 extends Table[
@@ -41,11 +41,28 @@ abstract class OptionalPrimitivesJdk8 extends Table[
 
   object zonedDateTime extends OptionalCol[ZonedDateTime]
 
-  object localDate extends OptionalCol[LocalDate]
+  object localDate extends OptionalCol[JdkLocalDate]
 
-  object localDateTime extends OptionalCol[LocalDateTime]
+  object localDateTime extends OptionalCol[JdkLocalDateTime]
 
   def findByPkey(pkey: String): Future[Option[OptionalJdk8Row]] = {
     select.where(_.pkey eqs pkey).one()
   }
+}
+
+case class User(id: Int, time: Instant)
+
+object Extras {
+  implicit val instantPrimitive: Primitive[Instant] = {
+    def toInstant(dateTime: LocalDateTime): Instant      = dateTime.atZone(ZoneOffset.UTC).toInstant
+    def toLocalDateTime(instant: Instant): LocalDateTime = instant.atZone(ZoneOffset.UTC).toLocalDateTime
+    Primitive.derive[Instant, LocalDateTime](toLocalDateTime)(toInstant)
+  }
+}
+
+import Extras._
+
+abstract class UserSchema extends Table[UserSchema, User] {
+  object id    extends IntColumn with PartitionKey
+  object time  extends Col[Instant]
 }
