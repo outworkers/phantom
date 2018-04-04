@@ -151,6 +151,9 @@ object Primitive {
     */
   implicit def materializer[T]: Primitive[T] = macro PrimitiveMacro.materializer[T]
 
+
+  def iso[A, B : Primitive](r: B => A)(w: A => B): Primitive[A] = derive[A, B](w)(r)
+
   /**
     * Derives primitives and encodings for a non standard type.
     * @param to The function that converts a [[Target]] instance to a [[Source]] instance.
