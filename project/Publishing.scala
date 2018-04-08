@@ -65,17 +65,23 @@ object Publishing {
       versionsFile
     ).getOrElse("Version file [%s] is outside of this VCS repository with base directory [%s]!" format(versionsFile, base))
 
-    val relativeDocsPath = IO.relativize(
-      base,
-      docsFolder
-    ).getOrElse("Docs folder [%s] is outside of this VCS repository with base directory [%s]!" format(docsFolder, base))
+    val commitablePaths = Seq(relativePath) ++ {
+      if (docsFolder.exists) {
+        println(s"Docs folder exists under ${docsFolder}")
+        val relativeDocsPath = IO.relativize(
+          base,
+          docsFolder
+        ).getOrElse("Docs folder [%s] is outside of this VCS repository with base directory [%s]!" format(docsFolder, base))
+        Seq(relativeDocsPath)
+      } else {
+        println(s"Docs folder doesn't exist under, $base and $docsFolder")
+        Seq.empty
+      }
+    }
 
-    vcs(st).add(relativePath, relativeDocsPath) !! log
+    vcs(st).add(commitablePaths: _*) !! log
     val status = (vcs(st).status !!) trim
 
-    vcs(st)
-
-    status !! log
     val newState = if (status.nonEmpty) {
       val (state, msg) = settings.runTask(releaseCommitMessage, st)
       vcs(state).commit(msg, sign) !! log
