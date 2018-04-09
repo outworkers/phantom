@@ -83,7 +83,7 @@ val scalacOptionsFn: String => Seq[String] = { s =>
   }
 }
 
-scalacOptions in ThisBuild ++= ScalacOptions ++ YWarnOptions
+scalacOptions ++= ScalacOptions ++ YWarnOptions
 
 lazy val Versions = new {
   val logback = "1.2.3"
