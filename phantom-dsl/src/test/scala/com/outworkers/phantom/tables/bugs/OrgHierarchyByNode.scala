@@ -31,9 +31,14 @@ case class OrgHierarchy(
   nodeHw: Option[String]
 )
 
+/**
+  * Table structure to isolate prepared statement bug reported by Verizon.
+  * Prepared statements should re-attach to clusters with some kind of exponential retry
+  * strategy and leverage internals.
+  */
 abstract class OrgHierarchyByNode extends Table[OrgHierarchyByNode, OrgHierarchy] {
 
-  def getById(nodeId: String): Future[Option[OrgHierarchy]] =
+  def findById(nodeId: String): Future[Option[OrgHierarchy]] =
     getOrgQuery.flatMap(_.bind(nodeId).one())
 
   override def tableName: String = "orghierarchy_by_nodeid"
