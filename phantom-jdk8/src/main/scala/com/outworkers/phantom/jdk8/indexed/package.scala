@@ -29,9 +29,14 @@ package object indexed {
     millis => OffsetDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneOffset.UTC)
   )(Primitives.LongPrimitive)(CQLSyntax.Types.Timestamp)
 
+  implicit val instantPrimitive: Primitive[Instant] = Primitive.manuallyDerive[Instant, Long](
+    _.toEpochMilli,
+    Instant.ofEpochMilli
+  )(Primitives.LongPrimitive)(CQLSyntax.Types.Timestamp)
+
   implicit val zonePrimitive: Primitive[ZoneId] = Primitive.derive[ZoneId, String](_.getId)(ZoneId.of)
 
-  implicit val LocalDateIsPrimitive = Primitive.manuallyDerive[JavaLocalDate, DatastaxLocalDate](
+  implicit val LocalDateIsPrimitive: Primitive[JavaLocalDate] = Primitive.manuallyDerive[JavaLocalDate, DatastaxLocalDate](
     l => {
       val off = OffsetDateTime.of(l.atTime(0, 0), ZoneOffset.UTC)
       DatastaxLocalDate.fromYearMonthDay(off.getYear, off.getMonthValue, off.getDayOfMonth)
@@ -42,10 +47,10 @@ package object indexed {
 
   )(Primitives.LocalDateIsPrimitive)(CQLSyntax.Types.Date)
 
-  implicit val zonedDateTimePrimitive: Primitive[ZonedDateTime] = Primitive.manuallyDerive[ZonedDateTime, Long](
-    _.toInstant.toEpochMilli,
-    ts => ZonedDateTime.ofInstant(Instant.ofEpochMilli(ts), ZoneOffset.UTC)
-  )(Primitives.LongPrimitive)(CQLSyntax.Types.Timestamp)
+  implicit val zonedDateTimePrimitive: Primitive[ZonedDateTime] = Primitive.manuallyDerive[ZonedDateTime, Instant](
+    _.toInstant,
+    ZonedDateTime.ofInstant(_, ZoneOffset.UTC)
+  )(instantPrimitive)(CQLSyntax.Types.Timestamp)
 
   implicit val JdkLocalDateTimeIsPrimitive: Primitive[JavaLocalDateTime] = {
     Primitive.derive[JavaLocalDateTime, DateTime](jd =>
