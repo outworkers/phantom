@@ -35,6 +35,9 @@ package object jdk8 {
   type JdkLocalDate = java.time.LocalDate
   type JdkLocalDateTime = java.time.LocalDateTime
 
+
+  implicit val instantPrimitive: Primitive[java.time.Instant] = indexed.instantPrimitive
+
   implicit val OffsetDateTimeIsPrimitive: Primitive[OffsetDateTime] = {
     val tuplePremitive = implicitly[Primitive[(Long, String)]]
     Primitive.manuallyDerive[OffsetDateTime, (Long, String)](
