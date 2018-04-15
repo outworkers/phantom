@@ -58,9 +58,9 @@ class PrimitiveMacro(override val c: blackbox.Context) extends BlackboxToolbelt 
   val bufferType = tq"_root_.java.nio.ByteBuffer"
   val bufferCompanion = q"_root_.java.nio.ByteBuffer"
 
-  val listValueType = typeOf[ListValue[_]]
-  val bufferException = typeOf[BufferUnderflowException]
-  val invalidTypeException = typeOf[InvalidTypeException]
+  private[this] val listValueType: Type = typeOf[ListValue[_]]
+  private[this] val bufferException = typeOf[BufferUnderflowException]
+  private[this] val invalidTypeException = typeOf[InvalidTypeException]
 
   val codecUtils = q"_root_.com.datastax.driver.core.CodecUtils"
   val builder = q"_root_.com.outworkers.phantom.builder"
@@ -114,43 +114,6 @@ class PrimitiveMacro(override val c: blackbox.Context) extends BlackboxToolbelt 
     val enum: Symbol = typed[Enumeration]
   }
 
-  def primitive(nm: String): Tree = q"$prefix.Primitives.${TermName(nm)}"
-
-  val booleanPrimitive: Tree = primitive("BooleanIsPrimitive")
-
-  val stringPrimitive: Tree = primitive("StringPrimitive")
-
-  val intPrimitive: Tree = primitive("IntPrimitive")
-
-  val shortPrimitive: Tree = primitive("SmallIntPrimitive")
-
-  val bytePrimitive: Tree = primitive("TinyIntPrimitive")
-
-  val doublePrimitive: Tree = primitive("DoublePrimitive")
-
-  val longPrimitive: Tree = primitive("LongPrimitive")
-
-  val floatPrimitive: Tree = primitive("FloatPrimitive")
-
-  val uuidPrimitive: Tree = primitive("UUIDPrimitive")
-
-  val datePrimitive: Tree = primitive("DateIsPrimitive")
-
-  val localDatePrimitive: Tree = primitive("LocalDateIsPrimitive")
-
-  val dateTimePrimitive: Tree = primitive("DateTimeIsPrimitive")
-
-  val localJodaDatePrimitive: Tree = primitive("JodaLocalDateIsPrimitive")
-
-  val sqlTimeStampPrimitive: Tree = primitive("SqlTimestampIsPrimitive")
-
-  val bigDecimalPrimitive: Tree = primitive("BigDecimalIsPrimitive")
-
-  val inetPrimitive: Tree = primitive("InetAddressPrimitive")
-
-  val bigIntPrimitive: Tree = primitive("BigIntPrimitive")
-
-  val bufferPrimitive: Tree = primitive("BlobIsPrimitive")
 
   def listPrimitive(tpe: Type): Tree = {
     val innerTpe = tpe.typeArgs.headOption
@@ -363,24 +326,6 @@ class PrimitiveMacro(override val c: blackbox.Context) extends BlackboxToolbelt 
     val tree = tpe match {
       case _ if isTuple(wkType) => tuplePrimitive(wkType)
       case _ if isOption(wkType) => optionPrimitive(wkType)
-      case Symbols.boolSymbol => booleanPrimitive
-      case Symbols.byteSymbol => bytePrimitive
-      case Symbols.shortSymbol => shortPrimitive
-      case Symbols.intSymbol => intPrimitive
-      case Symbols.longSymbol => longPrimitive
-      case Symbols.doubleSymbol => doublePrimitive
-      case Symbols.floatSymbol => floatPrimitive
-      case Symbols.uuidSymbol => uuidPrimitive
-      case Symbols.stringSymbol => stringPrimitive
-      case Symbols.dateSymbol => datePrimitive
-      case Symbols.dateTimeSymbol => dateTimePrimitive
-      case Symbols.localDateSymbol => localDatePrimitive
-      case Symbols.jodaLocalDateSymbol => localJodaDatePrimitive
-      case Symbols.inetSymbol => inetPrimitive
-      case Symbols.bigInt => bigIntPrimitive
-      case Symbols.bigDecimal => bigDecimalPrimitive
-      case Symbols.timestampSymbol => sqlTimeStampPrimitive
-      case Symbols.buffer => bufferPrimitive
       case Symbols.enum => enumPrimitive(wkType)
       case Symbols.enumValue => enumValuePrimitive(wkType)
       case Symbols.listSymbol => listPrimitive(wkType)
