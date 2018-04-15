@@ -27,15 +27,13 @@ import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import org.joda.time.{DateTime, DateTimeZone}
 
-package object jdk8 {
+package object jdk8 extends Shared {
 
   type OffsetDateTime = java.time.OffsetDateTime
   type ZonedDateTime = java.time.ZonedDateTime
   type JdkLocalDate = java.time.LocalDate
   type JdkLocalDateTime = java.time.LocalDateTime
 
-
-  implicit val instantPrimitive: Primitive[java.time.Instant] = indexed.instantPrimitive
 
   implicit val OffsetDateTimeIsPrimitive: Primitive[OffsetDateTime] = {
     val tuplePremitive = implicitly[Primitive[(Long, String)]]

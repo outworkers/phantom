@@ -17,8 +17,8 @@ package com.outworkers.phantom.jdk8
 
 import java.time.{LocalDate => JavaLocalDate, LocalDateTime => JavaLocalDateTime, _}
 
-import com.datastax.driver.core.{ LocalDate => DatastaxLocalDate }
-import com.outworkers.phantom.builder.primitives.{Primitive, Primitives}
+import com.datastax.driver.core.{LocalDate => DatastaxLocalDate}
+import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import org.joda.time.{DateTime, DateTimeZone}
 
@@ -29,10 +29,6 @@ package object indexed {
     millis => OffsetDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneOffset.UTC)
   )(Primitive[Long])(CQLSyntax.Types.Timestamp)
 
-  implicit val instantPrimitive: Primitive[Instant] = Primitive.manuallyDerive[Instant, Long](
-    _.toEpochMilli,
-    Instant.ofEpochMilli
-  )(Primitive[Long])(CQLSyntax.Types.Timestamp)
 
   implicit val zonePrimitive: Primitive[ZoneId] = Primitive.derive[ZoneId, String](_.getId)(ZoneId.of)
 
