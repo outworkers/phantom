@@ -27,12 +27,12 @@ package object indexed {
   implicit val OffsetDateTimeIsPrimitive: Primitive[OffsetDateTime] = Primitive.manuallyDerive[OffsetDateTime, Long](
     _.toInstant.toEpochMilli,
     millis => OffsetDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneOffset.UTC)
-  )(Primitives.LongPrimitive)(CQLSyntax.Types.Timestamp)
+  )(Primitive[Long])(CQLSyntax.Types.Timestamp)
 
   implicit val instantPrimitive: Primitive[Instant] = Primitive.manuallyDerive[Instant, Long](
     _.toEpochMilli,
     Instant.ofEpochMilli
-  )(Primitives.LongPrimitive)(CQLSyntax.Types.Timestamp)
+  )(Primitive[Long])(CQLSyntax.Types.Timestamp)
 
   implicit val zonePrimitive: Primitive[ZoneId] = Primitive.derive[ZoneId, String](_.getId)(ZoneId.of)
 
@@ -45,7 +45,7 @@ package object indexed {
       JavaLocalDate.of(conv.getYear, conv.getMonth, conv.getDayOfMonth)
     }
 
-  )(Primitives.LocalDateIsPrimitive)(CQLSyntax.Types.Date)
+  )(Primitive[DatastaxLocalDate])(CQLSyntax.Types.Date)
 
   implicit val zonedDateTimePrimitive: Primitive[ZonedDateTime] = Primitive.manuallyDerive[ZonedDateTime, Instant](
     _.toInstant,

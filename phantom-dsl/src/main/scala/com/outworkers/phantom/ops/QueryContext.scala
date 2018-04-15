@@ -37,7 +37,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
 )(
   implicit fMonad: FutureMonad[F],
   val promiseInterface: PromiseInterface[P, F]
-) extends DefaultPrimitives { outer =>
+) { outer =>
 
   type QueryNotExecuted = _root_.com.outworkers.phantom.ops.QueryNotExecuted
 

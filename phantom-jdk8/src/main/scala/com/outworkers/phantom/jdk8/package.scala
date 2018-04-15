@@ -15,17 +15,16 @@
  */
 package com.outworkers.phantom
 
+import java.time.{LocalDate => JavaLocalDate, LocalDateTime => JavaLocalDateTime, _}
 import java.util.UUID
 
 import com.datastax.driver.core.utils.UUIDs
+import com.datastax.driver.core.{LocalDate => DatastaxLocalDate}
+import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.OperatorClause
 import com.outworkers.phantom.builder.ops.TimeUUIDOperator
-import java.time.{LocalDate => JavaLocalDate, LocalDateTime => JavaLocalDateTime, _}
-
-import com.datastax.driver.core.{LocalDate => DatastaxLocalDate}
-import com.outworkers.phantom.builder.primitives.{Primitive, Primitives}
+import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.syntax.CQLSyntax
-import com.outworkers.phantom.builder.QueryBuilder
 import org.joda.time.{DateTime, DateTimeZone}
 
 package object jdk8 {
@@ -61,7 +60,7 @@ package object jdk8 {
       JavaLocalDate.of(conv.getYear, conv.getMonth, conv.getDayOfMonth)
     }
 
-  )(Primitives.LocalDateIsPrimitive)(CQLSyntax.Types.Date)
+  )(Primitive[DatastaxLocalDate])(CQLSyntax.Types.Date)
 
   implicit val zonedDateTimePrimitive: Primitive[ZonedDateTime] = {
     val tuplePremitive = implicitly[Primitive[(Long, String)]]

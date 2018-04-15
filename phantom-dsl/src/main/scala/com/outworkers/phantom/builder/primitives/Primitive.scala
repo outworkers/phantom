@@ -132,7 +132,7 @@ abstract class Primitive[RR] {
   def shouldFreeze: Boolean = false
 }
 
-object Primitive {
+object Primitive extends DefaultPrimitives  {
 
   val nullValue = None.orNull
 
