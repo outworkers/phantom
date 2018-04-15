@@ -141,7 +141,7 @@ abstract class Primitive[RR] {
 
 object Primitive {
 
-  val nullValue = None.orNull
+  val nullValue: Null = None.orNull
 
   implicit object InetAddressPrimitive extends Primitive[InetAddress] {
     override val dataType: String = CQLSyntax.Types.Inet
