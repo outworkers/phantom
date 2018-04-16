@@ -53,6 +53,7 @@ class PrimitiveRoundtripTests
 
   val protocolGen: Gen[ProtocolVersion] = Gen.alphaStr.map(_ => ProtocolVersion.V5)
 
+
   def roundtrip[T : Primitive](gen: Gen[T]): Assertion = {
     val ev = Primitive[T]
     forAll(gen, protocolGen) { (sample, protocol) =>
@@ -115,7 +116,6 @@ class PrimitiveRoundtripTests
   it should "serialize and deserialize an Option[DateTime] primitive" in {
     roundtrip(Gen.option(dateTimeGen))
   }
-
 
   it should "serialize and deserialize a java.sql.Timestamp primitive" in {
     roundtrip(timestampGen)

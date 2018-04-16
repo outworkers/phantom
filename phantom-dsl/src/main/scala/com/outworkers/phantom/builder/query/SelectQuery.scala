@@ -20,7 +20,7 @@ import java.nio.ByteBuffer
 import com.datastax.driver.core.{ConsistencyLevel, Session}
 import com.outworkers.phantom.builder.clauses._
 import com.outworkers.phantom.builder.ops.TokenizerKey
-import com.outworkers.phantom.builder.primitives.Primitives.{LongPrimitive, StringPrimitive}
+import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.execution._
 import com.outworkers.phantom.builder.query.prepared.{PrepareMark, PreparedFlattener, PreparedSelectBlock}
@@ -201,13 +201,18 @@ private[phantom] class RootSelectBlock[
     new SelectQuery(table, rowFunc, QueryBuilder.Select.distinct(table.tableName, keySpace.name, columns: _*))
   }
 
-  private[this] def extractCount(r: Row): Long = {
-    LongPrimitive.fromRow(CQLSyntax.Selection.count, r).getOrElse(0L)
+  private[this] def extractCount(r: Row)(
+    implicit ev: Primitive[Long]
+  ): Long = {
+    ev.fromRow(CQLSyntax.Selection.count, r).getOrElse(0L)
   }
 
-  def json()(implicit keySpace: KeySpace): SelectQuery.Default[T, String] = {
+  def json()(
+    implicit keySpace: KeySpace,
+    ev: Primitive[String]
+  ): SelectQuery.Default[T, String] = {
     val jsonParser: (Row) => String = row => {
-      StringPrimitive.deserialize(
+      ev.deserialize(
         row.getBytesUnsafe(CQLSyntax.JSON_EXTRACTOR),
         row.version
       )
@@ -265,7 +270,10 @@ private[phantom] class RootSelectBlock[
   }
 
   @implicitNotFound("You haven't provided a KeySpace in scope. Use a Connector to automatically inject one.")
-  def count()(implicit keySpace: KeySpace): SelectQuery.Default[T, Long] = {
+  def count()(
+    implicit keySpace: KeySpace,
+    ev: Primitive[Long]
+  ): SelectQuery.Default[T, Long] = {
     new SelectQuery(
       table,
       extractCount,
