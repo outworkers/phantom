@@ -50,13 +50,15 @@ trait FutureMonad[F[_]] {
 
 
 object FutureMonadOps {
-  implicit class Ops[F[_], A](val source: F[A])(implicit monad: FutureMonad[F]) {
+  implicit class Ops[F[_], A](val source: F[A]) extends AnyVal{
     def map[B](f: A => B)(
-      implicit ctx: ExecutionContextExecutor
+      implicit ctx: ExecutionContextExecutor,
+      monad: FutureMonad[F]
     ): F[B] = monad.map(source)(f)
 
     def flatMap[B](fn: A => F[B])(
-      implicit ctx: ExecutionContextExecutor
+      implicit ctx: ExecutionContextExecutor,
+      monad: FutureMonad[F]
     ): F[B]= monad.flatMap(source)(fn)
   }
 }

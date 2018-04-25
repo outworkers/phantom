@@ -15,8 +15,6 @@
  */
 package com.outworkers.phantom.builder.query
 
-import java.nio.ByteBuffer
-
 import com.datastax.driver.core.{ConsistencyLevel, Session}
 import com.outworkers.phantom.builder.clauses._
 import com.outworkers.phantom.builder.ops.TokenizerKey
