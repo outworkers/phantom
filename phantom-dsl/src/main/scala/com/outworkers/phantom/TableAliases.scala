@@ -19,7 +19,7 @@ import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.util.{Date, UUID}
 
-import com.outworkers.phantom.builder.primitives.Primitive
+import com.outworkers.phantom.builder.primitives.{AsciiValue, Primitive}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import org.joda.time.{DateTime, LocalDate}
 
@@ -89,24 +89,25 @@ trait TableAliases[T <: CassandraTable[T, R], R] { self: CassandraTable[T, R] =>
   abstract class OptionalColumn[RR] extends com.outworkers.phantom.column.OptionalColumn[T, R, RR](this)
   class OptionalPrimitiveColumn[RR : Primitive] extends com.outworkers.phantom.column.OptionalPrimitiveColumn[T, R, RR](this)
 
-  class BigDecimalColumn()(implicit ev: Primitive[BigDecimal]) extends PrimitiveColumn[BigDecimal]
-  class BlobColumn()(implicit ev: Primitive[ByteBuffer]) extends PrimitiveColumn[ByteBuffer]
-  class BigIntColumn()(implicit ev: Primitive[BigInt]) extends PrimitiveColumn[BigInt]
-  class BooleanColumn()(implicit ev: Primitive[Boolean]) extends PrimitiveColumn[Boolean]
-  class DateColumn()(implicit ev: Primitive[Date]) extends PrimitiveColumn[Date]
-  class DateTimeColumn()(implicit ev: Primitive[DateTime]) extends PrimitiveColumn[DateTime]
-  class LocalDateColumn()(implicit ev: Primitive[LocalDate]) extends PrimitiveColumn[LocalDate]
-  class DoubleColumn()(implicit ev: Primitive[Double]) extends PrimitiveColumn[Double]
-  class FloatColumn()(implicit ev: Primitive[Float]) extends PrimitiveColumn[Float]
-  class IntColumn()(implicit ev: Primitive[Int]) extends PrimitiveColumn[Int]
-  class SmallIntColumn()(implicit ev: Primitive[Short]) extends PrimitiveColumn[Short]
-  class TinyIntColumn()(implicit ev: Primitive[Byte]) extends PrimitiveColumn[Byte]
-  class InetAddressColumn()(implicit ev: Primitive[InetAddress]) extends PrimitiveColumn[InetAddress]
-  class LongColumn()(implicit ev: Primitive[Long]) extends PrimitiveColumn[Long]
-  class StringColumn()(implicit ev: Primitive[String]) extends PrimitiveColumn[String]
-  class UUIDColumn()(implicit ev: Primitive[UUID]) extends PrimitiveColumn[UUID]
+  class BigDecimalColumn()(implicit ev: Primitive[BigDecimal]) extends Col[BigDecimal]
+  class BlobColumn()(implicit ev: Primitive[ByteBuffer]) extends Col[ByteBuffer]
+  class BigIntColumn()(implicit ev: Primitive[BigInt]) extends Col[BigInt]
+  class BooleanColumn()(implicit ev: Primitive[Boolean]) extends Col[Boolean]
+  class DateColumn()(implicit ev: Primitive[Date]) extends Col[Date]
+  class DateTimeColumn()(implicit ev: Primitive[DateTime]) extends Col[DateTime]
+  class LocalDateColumn()(implicit ev: Primitive[LocalDate]) extends Col[LocalDate]
+  class DoubleColumn()(implicit ev: Primitive[Double]) extends Col[Double]
+  class FloatColumn()(implicit ev: Primitive[Float]) extends Col[Float]
+  class IntColumn()(implicit ev: Primitive[Int]) extends Col[Int]
+  class SmallIntColumn()(implicit ev: Primitive[Short]) extends Col[Short]
+  class TinyIntColumn()(implicit ev: Primitive[Byte]) extends Col[Byte]
+  class InetAddressColumn()(implicit ev: Primitive[InetAddress]) extends Col[InetAddress]
+  class LongColumn()(implicit ev: Primitive[Long]) extends Col[Long]
+  class StringColumn()(implicit ev: Primitive[String]) extends Col[String]
+  class UUIDColumn()(implicit ev: Primitive[UUID]) extends Col[UUID]
   class CounterColumn()(implicit ev: Primitive[Long]) extends com.outworkers.phantom.column.CounterColumn[T, R](this)
   class TimeUUIDColumn()(implicit ev: Primitive[UUID]) extends com.outworkers.phantom.column.TimeUUIDColumn[T, R](this)
+  class AsciiColumn()(implicit ev: Primitive[AsciiValue]) extends Col[AsciiValue]
 
   class OptionalBlobColumn()(
     implicit ev: Primitive[ByteBuffer]

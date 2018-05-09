@@ -15,4 +15,4 @@
  */
 package com.outworkers.phantom.builder.primitives
 
-case class ASCIIValue(value: String)
+case class AsciiValue(value: String)

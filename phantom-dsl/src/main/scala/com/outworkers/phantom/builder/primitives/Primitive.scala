@@ -253,7 +253,7 @@ object Primitive {
   }
 
 
-  implicit object AsciPrimitive extends Primitive[ASCIIValue] {
+  implicit object AsciPrimitive extends Primitive[AsciiValue] {
     private val ASCII_PATTERN = Pattern.compile("^\\p{ASCII}*$")
 
     /**
@@ -264,11 +264,11 @@ object Primitive {
       * @param value The strongly typed value.
       * @return The string representation of the value with respect to CQL standards.
       */
-    override def asCql(value: ASCIIValue): String = StringPrimitive.asCql(value.value)
+    override def asCql(value: AsciiValue): String = StringPrimitive.asCql(value.value)
 
     override def dataType: String = CQLSyntax.Types.Ascii
 
-    override def serialize(value: ASCIIValue, protocol: ProtocolVersion): ByteBuffer = {
+    override def serialize(value: AsciiValue, protocol: ProtocolVersion): ByteBuffer = {
       if (value.value != null && !ASCII_PATTERN.matcher(value.value).matches) {
         throw new InvalidTypeException(String.format("%s is not a valid ASCII String", value))
       } else {
@@ -276,8 +276,8 @@ object Primitive {
       }
     }
 
-    override def deserialize(source: ByteBuffer, protocol: ProtocolVersion): ASCIIValue = {
-      ASCIIValue(StringPrimitive.deserialize(source, protocol))
+    override def deserialize(source: ByteBuffer, protocol: ProtocolVersion): AsciiValue = {
+      AsciiValue(StringPrimitive.deserialize(source, protocol))
     }
   }
 
