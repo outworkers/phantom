@@ -109,75 +109,75 @@ trait TableAliases[T <: CassandraTable[T, R], R] { self: CassandraTable[T, R] =>
   class TimeUUIDColumn()(implicit ev: Primitive[UUID]) extends com.outworkers.phantom.column.TimeUUIDColumn[T, R](this)
   class AsciiColumn()(implicit ev: Primitive[AsciiValue]) extends Col[AsciiValue]
 
-  class OptionalAsciiColumn()(implicit ev: Primitive[AsciiValue]) extends OptionalCol[AsciiValue]
+  class OptionalAsciiColumn()(implicit ev: Primitive[AsciiValue]) extends OptionalPrimitiveColumn[AsciiValue]
 
   class OptionalBlobColumn()(
     implicit ev: Primitive[ByteBuffer]
-  ) extends OptionalCol[ByteBuffer]
+  ) extends OptionalPrimitiveColumn[ByteBuffer]
 
   class OptionalBigDecimalColumn()(
     implicit ev: Primitive[BigDecimal]
-  ) extends OptionalCol[BigDecimal]
+  ) extends OptionalPrimitiveColumn[BigDecimal]
 
   class OptionalBigIntColumn()(
     implicit ev: Primitive[BigInt]
-  ) extends OptionalCol[BigInt]
+  ) extends OptionalPrimitiveColumn[BigInt]
 
   class OptionalBooleanColumn()(
     implicit ev: Primitive[Boolean]
-  ) extends OptionalCol[Boolean]
+  ) extends OptionalPrimitiveColumn[Boolean]
 
   class OptionalDateColumn()(
     implicit ev: Primitive[Date]
-  ) extends OptionalCol[Date]
+  ) extends OptionalPrimitiveColumn[Date]
 
   class OptionalDateTimeColumn()(
     implicit ev: Primitive[DateTime]
-  ) extends OptionalCol[DateTime]
+  ) extends OptionalPrimitiveColumn[DateTime]
 
   class OptionalLocalDateColumn()(
     implicit ev: Primitive[LocalDate]
-  ) extends OptionalCol[LocalDate]
+  ) extends OptionalPrimitiveColumn[LocalDate]
 
   class OptionalDoubleColumn()(
     implicit ev: Primitive[Double]
-  ) extends OptionalCol[Double]
+  ) extends OptionalPrimitiveColumn[Double]
 
   class OptionalFloatColumn()(
     implicit ev: Primitive[Float]
-  ) extends OptionalCol[Float]
+  ) extends OptionalPrimitiveColumn[Float]
 
   class OptionalIntColumn()(
     implicit ev: Primitive[Int]
-  ) extends OptionalCol[Int]
+  ) extends OptionalPrimitiveColumn[Int]
 
   class OptionalSmallIntColumn()(
     implicit ev: Primitive[Short]
-  ) extends OptionalCol[Short]
+  ) extends OptionalPrimitiveColumn[Short]
 
   class OptionalTinyIntColumn()(
     implicit ev: Primitive[Byte]
-  ) extends OptionalCol[Byte]
+  ) extends OptionalPrimitiveColumn[Byte]
 
   class OptionalInetAddressColumn()(
     implicit ev: Primitive[InetAddress]
-  ) extends OptionalCol[InetAddress]
+  ) extends OptionalPrimitiveColumn[InetAddress]
 
   class OptionalLongColumn()(
     implicit ev: Primitive[Long]
-  ) extends OptionalCol[Long]
+  ) extends OptionalPrimitiveColumn[Long]
 
   class OptionalStringColumn()(
     implicit ev: Primitive[String]
-  ) extends OptionalCol[String]
+  ) extends OptionalPrimitiveColumn[String]
 
   class OptionalUUIDColumn()(
     implicit ev: Primitive[UUID]
-  ) extends OptionalCol[UUID]
+  ) extends OptionalPrimitiveColumn[UUID]
 
   class OptionalTimeUUIDColumn()(
     implicit ev: Primitive[UUID]
-  ) extends OptionalCol[UUID] {
+  ) extends OptionalPrimitiveColumn[UUID] {
     override val cassandraType: String = CQLSyntax.Types.TimeUUID
   }
 }
