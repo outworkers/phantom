@@ -269,7 +269,7 @@ object Primitive {
     override def dataType: String = CQLSyntax.Types.Ascii
 
     override def serialize(value: AsciiValue, protocol: ProtocolVersion): ByteBuffer = {
-      if (value.value != null && !ASCII_PATTERN.matcher(value.value).matches) {
+      if (Option(value.value).isDefined && !ASCII_PATTERN.matcher(value.value).matches) {
         throw new InvalidTypeException(String.format("%s is not a valid ASCII String", value))
       } else {
         StringPrimitive.serialize(value.value, protocol)

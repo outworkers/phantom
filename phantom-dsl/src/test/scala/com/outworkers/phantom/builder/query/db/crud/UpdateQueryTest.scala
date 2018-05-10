@@ -140,9 +140,10 @@ class UpdateQueryTest extends PhantomSuite with Inside with EitherValues {
     val chain = for {
       store <- database.optionalPrimitives.store(sample).future()
       get <- database.optionalPrimitives.findByKey(sample.pkey)
-      update <- database.optionalPrimitives.update.where(_.pkey eqs sample.pkey)
-          .modify(_.boolean setIfDefined Some(false))
-          .future()
+      update <- database.optionalPrimitives.update
+        .where(_.pkey eqs sample.pkey)
+        .modify(_.boolean setIfDefined Some(false))
+        .future()
       get2 <- database.optionalPrimitives.findByKey(sample.pkey)
     } yield (get, get2)
 
