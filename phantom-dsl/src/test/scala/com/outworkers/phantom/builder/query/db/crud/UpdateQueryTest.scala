@@ -283,6 +283,7 @@ class UpdateQueryTest extends PhantomSuite with Inside with EitherValues {
         .and(_.date setTo updatedRow.date)
         .and(_.uuid setTo updatedRow.uuid)
         .and(_.bi setTo updatedRow.bi)
+        .and(_.ascii setTo updatedRow.ascii)
         .future()
       a2 <- database.primitives.select.where(_.pkey eqs row.pkey).one
     } yield (a, a2)
@@ -314,6 +315,7 @@ class UpdateQueryTest extends PhantomSuite with Inside with EitherValues {
         .and(_.date setTo updatedRow.date)
         .and(_.uuid setTo updatedRow.uuid)
         .and(_.bi setTo updatedRow.bi)
+        .and(_.ascii setTo updatedRow.ascii)
         .future()
       a2 <- database.primitives.select.where(_.pkey eqs row.pkey).one
     } yield (a, a2)
@@ -375,6 +377,7 @@ class UpdateQueryTest extends PhantomSuite with Inside with EitherValues {
         .and(_.date setTo updatedRow.date)
         .and(_.uuid setTo updatedRow.uuid)
         .and(_.bi setTo updatedRow.bi)
+        .and(_.ascii setTo updatedRow.ascii)
         .succeedAnyway()
       a2 <- database.primitives.select.where(_.pkey eqs row.pkey).one
     } yield (a, a2, u)
