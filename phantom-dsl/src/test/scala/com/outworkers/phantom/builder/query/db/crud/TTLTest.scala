@@ -82,6 +82,7 @@ class TTLTest extends PhantomSuite with Eventually with Retries {
       .p_value(_.date, ?)
       .p_value(_.uuid, ?)
       .p_value(_.bi, ?)
+      .p_value(_.ascii, ?)
       .ttl(ttl)
       .prepare()
 

@@ -51,6 +51,8 @@ class PrimitiveRoundtripTests
 
   implicit val bigDecimalArb: Arbitrary[BigDecimal] = Sample.arbitrary[BigDecimal]
 
+  implicit val asciiValue: Arbitrary[AsciiValue] = Arbitrary(Gen.containerOf[Array, Char](Gen.choose[Char](min = 0,max = 127)).map(v => AsciiValue(v.mkString)))
+
   val protocolGen: Gen[ProtocolVersion] = Gen.alphaStr.map(_ => ProtocolVersion.V5)
 
 
@@ -333,6 +335,10 @@ class PrimitiveRoundtripTests
 
   it should "serialize and deserialize a derived Primitive with a type" in {
     sroundtrip[Username[Serialized]]
+  }
+
+  it should "serialize and deserialize an ASCII Value" in {
+    roundtrip[AsciiValue]
   }
 
   it should "serialize and deserialize an Option wrapped derived Primitive with a type" in {

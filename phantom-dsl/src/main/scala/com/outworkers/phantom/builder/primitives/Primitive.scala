@@ -20,6 +20,7 @@ import java.net.{InetAddress, UnknownHostException}
 import java.nio.ByteBuffer
 import java.nio.charset.{Charset, CharsetDecoder, CharsetEncoder}
 import java.sql.{Timestamp => JTimestamp}
+import java.util.regex.Pattern
 import java.util.{Date, UUID}
 
 import com.datastax.driver.core._
@@ -248,6 +249,35 @@ object Primitive {
         case bytes if bytes.remaining() == 0 => ""
         case arr @ _ => new String(Bytes.getArray(arr), charset)
       }
+    }
+  }
+
+
+  implicit object AsciPrimitive extends Primitive[AsciiValue] {
+    private val ASCII_PATTERN = Pattern.compile("^\\p{ASCII}*$")
+
+    /**
+      * Converts the type to a CQL compatible string.
+      * The primitive is responsible for handling all aspects of adequate escaping as well.
+      * This is used to generate the final queries from domain objects.
+      *
+      * @param value The strongly typed value.
+      * @return The string representation of the value with respect to CQL standards.
+      */
+    override def asCql(value: AsciiValue): String = StringPrimitive.asCql(value.value)
+
+    override def dataType: String = CQLSyntax.Types.Ascii
+
+    override def serialize(value: AsciiValue, protocol: ProtocolVersion): ByteBuffer = {
+      if (Option(value.value).isDefined && !ASCII_PATTERN.matcher(value.value).matches) {
+        throw new InvalidTypeException(String.format("%s is not a valid ASCII String", value))
+      } else {
+        StringPrimitive.serialize(value.value, protocol)
+      }
+    }
+
+    override def deserialize(source: ByteBuffer, protocol: ProtocolVersion): AsciiValue = {
+      AsciiValue(StringPrimitive.deserialize(source, protocol))
     }
   }
 
