@@ -96,6 +96,7 @@ class PreparedInsertQueryTest extends PhantomSuite with TwitterFutures {
       .p_value(_.date, ?)
       .p_value(_.uuid, ?)
       .p_value(_.bi, ?)
+      .p_value(_.ascii, ?)
       .prepare()
 
     val chain = for {
@@ -239,6 +240,7 @@ class PreparedInsertQueryTest extends PhantomSuite with TwitterFutures {
       .p_value(_.date, ?)
       .p_value(_.uuid, ?)
       .p_value(_.bi, ?)
+      .p_value(_.ascii, ?)
       .prepare()
 
     val chain = for {
@@ -268,6 +270,7 @@ class PreparedInsertQueryTest extends PhantomSuite with TwitterFutures {
         .p_value(_.date, ?)
         .p_value(_.uuid, ?)
         .p_value(_.bi, ?)
+        .p_value(_.ascii, ?)
         .prepareAsync()
        store <- query.bind(sample).future()
       res <- database.primitives.select.where(_.pkey eqs sample.pkey).one()
