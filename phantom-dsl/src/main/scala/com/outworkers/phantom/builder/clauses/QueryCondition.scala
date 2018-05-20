@@ -124,6 +124,21 @@ object OperatorClause extends Clause {
 
 object TypedClause extends Clause {
   class Condition[RR](override val qb: CQLQuery, val extractor: Row => RR) extends QueryCondition(qb, Nil)
+
+  abstract class TypedProjection[HL](queries: List[CQLQuery]) extends QueryCondition[HNil](
+    QueryBuilder.Utils.join(queries: _*),
+    Nil
+  ) {
+    def extractor: Row => HL
+  }
+
+  object TypedProjection {
+    implicit def condition2[A1, A2](source: (Condition[A1], Condition[A2])): TypedProjection[(A1, A2)] = {
+      new TypedProjection[(A1, A2)](List(source._1.qb, source._2.qb)) {
+        override def extractor: Row => (A1, A2) = r => source._1.extractor(r) -> source._2.extractor(r)
+      }
+    }
+  }
 }
 
 object DeleteClause extends Clause {

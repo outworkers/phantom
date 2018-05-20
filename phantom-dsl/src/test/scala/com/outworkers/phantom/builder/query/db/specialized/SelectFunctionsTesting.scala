@@ -433,4 +433,18 @@ class SelectFunctionsTesting extends PhantomSuite {
       res shouldBe defined
     }
   }
+
+  it should "retrieve the average of a Long field from Cassandra" in {
+    val record = gen[PrimitiveRecord]
+
+    val chain = for {
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => avg(t.long) -> max(t.long)).where(_.pkey eqs record.pkey).aggregate()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+    }
+  }
+
 }
