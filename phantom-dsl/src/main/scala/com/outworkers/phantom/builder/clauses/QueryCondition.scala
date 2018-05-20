@@ -133,6 +133,13 @@ object TypedClause extends Clause {
   }
 
   object TypedProjection {
+
+    implicit def conditoin1[A1](source: Condition[A1]): TypedProjection[A1] = {
+      new TypedProjection[A1](List(source.qb)) {
+        override def extractor: Row => A1 = r => source.extractor(r)
+      }
+    }
+
     implicit def condition2[A1, A2](source: (Condition[A1], Condition[A2])): TypedProjection[(A1, A2)] = {
       new TypedProjection[(A1, A2)](List(source._1.qb, source._2.qb)) {
         override def extractor: Row => (A1, A2) = r => source._1.extractor(r) -> source._2.extractor(r)

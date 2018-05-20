@@ -269,23 +269,6 @@ private[phantom] class RootSelectBlock[
     )
   }
 
-  def function[RR](f1: T => TypedClause.Condition[RR])(
-    implicit keySpace: KeySpace
-  ): SelectQuery.Default[T, RR] = {
-    new SelectQuery(
-      table,
-      f1(table).extractor,
-      QueryBuilder.Select.select(table.tableName, keySpace.name, f1(table).qb),
-      Nil,
-      WherePart.empty,
-      OrderPart.empty,
-      LimitedPart.empty,
-      FilteringPart.empty,
-      UsingPart.empty,
-      count = false
-    )
-  }
-
   @implicitNotFound("You haven't provided a KeySpace in scope. Use a Connector to automatically inject one.")
   def count()(
     implicit keySpace: KeySpace,
