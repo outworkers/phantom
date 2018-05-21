@@ -28,8 +28,8 @@ import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.builder.{ConsistencyBound, LimitBound, OrderBound, WhereBound, _}
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.{CassandraTable, Row}
-import shapeless.ops.hlist.{Prepend, Reverse}
-import shapeless.{::, =:!=, HList, HNil}
+import shapeless.ops.hlist.{Prepend, Reverse, Tupler}
+import shapeless.{::, =:!=, Generic, HList, HNil}
 
 import scala.annotation.implicitNotFound
 import scala.concurrent.ExecutionContextExecutor
@@ -235,13 +235,17 @@ private[phantom] class RootSelectBlock[
     }
   }
 
-  def function[RR](f1: T => TypedClause.TypedProjection[RR])(
-    implicit keySpace: KeySpace
-  ): SelectQuery.Default[T, RR] = {
+  def function[
+    HL <: HList,
+    TP
+  ](projection: T => TypedClause.TypedProjection[HL])(
+    implicit keySpace: KeySpace,
+    ev: Tupler.Aux[HL, TP]
+  ): SelectQuery.Default[T, TP] = {
     new SelectQuery(
       table,
-      f1(table).extractor,
-      QueryBuilder.Select.select(table.tableName, keySpace.name, f1(table).qb),
+      row => ev.apply(projection(table).extractor(row)),
+      QueryBuilder.Select.select(table.tableName, keySpace.name, projection(table).qb),
       Nil,
       WherePart.empty,
       OrderPart.empty,

@@ -123,26 +123,30 @@ object OperatorClause extends Clause {
 }
 
 object TypedClause extends Clause {
-  class Condition[RR](override val qb: CQLQuery, val extractor: Row => RR) extends QueryCondition(qb, Nil)
+  class Condition[RR](override val qb: CQLQuery, val extractor: Row => RR) extends QueryCondition(qb, Nil) { outer =>
 
-  abstract class TypedProjection[HL](queries: List[CQLQuery]) extends QueryCondition[HNil](
-    QueryBuilder.Utils.join(queries: _*),
+    def ~[BB](other: Condition[BB]): TypedProjection[BB :: RR :: HNil] = new TypedProjection[BB :: RR :: HNil](List(qb, other.qb)) {
+      override def extractor: Row => BB :: RR :: HNil = r => {
+        other.extractor(r) :: outer.extractor(r) :: HNil
+      }
+    }
+  }
+
+  abstract class TypedProjection[HL <: HList](queries: List[CQLQuery]) extends QueryCondition[HNil](
+    QueryBuilder.Utils.join(queries.reverse: _*),
     Nil
-  ) {
+  ) { outer =>
     def extractor: Row => HL
+
+    def ~[RR](other: Condition[RR]): TypedProjection[RR :: HL] = new TypedProjection[RR :: HL](other.qb :: queries) {
+      override def extractor: Row => RR :: HL = r => other.extractor(r) :: outer.extractor(r)
+    }
   }
 
   object TypedProjection {
-
-    implicit def conditoin1[A1](source: Condition[A1]): TypedProjection[A1] = {
-      new TypedProjection[A1](List(source.qb)) {
-        override def extractor: Row => A1 = r => source.extractor(r)
-      }
-    }
-
-    implicit def condition2[A1, A2](source: (Condition[A1], Condition[A2])): TypedProjection[(A1, A2)] = {
-      new TypedProjection[(A1, A2)](List(source._1.qb, source._2.qb)) {
-        override def extractor: Row => (A1, A2) = r => source._1.extractor(r) -> source._2.extractor(r)
+    implicit def condition1[A1](source: Condition[A1]): TypedProjection[A1 :: HNil] = {
+      new TypedProjection[A1 :: HNil](List(source.qb)) {
+        override def extractor: Row => A1 :: HNil = r => source.extractor(r) :: HNil
       }
     }
   }
