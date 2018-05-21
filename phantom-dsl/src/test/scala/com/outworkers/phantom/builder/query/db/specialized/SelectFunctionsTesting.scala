@@ -38,8 +38,10 @@ class SelectFunctionsTesting extends PhantomSuite {
 
     val chain = for {
       _ <- database.recipes.store(record).future()
-      timestamp <- database.recipes.select.function(t => writetime(t.description))
-        .where(_.url eqs record.url).one()
+      timestamp <- database.recipes.select
+        .function(t => writetime(t.description))
+        .where(_.url eqs record.url)
+        .aggregate()
     } yield timestamp
 
     whenReady(chain) { res =>

@@ -15,8 +15,6 @@
  */
 package com.outworkers.phantom.builder.query
 
-import java.nio.ByteBuffer
-
 import com.datastax.driver.core.{ConsistencyLevel, Session}
 import com.outworkers.phantom.builder.clauses._
 import com.outworkers.phantom.builder.ops.TokenizerKey
@@ -29,7 +27,7 @@ import com.outworkers.phantom.builder.{ConsistencyBound, LimitBound, OrderBound,
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.{CassandraTable, Row}
 import shapeless.ops.hlist.{Prepend, Reverse, Tupler}
-import shapeless.{::, =:!=, Generic, HList, HNil}
+import shapeless.{::, =:!=, HList, HNil}
 
 import scala.annotation.implicitNotFound
 import scala.concurrent.ExecutionContextExecutor
