@@ -439,7 +439,10 @@ class SelectFunctionsTesting extends PhantomSuite {
 
     val chain = for {
       _ <- database.primitives.store(record).future()
-      res <- database.primitives.select.function(t => avg(t.long) ~ max(t.long)).where(_.pkey eqs record.pkey).aggregate()
+      res <- database.primitives.select
+        .function(t => avg(t.long) ~ max(t.long))
+        .where(_.pkey eqs record.pkey)
+        .aggregate()
     } yield res
 
     whenReady(chain) { res =>
