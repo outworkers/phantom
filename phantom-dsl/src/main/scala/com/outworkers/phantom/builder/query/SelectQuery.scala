@@ -237,14 +237,16 @@ private[phantom] class RootSelectBlock[
 
   def function[
     HL <: HList,
+    Rev <: HList,
     TP
   ](projection: T => TypedClause.TypedProjection[HL])(
     implicit keySpace: KeySpace,
-    ev: Tupler.Aux[HL, TP]
+    rev: Reverse.Aux[HL, Rev],
+    ev: Tupler.Aux[Rev, TP]
   ): SelectQuery.Default[T, TP] = {
     new SelectQuery(
       table,
-      row => ev.apply(projection(table).extractor(row)),
+      row => ev.apply(rev.apply(projection(table).extractor(row))),
       QueryBuilder.Select.select(table.tableName, keySpace.name, projection(table).qb),
       Nil,
       WherePart.empty,

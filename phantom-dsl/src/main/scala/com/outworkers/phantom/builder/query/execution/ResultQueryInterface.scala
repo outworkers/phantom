@@ -37,8 +37,11 @@ abstract class ResultQueryInterface[
 
   protected[this] def flattenedOption[Inner](
     row: Option[Row]
-  )(implicit ev: R <:< Option[Inner]): Option[Inner] = {
-    row flatMap fromRow
+  )(implicit ev: R <:< Tuple1[Option[Inner]]): Option[Inner] = {
+    row match {
+      case Some(r) => fromRow(r)._1
+      case None => None
+    }
   }
 
   protected[this] def directMapper(
@@ -59,7 +62,7 @@ abstract class ResultQueryInterface[
 
   private[phantom] def optionalFetch[Inner](source: F[ResultSet])(
     implicit ec: ExecutionContextExecutor,
-    ev: R <:< Option[Inner]
+    ev: R <:< Tuple1[Option[Inner]]
   ): F[Option[Inner]] = {
     source map { res => flattenedOption(res.value()) }
   }

@@ -73,7 +73,7 @@ class SelectQueryOps[
   def aggregate[Inner]()(
     implicit session: Session,
     ev: Limit =:= Unlimited,
-    opt: Record <:< Option[Inner],
+    opt: Record <:< Tuple1[Option[Inner]],
     ec: ExecutionContextExecutor
   ): F[Option[Inner]] = {
     val enforceLimit = if (query.count) LimitedPart.empty else query.limitedPart append QueryBuilder.limit(1.toString)
