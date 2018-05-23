@@ -40,7 +40,10 @@ case class PartitionQueryColumn[RR](name: String)(
   )(fn: (String, String) => CQLQuery)(implicit pp: Primitive[R]): WhereClause.PartitionCondition = {
     new WhereClause.PartitionCondition(
       fn(name, pp.asCql(value)), {
-        session: Session => pp.serialize(value, session.protocolVersion)
+        session: Session => RoutingKeyValue(
+          cql = pp.asCql(value),
+          bytes = pp.serialize(value, session.protocolVersion)
+        )
       }
     )
   }
@@ -106,7 +109,10 @@ case class PartitionQueryColumn[RR](name: String)(
   ): WhereClause.PartitionCondition = {
     new WhereClause.PartitionCondition(
       QueryBuilder.Where.in(name, values.map(p.asCql)), {
-        session: Session => ev.serialize(ListValue(values), session.protocolVersion)
+        session: Session => RoutingKeyValue(
+          s"List(${QueryBuilder.Utils.join(values.map(p.asCql)).queryString}",
+          ev.serialize(ListValue(values), session.protocolVersion)
+        )
       }
     )
   }

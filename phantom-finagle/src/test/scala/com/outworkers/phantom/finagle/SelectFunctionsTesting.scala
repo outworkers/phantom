@@ -38,7 +38,8 @@ class SelectFunctionsTesting extends PhantomSuite with TwitterFutures {
       _ <- database.recipes.store(record).future()
       timestamp <- database.recipes.select
         .function(t => writetime(t.description))
-        .where(_.url eqs record.url).one()
+        .where(_.url eqs record.url)
+        .one()
     } yield timestamp
 
     whenReady(chain) { res =>

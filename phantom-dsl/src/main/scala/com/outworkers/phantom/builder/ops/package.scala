@@ -20,5 +20,7 @@ import java.nio.ByteBuffer
 import com.datastax.driver.core.Session
 
 package object ops {
-  type TokenizerKey = (Session => ByteBuffer)
+
+
+  type TokenizerKey = (Session => RoutingKeyValue)
 }

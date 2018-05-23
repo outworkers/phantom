@@ -17,6 +17,7 @@ package com.outworkers.phantom.builder.query
 
 import com.datastax.driver.core._
 import com.datastax.driver.core.policies.TokenAwarePolicy
+import com.outworkers.phantom.Manager
 import com.outworkers.phantom.builder.ops.TokenizerKey
 
 trait Modifier extends (Statement => Statement)
@@ -31,8 +32,13 @@ case class RoutingKeyModifier(
     val policy = session.getCluster.getConfiguration.getPolicies.getLoadBalancingPolicy
 
     if (policy.isInstanceOf[TokenAwarePolicy] && tokens.nonEmpty) {
+
+      val routingKeys = tokens.map(_.apply(session))
+
+      Manager.logger.debug(s"Routing key tokens found. Settings routing key to ${routingKeys.map(_.cql).mkString("(", ",", ")")}")
+
       st
-        .setRoutingKey(tokens.map(_.apply(session)): _*)
+        .setRoutingKey(routingKeys.map(_.bytes):_*)
         .setKeyspace(session.getLoggedKeyspace)
     } else {
       st
