@@ -192,7 +192,7 @@ The average of a `Float` column will come back as `scala.Float` and so on.
 To take advantage of these operators, simply use the default import, combined with the `function` argument
 and the `aggregate` function. A few examples are found in [SelectFunctionsTesting.scala](/phantom-dsl/src/test/scala/com/outworkers/phantom/builder/query/db/specialized/SelectFunctionsTesting.scala#L99).
 
-The structure of an aggregation query is simple, and the rturn type is 
+The structure of an aggregation query is simple, and the return type is 
 
 ```scala
 database.primitives.select.function(t => sum(t.long)).where(_.pkey eqs record.pkey).aggregate()
