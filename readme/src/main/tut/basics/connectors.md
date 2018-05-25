@@ -106,7 +106,7 @@ object KeySpaceQueryWith {
 
 object KeySpaceQueryOption {
   val query = KeySpace("phantom").ifNotExists()
-    .otion(replication eqs SimpleStrategy.replication_factor(1))
+    .option(replication eqs SimpleStrategy.replication_factor(1))
     .and(durable_writes eqs true)
 }
 
