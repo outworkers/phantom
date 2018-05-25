@@ -113,7 +113,7 @@ object KeySpaceQueryOption {
 ```
 
 
-#### Keyspace query options
+#### Keyspace configuration options
 
 Using the DSL, you can configure three main things:
 
