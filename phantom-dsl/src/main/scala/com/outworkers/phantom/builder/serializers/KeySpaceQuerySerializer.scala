@@ -122,6 +122,10 @@ sealed class KeySpaceSerializer(
   val qb: CQLQuery = CQLQuery.empty
 ) extends KeySpaceCQLQuery {
 
+  def option(clause: BuilderClause): KeySpaceSerializer = {
+    new KeySpaceSerializer(keySpace, QueryBuilder.Alter.option(qb, clause.qb))
+  }
+
   def `with`(clause: BuilderClause): KeySpaceSerializer = {
     new KeySpaceSerializer(keySpace, QueryBuilder.Alter.option(qb, clause.qb))
   }
