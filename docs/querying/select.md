@@ -12,9 +12,9 @@ and demonstrate the available select API.
 
 We will create a `AnalyticsEntries` table, where we hold information about a car's state over time for 2 properties we
 care about, namely the `velocity` and `tirePressure`. We leverage the `TimeUUID` Cassandra type to store information
-about timestamps, order the logs we receive in descending order(most recent record first), and prevent any colissions.
+about timestamps, order the logs we receive in descending order(most recent record first), and prevent any collisions.
 
-If we would just use a timestamp type, if we were to receive two logs for the same car at the exact same timestamp,
+If we would just use the normal timestamp type, if we were to receive two logs for the same car at the exact same timestamp,
 the entries would override each other in Cassandra, because in effect they would have the same partition key
 and the same clustering key, so the whole primary key would be identical.
 
@@ -192,7 +192,7 @@ The average of a `Float` column will come back as `scala.Float` and so on.
 To take advantage of these operators, simply use the default import, combined with the `function` argument
 and the `aggregate` function. A few examples are found in [SelectFunctionsTesting.scala](/phantom-dsl/src/test/scala/com/outworkers/phantom/builder/query/db/specialized/SelectFunctionsTesting.scala#L99).
 
-The structure of an aggregation query is simple, and the rturn type is 
+The structure of an aggregation query is simple, and the return type is 
 
 ```scala
 database.primitives.select.function(t => sum(t.long)).where(_.pkey eqs record.pkey).aggregate()
