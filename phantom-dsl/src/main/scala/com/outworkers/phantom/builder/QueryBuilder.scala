@@ -64,11 +64,20 @@ abstract class QueryBuilder(val config: QueryBuilderConfig = QueryBuilderConfig.
 
   /**
     * Produces a timestamp clause that should be appended to a UsingPart.
-    * @param unixTimestamp The milliseconds since EPOCH long value of a timestamp.
+    * @param epoch The milliseconds since EPOCH long value of a timestamp.
     * @return A CQLQuery wrapping the USING clause.
     */
-  def timestamp(unixTimestamp: Long): CQLQuery = {
-    CQLQuery(CQLSyntax.timestamp).forcePad.append(unixTimestamp.toString)
+  def timestamp(epoch: Long): CQLQuery = {
+    CQLQuery(CQLSyntax.timestamp).forcePad.append(epoch.toString)
+  }
+
+  /**
+    * Produces a timestamp clause that should be appended to a UsingPart.
+    * @param microSecondTimestamp The milliseconds since EPOCH long value of a timestamp.
+    * @return A CQLQuery wrapping the USING clause.
+    */
+  def microstamp(microSecondTimestamp: Long): CQLQuery = {
+    CQLQuery(CQLSyntax.timestamp).forcePad.append(microSecondTimestamp.toString)
   }
 
   def consistencyLevel(qb: CQLQuery, level: String): CQLQuery = {
