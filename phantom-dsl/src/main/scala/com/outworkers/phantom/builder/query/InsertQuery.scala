@@ -199,7 +199,6 @@ case class InsertQuery[
     timestamp(value.toMicros)
   }
 
-
   /**
     * Allows specifying a timestamp using a Long value.
     * This will NOT automatically convert the underlying duration to microseconds.
@@ -216,8 +215,8 @@ case class InsertQuery[
     * Allows specifying a timestamp using [[org.joda.time.DateTime]].
     * This will automatically convert the underlying duration to microseconds.
     * It's important to note [[org.joda.time.DateTime]] does not store dates as a microsecond value,
-    * the maximum granularity is miliseconds. The convertion done here is the simplest one, multipying
-    * the milisecond epoch value by 1000.
+    * the maximum granularity is milliseconds. The conversion done here is the simplest one, multiplying
+    * the millisecond epoch value by 1000.
     *
     * @param value The duration value representing the microsecond epoch.
     * @return An insert query where a timestamp is passed in the using part.
