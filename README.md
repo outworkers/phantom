@@ -85,7 +85,7 @@ We publish phantom in 2 formats, stable releases and bleeding edge.
 
 ### How phantom compares
 
-To compare phantom to similar tools in the Scala/Cassandra category, you can read more [here](https://github.com/outworkers/phantom/blob/develop/comparison.md).
+To compare phantom to similar tools in the Scala/Cassandra category, you can read more [here](docs/comparison.md).
 
 ### Latest versions
 
