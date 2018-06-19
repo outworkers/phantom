@@ -71,13 +71,13 @@ class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite with T
           .timestamp(timestamp)
           .queryString
 
-        query shouldEqual s"UPDATE phantom.recipes USING TIMESTAMP $timestamp SET uid = $uid WHERE url = '$url';"
+        query shouldEqual s"UPDATE phantom.recipes USING TIMESTAMP ${timestamp.getMillis * 1000} SET uid = $uid WHERE url = '$url';"
       }
 
       "a timestamp setting on an conditional assignments query specified before the onlyIf clause" in {
         val url = gen[String]
         val uid = gen[UUID]
-        val timestamp = gen[Long]
+        val timestamp = gen[DateTime]
 
         val query = TestDatabase.recipes.update.where(_.url eqs url)
           .modify(_.uid setTo uid)
@@ -85,7 +85,7 @@ class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite with T
           .onlyIf(_.description is Some("test"))
           .queryString
 
-        query shouldEqual s"UPDATE phantom.recipes USING TIMESTAMP $timestamp SET uid = $uid WHERE url = '$url' IF description = 'test';"
+        query shouldEqual s"UPDATE phantom.recipes USING TIMESTAMP ${timestamp.getMillis * 1000} SET uid = $uid WHERE url = '$url' IF description = 'test';"
       }
     }
 
