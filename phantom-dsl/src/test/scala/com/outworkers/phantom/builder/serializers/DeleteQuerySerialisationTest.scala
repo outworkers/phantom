@@ -19,6 +19,7 @@ import com.outworkers.phantom.builder.query.QueryBuilderTest
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.TestDatabase
 import com.outworkers.util.samplers._
+import scala.concurrent.duration._
 
 class DeleteQuerySerialisationTest extends QueryBuilderTest {
 
@@ -114,7 +115,7 @@ class DeleteQuerySerialisationTest extends QueryBuilderTest {
 
         val qb = TestDatabase.recipes
           .delete.where(_.url eqs url)
-          .timestamp(value)
+          .timestamp(value.micros)
           .queryString
 
         qb shouldEqual s"DELETE FROM phantom.recipes USING TIMESTAMP $value WHERE url = '$url';"

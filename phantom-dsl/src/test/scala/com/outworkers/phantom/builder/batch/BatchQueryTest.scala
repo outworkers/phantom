@@ -272,12 +272,14 @@ class BatchQueryTest extends PhantomSuite {
 
     val batch = Batch.logged
       .add(statement1.timestamp(last))
-      .add(database.primitivesJoda.update.where(_.pkey eqs row.pkey)
+      .add(
+        database.primitivesJoda.update.where(_.pkey eqs row.pkey)
+        .modify(_.intColumn setTo (row.intColumn + 15)).timestamp(last2)
+      ).add(
+        database.primitivesJoda.update.where(_.pkey eqs row.pkey)
         .modify(_.intColumn setTo (row.intColumn + 10))
-        .timestamp(last1))
-      .add(database.primitivesJoda.update.where(_.pkey eqs row.pkey)
-        .modify(_.intColumn setTo (row.intColumn + 15)))
-        .timestamp(last2)
+        .timestamp(last1)
+      )
 
     val chain = for {
       done <- batch.future()
@@ -285,7 +287,7 @@ class BatchQueryTest extends PhantomSuite {
     } yield updated
 
     whenReady(chain) { res =>
-      res shouldEqual defined
+      res shouldBe defined
       res.value.intColumn shouldEqual (row.intColumn + 15)
     }
   }
