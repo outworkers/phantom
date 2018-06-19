@@ -20,6 +20,7 @@ import com.outworkers.phantom.builder.query.{Batchable, _}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.builder.{ConsistencyBound, QueryBuilder, Specified, Unspecified}
 import com.outworkers.phantom.connectors.SessionAugmenterImplicits
+import org.joda.time.DateTime
 
 import scala.annotation.implicitNotFound
 import scala.collection.generic.CanBuildFrom
@@ -109,8 +110,12 @@ sealed case class BatchQuery[Status <: ConsistencyBound](
     copy(this.iterator ++ batch.iterator)
   }
 
+  def timestamp(time: DateTime): BatchQuery[Status] = {
+    timestamp(time.getMillis)
+  }
+
   def timestamp(stamp: Long): BatchQuery[Status] = {
-    copy(usingPart = usingPart append QueryBuilder.timestamp(stamp))
+    copy(usingPart = usingPart append QueryBuilder.microstamp(stamp * 1000))
   }
 }
 

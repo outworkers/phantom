@@ -18,6 +18,9 @@ package com.outworkers.phantom.builder.serializers
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.query.QueryBuilderTest
 import com.outworkers.util.samplers._
+import org.joda.time.DateTime
+
+import scala.concurrent.duration._
 
 class UpdateQueryBuilderTest extends QueryBuilderTest {
 
@@ -45,8 +48,8 @@ class UpdateQueryBuilderTest extends QueryBuilderTest {
 
     "should allow specifying USING clause options" - {
       "should allow specifying a timestamp clause" in {
-        val str = gen[Long]
-        QueryBuilder.timestamp(str).queryString shouldEqual s"TIMESTAMP $str"
+        val str = gen[DateTime]
+        QueryBuilder.timestamp(str.getMillis.millis).queryString shouldEqual s"TIMESTAMP ${str.getMillis * 1000}"
       }
     }
 

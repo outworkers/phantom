@@ -19,6 +19,7 @@ import com.outworkers.phantom.builder.query.QueryBuilderTest
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.TestDatabase
 import com.outworkers.util.samplers._
+import scala.concurrent.duration._
 
 class DeleteQuerySerialisationTest extends QueryBuilderTest {
 
@@ -109,12 +110,12 @@ class DeleteQuerySerialisationTest extends QueryBuilderTest {
 
     "should allow specifying a custom timestamp for deletes" - {
       "should allow using a milliseconds Long value as a timestamp" in {
-        val value = gen[Long]
+        val value = gen[DateTime].getMillis
         val url = gen[String]
 
         val qb = TestDatabase.recipes
           .delete.where(_.url eqs url)
-          .timestamp(value)
+          .timestamp(value.micros)
           .queryString
 
         qb shouldEqual s"DELETE FROM phantom.recipes USING TIMESTAMP $value WHERE url = '$url';"
@@ -129,7 +130,7 @@ class DeleteQuerySerialisationTest extends QueryBuilderTest {
           .timestamp(value)
           .queryString
 
-        qb shouldEqual s"DELETE FROM phantom.recipes USING TIMESTAMP ${value.getMillis} WHERE url = '$url';"
+        qb shouldEqual s"DELETE FROM phantom.recipes USING TIMESTAMP ${value.getMillis * 1000} WHERE url = '$url';"
       }
 
       "should allow mixing a timestamp clause with a conditional clause" in {
@@ -142,7 +143,7 @@ class DeleteQuerySerialisationTest extends QueryBuilderTest {
           .onlyIf(_.lastcheckedat is value)
           .queryString
 
-        qb shouldEqual s"DELETE FROM phantom.recipes USING TIMESTAMP ${value.getMillis} WHERE url = '$url' IF lastcheckedat = ${value.getMillis};"
+        qb shouldEqual s"DELETE FROM phantom.recipes USING TIMESTAMP ${value.getMillis * 1000} WHERE url = '$url' IF lastcheckedat = ${value.getMillis};"
       }
     }
   }

@@ -19,6 +19,7 @@ import com.outworkers.phantom.builder.query.QueryBuilderTest
 import com.outworkers.phantom.tables.{Recipe, TestDatabase}
 import com.outworkers.util.samplers._
 import com.outworkers.phantom.dsl._
+import org.joda.time.DateTimeZone
 import org.json4s.Extraction
 import org.json4s.native._
 
@@ -55,18 +56,18 @@ class InsertQuerySerializationTest extends QueryBuilderTest {
       }
 
       "should allow specifying a timestamp clause" in {
-        val time = new DateTime
+        val time = new DateTime(DateTimeZone.UTC)
         val query = TestDatabase.recipes.insert
           .value(_.url, "test")
           .value(_.ingredients, List("test"))
           .timestamp(time)
           .queryString
 
-        query shouldEqual s"INSERT INTO phantom.recipes (url, ingredients) VALUES('test', ['test']) USING TIMESTAMP ${time.getMillis};"
+        query shouldEqual s"INSERT INTO phantom.recipes (url, ingredients) VALUES('test', ['test']) USING TIMESTAMP ${time.getMillis * 1000};"
       }
 
       "should allow specifying a combined TTL and timestamp clause" in {
-        val time = new DateTime
+        val time = new DateTime(DateTimeZone.UTC)
         val ttl = 5
 
         val query = TestDatabase.recipes.insert
@@ -76,7 +77,7 @@ class InsertQuerySerializationTest extends QueryBuilderTest {
           .ttl(ttl)
           .queryString
 
-        query shouldEqual s"INSERT INTO phantom.recipes (url, ingredients) VALUES('test', ['test']) USING TIMESTAMP ${time.getMillis} AND TTL $ttl;"
+        query shouldEqual s"INSERT INTO phantom.recipes (url, ingredients) VALUES('test', ['test']) USING TIMESTAMP ${time.getMillis * 1000} AND TTL $ttl;"
       }
     }
 
