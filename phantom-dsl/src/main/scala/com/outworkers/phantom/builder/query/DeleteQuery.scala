@@ -30,7 +30,6 @@ import shapeless.ops.hlist.{Prepend, Reverse}
 import shapeless.{=:!=, HList, HNil}
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContextExecutor
-import scala.concurrent.duration.Duration
 
 case class DeleteQuery[
   Table <: CassandraTable[Table, _],
