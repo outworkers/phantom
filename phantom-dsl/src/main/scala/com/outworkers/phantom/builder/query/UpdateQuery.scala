@@ -30,6 +30,7 @@ import shapeless.{::, =:!=, HList, HNil}
 
 import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.duration.{FiniteDuration => ScalaDuration}
+import scala.concurrent.duration._
 
 case class UpdateQuery[
   Table <: CassandraTable[Table, _],
@@ -180,12 +181,17 @@ sealed case class AssignmentsQuery[
     copy(setPart = setPart appendConditionally (clause(table).qb, !clause(table).skipped))
   }
 
+  /**
+    * Allows setting a timestamp value in microseconds.
+    * @param value The microsecond UTC timestamp of the time to use for the update query.
+    * @return An assignments query with a timestamp value manually set.
+    */
   final def timestamp(value: Long): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
-    copy(usingPart = usingPart append QueryBuilder.timestamp(value))
+    copy(usingPart = usingPart append QueryBuilder.timestamp(value.micros))
   }
 
   final def timestamp(value: DateTime): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
-    copy(usingPart = usingPart append QueryBuilder.timestamp(value.getMillis))
+    copy(usingPart = usingPart append QueryBuilder.timestamp((value.getMillis * 1000).micros))
   }
 
   final def ttl(mark: PrepareMark): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, Long :: PS, ModifyPrepared] = {

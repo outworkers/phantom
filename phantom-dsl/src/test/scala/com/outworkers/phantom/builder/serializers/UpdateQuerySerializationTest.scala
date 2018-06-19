@@ -64,7 +64,7 @@ class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite with T
       "a timestamp setting on an assignments query" in {
         val url = gen[String]
         val uid = gen[UUID]
-        val timestamp = gen[Long]
+        val timestamp = gen[DateTime]
 
         val query = TestDatabase.recipes.update.where(_.url eqs url)
           .modify(_.uid setTo uid)

@@ -231,7 +231,7 @@ class BatchTest extends PhantomSuite {
       .add(statement1)
       .add(database.primitivesJoda.update
         .where(_.pkey eqs row.pkey)
-        .modify(_.intColumn setTo (row.intColumn + 10)).timestamp(last.getMillis)
+        .modify(_.intColumn setTo (row.intColumn + 10)).timestamp(last)
       ).add(database.primitivesJoda.update
         .where(_.pkey eqs row.pkey)
         .modify(_.intColumn setTo (row.intColumn + 15))

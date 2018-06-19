@@ -28,8 +28,9 @@ import com.outworkers.phantom.connectors.KeySpace
 import org.joda.time.DateTime
 import shapeless.ops.hlist.{Prepend, Reverse}
 import shapeless.{=:!=, HList, HNil}
-
+import scala.concurrent.duration._
 import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.duration.Duration
 
 case class DeleteQuery[
   Table <: CassandraTable[Table, _],
@@ -74,12 +75,12 @@ case class DeleteQuery[
     }
   }
 
-  def timestamp(time: Long): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
+  def timestamp(time: Duration): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
     copy(usingPart = usingPart append QueryBuilder.timestamp(time))
   }
 
   def timestamp(time: DateTime): DeleteQuery[Table, Record, Limit, Order, Status, Chainned, PS] = {
-    timestamp(time.getMillis)
+    timestamp((time.getMillis * 1000).micros)
   }
 
   /**

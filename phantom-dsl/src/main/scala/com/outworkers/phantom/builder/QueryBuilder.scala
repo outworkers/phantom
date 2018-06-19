@@ -20,6 +20,8 @@ import com.outworkers.phantom.builder.serializers._
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.connectors.KeySpace
 
+import scala.concurrent.duration.Duration
+
 case class QueryBuilderConfig(caseSensitiveTables: Boolean)
 
 object QueryBuilderConfig {
@@ -67,8 +69,8 @@ abstract class QueryBuilder(val config: QueryBuilderConfig = QueryBuilderConfig.
     * @param epoch The milliseconds since EPOCH long value of a timestamp.
     * @return A CQLQuery wrapping the USING clause.
     */
-  def timestamp(epoch: Long): CQLQuery = {
-    CQLQuery(CQLSyntax.timestamp).forcePad.append(epoch.toString)
+  def timestamp(epoch: Duration): CQLQuery = {
+    CQLQuery(CQLSyntax.timestamp).forcePad.append(epoch.toMicros.toString)
   }
 
   /**
