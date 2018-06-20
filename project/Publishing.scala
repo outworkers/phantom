@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import bintray.BintrayKeys._
+//import bintray.BintrayKeys._
 import com.typesafe.sbt.SbtGit.git
 import sbt.Keys._
 import sbt._
@@ -148,6 +148,7 @@ object Publishing {
 
   def publishToMaven: Boolean = sys.env.get("MAVEN_PUBLISH").exists("true" ==)
 
+/*
   lazy val bintraySettings: Seq[Def.Setting[_]] = Seq(
     publishMavenStyle := true,
     bintrayOrganization := Some("outworkers"),
@@ -156,7 +157,7 @@ object Publishing {
     publishArtifact in Test := false,
     pomIncludeRepository := { _ => true},
     licenses += ("Apache-2.0", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt"))
-  )
+  )*/
 
   lazy val pgpPass: Option[Array[Char]] = Properties.envOrNone("pgp_passphrase").map(_.toCharArray)
 
@@ -206,7 +207,9 @@ object Publishing {
     if (publishToMaven) {
       mavenSettings ++ releaseSettings
     } else {
-      bintraySettings
+      // Intentional silly way to disable Bintray publishing temporarily
+      //bintraySettings ++ releaseSettings
+      mavenSettings ++ releaseSettings
     }
   }
 
