@@ -162,6 +162,7 @@ object Publishing {
   lazy val mavenSettings: Seq[Def.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     publishMavenStyle := true,
+    licenses += ("Apache-2.0", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt")),
     pgpPassphrase in ThisBuild := {
       if (runningUnderCi && pgpPass.isDefined) {
         println("Running under CI and PGP password specified under settings.")
@@ -183,7 +184,6 @@ object Publishing {
       }
     },
     externalResolvers := Resolver.withDefaultResolvers(resolvers.value, mavenCentral = true),
-    licenses += ("Outworkers License", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt")),
     publishArtifact in Test := false,
     pomIncludeRepository := { _ => true },
     pomExtra :=
