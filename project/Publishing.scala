@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import bintray.BintrayKeys._
 import sbt.Keys._
 import sbt._
 import com.typesafe.sbt.pgp.PgpKeys._
@@ -147,15 +146,19 @@ object Publishing {
 
   def publishToMaven: Boolean = sys.env.get("MAVEN_PUBLISH").exists("true" ==)
 
-  lazy val bintraySettings: Seq[Def.Setting[_]] = Seq(
-    publishMavenStyle := true,
-    bintrayOrganization := Some("outworkers"),
-    bintrayRepository := { if (version.value.trim.endsWith("SNAPSHOT")) "oss-snapshots" else "oss-releases" },
-    bintrayReleaseOnPublish in ThisBuild := true,
-    publishArtifact in Test := false,
-    pomIncludeRepository := { _ => true},
-    licenses += ("Apache-2.0", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt"))
-  )
+  /*
+  lazy val bintraySettings: Seq[Def.Setting[_]] = {
+    import bintray.BintrayKeys._
+    Seq(
+      publishMavenStyle := true,
+      bintrayOrganization := Some("outworkers"),
+      bintrayRepository := { if (version.value.trim.endsWith("SNAPSHOT")) "oss-snapshots" else "oss-releases" },
+      bintrayReleaseOnPublish in ThisBuild := true,
+      publishArtifact in Test := false,
+      pomIncludeRepository := { _ => true},
+      licenses += ("Apache-2.0", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt"))
+    )
+  }*/
 
   lazy val pgpPass: Option[Array[Char]] = Properties.envOrNone("pgp_passphrase").map(_.toCharArray)
 
