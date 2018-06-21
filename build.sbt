@@ -78,7 +78,7 @@ val YWarnOptions = Seq(
 
 val scalacOptionsFn: String => Seq[String] = { s =>
   CrossVersion.partialVersion(s) match {
-    case Some((_, minor)) if minor >= 12 && !Publishing.runningUnderCi => ScalacOptions ++ YWarnOptions ++ Scala212Options
+    case Some((_, minor)) if minor >= 12 => ScalacOptions ++ YWarnOptions ++ Scala212Options
     case _ => ScalacOptions ++ YWarnOptions
   }
 }
