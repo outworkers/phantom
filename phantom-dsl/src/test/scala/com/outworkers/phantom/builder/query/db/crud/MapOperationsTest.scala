@@ -82,10 +82,8 @@ class MapOperationsTest extends PhantomSuite {
 
   it should "support removing a single key from a map" in {
     val recipe = gen[Recipe]
-    val removals = recipe.props.take(1).keys.toSeq
-    val postRemove = removals.foldLeft(recipe.props) { case (map, el) =>
-      map - el
-    }
+    val removals = recipe.props.keys.headOption.value
+    val postRemove = recipe.props - removals
 
     val operation = for {
       insertDone <- database.recipes.store(recipe).future()
