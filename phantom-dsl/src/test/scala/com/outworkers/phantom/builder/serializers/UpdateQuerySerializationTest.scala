@@ -17,7 +17,7 @@ package com.outworkers.phantom.builder.serializers
 
 import com.outworkers.phantom.PhantomBaseSuite
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.tables.TestDatabase
+import com.outworkers.phantom.tables.{Recipe, TestDatabase}
 import com.outworkers.util.samplers._
 import org.joda.time.{DateTime, DateTimeZone}
 
@@ -190,6 +190,22 @@ class UpdateQuerySerializationTest extends FreeSpec with PhantomBaseSuite with T
           .queryString
 
         query shouldEqual s"UPDATE phantom.events SET map[$key] = ${dt.asCql()} WHERE id = $id;"
+      }
+    }
+
+    "allow using Collection update operators" - {
+      "remove a single key from a Map Column using the - syntax" in {
+        val recipe = gen[Recipe]
+        val url = gen[String]
+        val headKey = recipe.props.keys.headOption.value
+
+        val serialized = Primitive[String].asCql(headKey)
+
+        val query = TestDatabase.recipes.update.where(_.url eqs url)
+          .modify(_.props - Seq(headKey))
+          .queryString
+
+        query shouldEqual s"UPDATE phantom.recipes SET props = props - {$serialized} WHERE url = '$url';"
       }
     }
   }

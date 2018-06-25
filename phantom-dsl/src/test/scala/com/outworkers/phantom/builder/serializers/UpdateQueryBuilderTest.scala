@@ -63,5 +63,21 @@ class UpdateQueryBuilderTest extends QueryBuilderTest {
         QueryBuilder.Update.and(QueryBuilder.Where.eqs("a", "b")).queryString shouldEqual "AND a = b"
       }
     }
+
+
+    "should allow creating MAP update queries" - {
+
+      "remove a single key from a map column" in {
+        val qb = QueryBuilder.Collections.removeAll("mapColumn", Seq("a")).queryString
+        qb shouldEqual "mapColumn = mapColumn - {a}"
+      }
+
+      "remove multiple keys from a map column" in {
+        val qb = QueryBuilder.Collections.removeAll("mapColumn", Seq("a", "b", "c")).queryString
+        qb shouldEqual "mapColumn = mapColumn - {a, b, c}"
+      }
+
+    }
+
   }
 }
