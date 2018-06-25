@@ -24,7 +24,7 @@ import org.scalatest.{FreeSpec, Matchers, Suite}
 
 trait KeySpaceSuite { self: Suite =>
 
-  implicit val keySpace = KeySpace("phantom")
+  implicit val keySpace: KeySpace = KeySpace("phantom")
 }
 
 trait SerializationTest extends Matchers with TestDatabase.connector.Connector {
