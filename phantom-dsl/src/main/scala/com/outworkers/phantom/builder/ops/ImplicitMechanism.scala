@@ -116,6 +116,12 @@ sealed class MapRemoveKeyQueries[T <: CassandraTable[T, R], R, K, V](val col: Ab
       QueryBuilder.Collections.removeAll(col.name, elems.map(ev.asCql))
     )
   }
+
+  def -(head: K, tail: K*)(implicit ev: Primitive[K]): UpdateClause.Condition[HNil] = {
+    new UpdateClause.Condition(
+      QueryBuilder.Collections.removeAll(col.name, (head +: tail).map(ev.asCql))
+    )
+  }
 }
 
 sealed class MapConditionals[T <: CassandraTable[T, R], R, K, V](val col: AbstractMapColumn[T, R, K, V]) {
