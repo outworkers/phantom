@@ -79,6 +79,28 @@ class MapOperationsTest extends PhantomSuite {
     }
   }
 
+
+  it should "support a multiple item map key remove operation" in {
+    val recipe = gen[Recipe]
+    val removals = recipe.props.take(2).keys.toSeq
+    val postRemove = removals.foldLeft(recipe.props) { case (map, el) =>
+      map - el
+    }
+
+    val operation = for {
+      insertDone <- database.recipes.store(recipe).future()
+      update <- database.recipes.update
+        .where(_.url eqs recipe.url)
+        .modify(_.props - removals)
+        .future()
+      select <- database.recipes.select(_.props).where(_.url eqs recipe.url).one
+    } yield select
+
+    whenReady(operation) { items =>
+      items.value shouldEqual postRemove
+    }
+  }
+
   it should "support maps of nested primitives" in {
     val event = gen[SampleEvent]
 

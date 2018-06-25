@@ -111,10 +111,6 @@ sealed class MapEntriesConditionals[K : Primitive, V : Primitive](val col: MapKe
 
 sealed class MapRemoveKeyQueries[T <: CassandraTable[T, R], R, K, V](val col: AbstractMapColumn[T, R, K, V]) {
 
-  def -(elems: K*)(implicit ev: Primitive[K]): UpdateClause.Condition[HNil] = {
-    this.-(elems.toSeq)
-  }
-
   def -(elems: Seq[K])(implicit ev: Primitive[K]): UpdateClause.Condition[HNil] = {
     new UpdateClause.Condition(
       QueryBuilder.Collections.removeAll(col.name, elems.map(ev.asCql))
