@@ -160,6 +160,25 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
     )
   }
 
+  /**
+    * Used to generate a query that allows removing one or more keys from a map.
+    * Example: {{{
+    *   UPDATE db.table WHERE a = b SET mapColumn -= {"a", "b", "c"}
+    * }}}
+    * @param column The name of the map column to remove from.
+    * @param keys The keys to remove from the map column.
+    * @return
+    */
+  def removeAll(column: String, keys: Seq[String]): CQLQuery = {
+    CQLQuery(column).forcePad.append(CQLSyntax.Symbols.eqs).forcePad.append(
+      collectionModifier(
+        column,
+        CQLSyntax.Symbols.-,
+        queryBuilder.Utils.set(keys.toSet[String])
+      )
+    )
+  }
+
   def serialize(list: Seq[String]): CQLQuery = {
     CQLQuery(CQLSyntax.Symbols.`[`)
       .append(list.mkString(", "))
@@ -176,10 +195,6 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
     CQLQuery(CQLSyntax.Symbols.`{`).forcePad
       .append(CQLQuery(col.map { case (key, value) => s"$key : $value" }))
       .forcePad.append(CQLSyntax.Symbols.`}`)
-  }
-
-  def mapType(keyType: String, valueType: String): CQLQuery = {
-    diamond(CQLSyntax.Collections.map, CQLQuery(List(keyType, valueType)).queryString)
   }
 
   def mapType[K, V](key: Primitive[K], value: Primitive[V]): CQLQuery = {

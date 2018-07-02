@@ -15,53 +15,17 @@
  */
 package com.outworkers.phantom
 
-import com.outworkers.phantom.builder.primitives.Primitive
+import com.outworkers.phantom.thrift.columns.Ops
+import com.twitter.scrooge._
 
 package object thrift {
+
   type ThriftStruct = com.twitter.scrooge.ThriftStruct
 
-  type ThriftColumn[
-    T <: CassandraTable[T, R],
-    R,
-    Model <: ThriftStruct
-  ] = columns.ThriftColumn[T, R, Model]
-
-  type ThriftSetColumn[
-    T <: CassandraTable[T, R],
-    R,
-    Model <: ThriftStruct
-  ] = columns.ThriftSetColumn[T, R, Model]
-
-  type ThriftListColumn[
-    T <: CassandraTable[T, R],
-    R,
-    Model <: ThriftStruct
-  ] = columns.ThriftListColumn[T, R, Model]
-
-  type ThriftMapColumn[
-    T <: CassandraTable[T, R],
-    R,
-    KeyType,
-    Model <: ThriftStruct
-  ] = columns.ThriftMapColumn[T, R, KeyType, Model]
-
-  type OptionalThriftColumn[
-    T <: CassandraTable[T, R],
-    R,
-    Model <: ThriftStruct
-  ] = columns.OptionalThriftColumn[T, R, Model]
-
-  implicit def thriftPrimitive[T <: ThriftStruct]()(implicit hp: ThriftHelper[T]): Primitive[T] = {
-    val sz = hp.serializer
-    Primitive.derive[T, String](sz.toString)(sz.fromString)
-  }
-
-  implicit class PrimitiveCompanionHelper(val obj: Primitive.type) extends AnyVal {
-    def thrift[T <: ThriftStruct]()(implicit hp: ThriftHelper[T]): Primitive[T] = {
-      val sz = hp.serializer
-      Primitive.derive[T, String](sz.toString)(sz.fromString)
-    }
-  }
+  object binary extends Ops[BinaryThriftStructSerializer]
+  object lazybinary extends Ops[LazyBinaryThriftStructSerializer]
+  object tjson extends Ops[TJSONProtocolThriftSerializer]
+  object compact extends Ops[CompactThriftSerializer]
 }
 
 

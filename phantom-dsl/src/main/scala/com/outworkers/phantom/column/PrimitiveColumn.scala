@@ -43,7 +43,7 @@ class PrimitiveColumn[
     if (isStaticColumn) {
       root.forcePad.append(CQLSyntax.static)
     } else if (shouldFreeze && ev.frozen) {
-      QueryBuilder.Collections.frozen(root)
+      CQLQuery(name).forcePad.append(QueryBuilder.Collections.frozen(cassandraType))
     } else {
       root
     }

@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.suites
+package com.outworkers.phantom.thrift.tests.compact.suites
 
 import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.thrift.tests.compact.CompactSuite
 import com.outworkers.util.samplers._
-import org.scalatest.FlatSpec
-import org.scalatest.time.SpanSugar._
 
-class ThriftSetOperationsTest extends FlatSpec with ThriftTestSuite {
+class ThriftSetOperationsTest extends CompactSuite {
 
   it should "add an item to a thrift set column" in {
 
@@ -112,10 +111,6 @@ class ThriftSetOperationsTest extends FlatSpec with ThriftTestSuite {
       .value(_.name, sample.name)
       .value(_.ref, sample)
       .value(_.thriftSet, Set(sample, sample2, sample3))
-
-    val q = thriftDb
-      .thriftColumnTable.update.where(_.id eqs id)
-      .modify(_.thriftSet removeAll Set(sample2, sample3))
 
     val operation = for {
       insertDone <- insert.future()

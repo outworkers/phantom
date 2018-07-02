@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import bintray.BintrayKeys._
-import com.typesafe.sbt.SbtGit.git
 import sbt.Keys._
 import sbt._
 import com.typesafe.sbt.pgp.PgpKeys._
@@ -49,9 +47,14 @@ object Publishing {
 
   def commitTutFilesAndVersion: ReleaseStep = ReleaseStep { st: State =>
     val settings = Project.extract(st)
+    println(s"Found modified files: ${vcs(st).hasModifiedFiles}")
+
     val log = toProcessLogger(st)
     val versionsFile = settings.get(releaseVersionFile).getCanonicalFile
     val docsFolder = settings.get(releaseTutFolder).getCanonicalFile
+
+    println(s"Docs folder path : ${docsFolder.getPath}")
+    println(s"Docs folder path : ${docsFolder.getAbsolutePath}")
     val base = vcs(st).baseDir.getCanonicalFile
     val sign = settings.get(releaseVcsSign)
 
@@ -60,24 +63,33 @@ object Publishing {
       versionsFile
     ).getOrElse("Version file [%s] is outside of this VCS repository with base directory [%s]!" format(versionsFile, base))
 
-    val relativeDocsPath = IO.relativize(
-      base,
-      docsFolder
-    ).getOrElse("Docs folder [%s] is outside of this VCS repository with base directory [%s]!" format(docsFolder, base))
+    val commitablePaths = Seq(relativePath) ++ {
+      if (docsFolder.exists) {
+        println(s"Docs folder exists under ${docsFolder}")
+        val relativeDocsPath = IO.relativize(
+          base,
+          docsFolder
+        ).getOrElse("Docs folder [%s] is outside of this VCS repository with base directory [%s]!" format(docsFolder, base))
+        Seq(relativeDocsPath)
+      } else {
+        println(s"Docs folder doesn't exist under, $base and $docsFolder")
+        Seq.empty
+      }
+    }
 
-
-    vcs(st).add(relativePath) !! log
-    vcs(st).add(relativeDocsPath) !! log
+    vcs(st).add(commitablePaths: _*) !! log
     val status = (vcs(st).status !!) trim
 
     val newState = if (status.nonEmpty) {
       val (state, msg) = settings.runTask(releaseCommitMessage, st)
-      vcs(state).commit(msg, sign) ! log
+      vcs(state).commit(msg, sign) !! log
       state
     } else {
-      // nothing to commit. this happens if the version.sbt file hasn't changed.
+      // nothing to commit. this happens if the version.sbt file hasn't changed or no docs have been added.
       st
     }
+    vcs(newState).status !! log
+
     newState
   }
 
@@ -92,6 +104,7 @@ object Publishing {
       inquireVersions,
       setReleaseVersion,
       commitReleaseVersion,
+      publishArtifacts,
       tagRelease,
       releaseStepCommandAndRemaining("such publishSigned"),
       releaseStepCommandAndRemaining("sonatypeReleaseAll"),
@@ -133,21 +146,26 @@ object Publishing {
 
   def publishToMaven: Boolean = sys.env.get("MAVEN_PUBLISH").exists("true" ==)
 
-  lazy val bintraySettings: Seq[Def.Setting[_]] = Seq(
-    publishMavenStyle := true,
-    bintrayOrganization := Some("outworkers"),
-    bintrayRepository := { if (scalaVersion.value.trim.endsWith("SNAPSHOT")) "oss-snapshots" else "oss-releases" },
-    bintrayReleaseOnPublish in ThisBuild := true,
-    publishArtifact in Test := false,
-    pomIncludeRepository := { _ => true},
-    licenses += ("Apache-2.0", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt"))
-  )
+  /*
+  lazy val bintraySettings: Seq[Def.Setting[_]] = {
+    import bintray.BintrayKeys._
+    Seq(
+      publishMavenStyle := true,
+      bintrayOrganization := Some("outworkers"),
+      bintrayRepository := { if (version.value.trim.endsWith("SNAPSHOT")) "oss-snapshots" else "oss-releases" },
+      bintrayReleaseOnPublish in ThisBuild := true,
+      publishArtifact in Test := false,
+      pomIncludeRepository := { _ => true},
+      licenses += ("Apache-2.0", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt"))
+    )
+  }*/
 
   lazy val pgpPass: Option[Array[Char]] = Properties.envOrNone("pgp_passphrase").map(_.toCharArray)
 
   lazy val mavenSettings: Seq[Def.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     publishMavenStyle := true,
+    licenses += ("Apache-2.0", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt")),
     pgpPassphrase in ThisBuild := {
       if (runningUnderCi && pgpPass.isDefined) {
         println("Running under CI and PGP password specified under settings.")
@@ -169,7 +187,6 @@ object Publishing {
       }
     },
     externalResolvers := Resolver.withDefaultResolvers(resolvers.value, mavenCentral = true),
-    licenses += ("Outworkers License", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt")),
     publishArtifact in Test := false,
     pomIncludeRepository := { _ => true },
     pomExtra :=
@@ -187,7 +204,15 @@ object Publishing {
         </developers>
   )
 
-  def effectiveSettings: Seq[Def.Setting[_]] = releaseSettings ++ mavenSettings
+  def effectiveSettings: Seq[Def.Setting[_]] = {
+    if (publishToMaven) {
+      mavenSettings ++ releaseSettings
+    } else {
+      // Intentional silly way to disable Bintray publishing temporarily
+      //bintraySettings ++ releaseSettings
+      mavenSettings ++ releaseSettings
+    }
+  }
 
   /**
    * This exists because SBT is not capable of reloading publishing configuration during tasks or commands.

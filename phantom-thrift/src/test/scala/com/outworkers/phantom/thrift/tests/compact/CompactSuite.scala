@@ -13,23 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.suites
+package com.outworkers.phantom.thrift.tests.compact
 
-import com.twitter.util.{Future, Return, Throw}
-import org.scalatest.concurrent.{ScalaFutures, Waiters}
+import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.thrift.tests.compact
+import com.outworkers.phantom.thrift.util.ThriftTestSuite
+import org.scalatest.FlatSpec
 
-trait TwitterFutures extends Waiters with ScalaFutures {
+trait CompactSuite extends FlatSpec with ThriftTestSuite {
+  val thriftDb = compact.ThriftDatabase
 
-  implicit def twitterFutureToConcept[T](f: Future[T]): FutureConcept[T] = new FutureConcept[T] {
-    override def eitherValue: Option[Either[Throwable, T]] = f.poll match {
-      case Some(Return(ret)) => Some(Right(ret))
-      case Some(Throw(err)) => Some(Left(err))
-      case None => None
-    }
-
-    override def isExpired: Boolean = false
-
-    override def isCanceled: Boolean = false
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    thriftDb.create()
   }
-
 }

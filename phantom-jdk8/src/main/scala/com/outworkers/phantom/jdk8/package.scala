@@ -15,36 +15,41 @@
  */
 package com.outworkers.phantom
 
+import java.time.{LocalDate => JavaLocalDate, LocalDateTime => JavaLocalDateTime, _}
 import java.util.UUID
 
 import com.datastax.driver.core.utils.UUIDs
+import com.datastax.driver.core.{LocalDate => DatastaxLocalDate}
+import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses.OperatorClause
 import com.outworkers.phantom.builder.ops.TimeUUIDOperator
-import java.time.{LocalDate => JavaLocalDate, LocalDateTime => JavaLocalDateTime, _}
-
-import com.datastax.driver.core.{LocalDate => DatastaxLocalDate}
-import com.outworkers.phantom.builder.primitives.{Primitive, Primitives}
+import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import org.joda.time.{DateTime, DateTimeZone}
 
-package object jdk8 {
+package object jdk8 extends Shared {
 
   type OffsetDateTime = java.time.OffsetDateTime
   type ZonedDateTime = java.time.ZonedDateTime
   type JdkLocalDate = java.time.LocalDate
   type JdkLocalDateTime = java.time.LocalDateTime
 
+
   implicit val OffsetDateTimeIsPrimitive: Primitive[OffsetDateTime] = {
-    Primitive.derive[OffsetDateTime, (Long, String)](
-      offsetDt => offsetDt.toInstant.toEpochMilli -> offsetDt.getOffset.getId
-    ) { case (timestamp, zone) =>
-      OffsetDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneOffset.of(zone))
-    }
+    val tuplePremitive = implicitly[Primitive[(Long, String)]]
+    Primitive.manuallyDerive[OffsetDateTime, (Long, String)](
+      offsetDt => offsetDt.toInstant.toEpochMilli -> offsetDt.getOffset.getId,
+      {
+        case (timestamp, zone) => OffsetDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneOffset.of(zone))
+      }
+    )(tuplePremitive)(
+      QueryBuilder.Collections.tupleType(CQLSyntax.Types.Timestamp, CQLSyntax.Types.Text).queryString
+    )
   }
 
   implicit val zonePrimitive: Primitive[ZoneId] = Primitive.derive[ZoneId, String](_.getId)(ZoneId.of)
 
-  implicit val LocalDateIsPrimitive = Primitive.manuallyDerive[JavaLocalDate, DatastaxLocalDate](
+  implicit val LocalDateIsPrimitive: Primitive[JavaLocalDate] = Primitive.manuallyDerive[JavaLocalDate, DatastaxLocalDate](
     l => {
       val off = OffsetDateTime.of(l.atTime(0, 0), ZoneOffset.UTC)
       DatastaxLocalDate.fromYearMonthDay(off.getYear, off.getMonthValue, off.getDayOfMonth)
@@ -53,12 +58,18 @@ package object jdk8 {
       JavaLocalDate.of(conv.getYear, conv.getMonth, conv.getDayOfMonth)
     }
 
-  )(Primitives.LocalDateIsPrimitive)(CQLSyntax.Types.Date)
+  )(Primitive[DatastaxLocalDate])(CQLSyntax.Types.Date)
 
   implicit val zonedDateTimePrimitive: Primitive[ZonedDateTime] = {
-    Primitive.derive[ZonedDateTime, (Long, String)](dt => dt.toInstant.toEpochMilli -> dt.getZone.getId) {
-      case (timestamp, zone) => ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.of(zone))
-    }
+    val tuplePremitive = implicitly[Primitive[(Long, String)]]
+    Primitive.manuallyDerive[ZonedDateTime, (Long, String)](
+      dt => dt.toInstant.toEpochMilli -> dt.getZone.getId,
+      {
+        case (timestamp, zone) => ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.of(zone))
+      }
+    )(tuplePremitive)(
+      QueryBuilder.Collections.tupleType(CQLSyntax.Types.Timestamp, CQLSyntax.Types.Text).queryString
+    )
   }
 
   implicit val JdkLocalDateTimeIsPrimitive: Primitive[JavaLocalDateTime] = {

@@ -18,6 +18,7 @@ package com.outworkers.phantom.builder.query
 import com.datastax.driver.core.{ConsistencyLevel, Session}
 import com.outworkers.phantom.builder._
 import com.outworkers.phantom.builder.clauses._
+import com.outworkers.phantom.builder.ops.TokenizerKey
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.execution._
 import com.outworkers.phantom.builder.query.prepared.{PrepareMark, PreparedBlock, PreparedFlattener}
@@ -29,6 +30,7 @@ import shapeless.{::, =:!=, HList, HNil}
 
 import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.duration.{FiniteDuration => ScalaDuration}
+import scala.concurrent.duration._
 
 case class UpdateQuery[
   Table <: CassandraTable[Table, _],
@@ -40,44 +42,15 @@ case class UpdateQuery[
   PS <: HList
 ](table: Table,
   init: CQLQuery,
+  tokens: List[TokenizerKey],
   usingPart: UsingPart = UsingPart.empty,
   wherePart: WherePart = WherePart.empty,
   private[phantom] val setPart: SetPart = SetPart.empty,
   casPart: CompareAndSetPart = CompareAndSetPart.empty,
-  override val options: QueryOptions = QueryOptions.empty
-) extends Query[Table, Record, Limit, Order, Status, Chain, PS](table, init, None.orNull, usingPart, options) with Batchable {
+  options: QueryOptions = QueryOptions.empty
+) extends RootQuery[Table, Record, Status] with Batchable {
 
-  override val qb: CQLQuery = usingPart merge setPart merge wherePart build init
-
-  override protected[this] type QueryType[
-    T <: CassandraTable[T, _],
-    R,
-    L <: LimitBound,
-    O <: OrderBound,
-    S <: ConsistencyBound,
-    C <: WhereBound,
-    P <: HList
-  ] = UpdateQuery[T, R, L, O, S, C, P]
-
-  protected[this] def create[
-    T <: CassandraTable[T, _],
-    R,
-    L <: LimitBound,
-    O <: OrderBound,
-    S <: ConsistencyBound,
-    C <: WhereBound,
-    P <: HList
-  ](t: T, q: CQLQuery, r: Row => R, usingPart: UsingPart, options: QueryOptions): QueryType[T, R, L, O, S, C, P] = {
-    new UpdateQuery[T, R, L, O, S, C, P](
-      t,
-      q,
-      usingPart,
-      wherePart,
-      setPart,
-      casPart,
-      options
-    )
-  }
+  val qb: CQLQuery = usingPart merge setPart merge wherePart build init
 
   def ttl(seconds: Long): UpdateQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
     copy(setPart = setPart append QueryBuilder.ttl(seconds.toString))
@@ -89,15 +62,18 @@ case class UpdateQuery[
     * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
     * @return
     */
-  override def where[
+  def where[
     RR,
     HL <: HList,
     Out <: HList
   ](condition: Table => QueryCondition[HL])(implicit
     ev: Chain =:= Unchainned,
     prepend: Prepend.Aux[HL, PS, Out]
-  ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out] = {
-    copy(wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb))
+  ): UpdateQuery[Table, Record, Limit, Order, Status, Chainned, Out] = {
+    copy(
+      wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb),
+      tokens = tokens ::: condition(table).tokens
+    )
   }
 
   /**
@@ -106,15 +82,18 @@ case class UpdateQuery[
     * @param ev An evidence request guaranteeing the user cannot chain multiple where clauses on the same query.
     * @return
     */
-  override def and[
+  def and[
     RR,
     HL <: HList,
     Out <: HList
   ](condition: Table => QueryCondition[HL])(implicit
     ev: Chain =:= Chainned,
     prepend: Prepend.Aux[HL, PS, Out]
-  ): QueryType[Table, Record, Limit, Order, Status, Chainned, Out] = {
-    copy(wherePart = wherePart append QueryBuilder.Update.and(condition(table).qb))
+  ): UpdateQuery[Table, Record, Limit, Order, Status, Chainned, Out] = {
+    copy(
+      wherePart = wherePart append QueryBuilder.Update.and(condition(table).qb),
+      tokens = tokens ::: condition(table).tokens
+    )
   }
 
   final def modify[
@@ -126,6 +105,7 @@ case class UpdateQuery[
     AssignmentsQuery(
       table = table,
       init = init,
+      tokens = tokens,
       usingPart = usingPart,
       wherePart = wherePart,
       setPart = setPart appendConditionally(clause(table).qb, !clause(table).skipped),
@@ -141,15 +121,18 @@ case class UpdateQuery[
     * @param clause The Compare-And-Set clause to append to the builder.
    * @return A conditional query, now bound by a compare-and-set part.
    */
-  def onlyIf(clause: Table => CompareAndSetClause.Condition): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, HNil] = {
+  def onlyIf(
+    clause: Table => CompareAndSetClause.Condition
+  ): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, HNil] = {
     ConditionalQuery(
-      table,
-      init,
-      usingPart,
-      wherePart,
-      setPart,
-      casPart append QueryBuilder.Update.onlyIf(clause(table).qb),
-      options
+      table = table,
+      init = init,
+      tokens = tokens,
+      usingPart = usingPart,
+      wherePart = wherePart,
+      setPart = setPart,
+      casPart = casPart append QueryBuilder.Update.onlyIf(clause(table).qb),
+      options = options
     )
   }
 
@@ -165,7 +148,7 @@ case class UpdateQuery[
     }
   }
 
-  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options)
+  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options, tokens)
 }
 
 sealed case class AssignmentsQuery[
@@ -179,6 +162,7 @@ sealed case class AssignmentsQuery[
   ModifyPrepared <: HList
 ](table: Table,
   init: CQLQuery,
+  tokens: List[TokenizerKey],
   usingPart: UsingPart = UsingPart.empty,
   wherePart : WherePart = WherePart.empty,
   private[phantom] val setPart : SetPart = SetPart.empty,
@@ -197,12 +181,17 @@ sealed case class AssignmentsQuery[
     copy(setPart = setPart appendConditionally (clause(table).qb, !clause(table).skipped))
   }
 
+  /**
+    * Allows setting a timestamp value in microseconds.
+    * @param value The microsecond UTC timestamp of the time to use for the update query.
+    * @return An assignments query with a timestamp value manually set.
+    */
   final def timestamp(value: Long): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
-    copy(usingPart = usingPart append QueryBuilder.timestamp(value))
+    copy(usingPart = usingPart append QueryBuilder.timestamp(value.micros))
   }
 
   final def timestamp(value: DateTime): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
-    copy(usingPart = usingPart append QueryBuilder.timestamp(value.getMillis))
+    copy(usingPart = usingPart append QueryBuilder.timestamp((value.getMillis * 1000).micros))
   }
 
   final def ttl(mark: PrepareMark): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, Long :: PS, ModifyPrepared] = {
@@ -265,27 +254,31 @@ sealed case class AssignmentsQuery[
     * @param clause The Compare-And-Set clause to append to the builder.
    * @return A conditional query, now bound by a compare-and-set part.
    */
-  def onlyIf(clause: Table => CompareAndSetClause.Condition): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
+  def onlyIf(
+    clause: Table => CompareAndSetClause.Condition
+  ): ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
     ConditionalQuery(
-      table,
-      init,
-      usingPart,
-      wherePart,
-      setPart,
-      casPart append QueryBuilder.Update.onlyIf(clause(table).qb),
-      options
+      table = table,
+      init = init,
+      tokens = tokens,
+      usingPart = usingPart,
+      wherePart = wherePart,
+      setPart = setPart,
+      casPart = casPart append QueryBuilder.Update.onlyIf(clause(table).qb),
+      options = options
     )
   }
 
   def ifExists: ConditionalQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
     ConditionalQuery(
-      table,
-      init,
-      usingPart,
-      wherePart,
-      setPart,
-      casPart append QueryBuilder.Update.ifExists,
-      options
+      table = table,
+      init = init,
+      tokens = tokens,
+      usingPart = usingPart,
+      wherePart = wherePart,
+      setPart = setPart,
+      casPart = casPart append QueryBuilder.Update.ifExists,
+      options = options
     )
   }
 
@@ -300,7 +293,7 @@ sealed case class AssignmentsQuery[
     }
   }
 
-  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options)
+  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options, tokens)
 }
 
 sealed case class ConditionalQuery[
@@ -314,6 +307,7 @@ sealed case class ConditionalQuery[
   ModifyPrepared <: HList
 ](table: Table,
   init: CQLQuery,
+  tokens: List[TokenizerKey],
   usingPart: UsingPart = UsingPart.empty,
   wherePart : WherePart = WherePart.empty,
   private[phantom] val setPart : SetPart = SetPart.empty,
@@ -387,7 +381,7 @@ sealed case class ConditionalQuery[
     }
   }
 
-  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options)
+  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options, tokens)
 }
 
 object UpdateQuery {
@@ -399,7 +393,8 @@ object UpdateQuery {
       table,
       QueryBuilder.Update.update(
         QueryBuilder.keyspace(keySpace.name, table.tableName).queryString
-      )
+      ),
+      Nil
     )
   }
 

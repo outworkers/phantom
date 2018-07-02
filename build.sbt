@@ -83,11 +83,9 @@ val scalacOptionsFn: String => Seq[String] = { s =>
   }
 }
 
-scalacOptions in ThisBuild ++= ScalacOptions ++ YWarnOptions
-
 lazy val Versions = new {
   val logback = "1.2.3"
-  val util = "0.39.0"
+  val util = "0.40.0"
   val json4s = "3.5.1"
   val datastax = "4.0.0-alpha3"
   val scalatest = "3.0.4"
@@ -108,7 +106,7 @@ lazy val Versions = new {
 
   val scala210 = "2.10.6"
   val scala211 = "2.11.11"
-  val scala212 = "2.12.4"
+  val scala212 = "2.12.5"
   val scalaAll = Seq(scala210, scala211, scala212)
 
   val scala = new {
@@ -165,13 +163,13 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   scalaVersion := Versions.scala212,
   credentials ++= Publishing.defaultCredentials,
   resolvers ++= Seq(
-
     "Twitter Repository" at "http://maven.twttr.com",
     Resolver.typesafeRepo("releases"),
     Resolver.sonatypeRepo("releases"),
     Resolver.jcenterRepo
   ),
-  logLevel in ThisBuild := Level.Info,
+
+  logLevel in ThisBuild := { if (Publishing.runningUnderCi) Level.Error else Level.Info },
   libraryDependencies ++= Seq(
     "ch.qos.logback" % "logback-classic" % Versions.logback % Test,
     "org.slf4j" % "log4j-over-slf4j" % Versions.slf4j
@@ -329,7 +327,6 @@ lazy val phantomFinagle = (project in file("phantom-finagle"))
       compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
       "com.twitter"                  %% "util-core"                         % Versions.twitterUtil(scalaVersion.value),
       "com.outworkers"               %% "util-testing"                      % Versions.util % Test,
-      "com.outworkers"               %% "util-testing-twitter"              % Versions.util % Test,
       "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter % Test
     )
   ).dependsOn(
@@ -350,8 +347,7 @@ lazy val phantomThrift = (project in file("phantom-thrift"))
       "org.apache.thrift"            % "libthrift"                          % Versions.thrift,
       "com.twitter"                  %% "scrooge-core"                      % Versions.scrooge(scalaVersion.value),
       "com.twitter"                  %% "scrooge-serializer"                % Versions.scrooge(scalaVersion.value),
-      "com.outworkers"               %% "util-testing"                      % Versions.util % Test,
-      "com.outworkers"               %% "util-testing-twitter"              % Versions.util % Test
+      "com.outworkers"               %% "util-testing"                      % Versions.util % Test
     ),
     coverageExcludedPackages := "com.outworkers.phantom.thrift.models.*"
   ).settings(

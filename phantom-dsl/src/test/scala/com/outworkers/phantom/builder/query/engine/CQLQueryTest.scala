@@ -223,7 +223,9 @@ class CQLQueryTest extends FlatSpec with Matchers with GeneratorDrivenPropertyCh
 
   it should "append and wrap a CQLQuery with ()" in {
     forAll { (q1: String, q2: String) =>
-      CQLQuery(q1).wrap(CQLQuery(q2)).queryString shouldEqual s"$q1 ($q2)"
+      whenever(q1.nonEmpty) {
+        CQLQuery(q1).wrap(CQLQuery(q2)).queryString shouldEqual s"$q1 ($q2)"
+      }
     }
   }
 

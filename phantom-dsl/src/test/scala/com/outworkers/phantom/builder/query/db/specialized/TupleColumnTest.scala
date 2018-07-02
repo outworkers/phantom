@@ -19,6 +19,7 @@ import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.tables.{NestedTupleRecord, TupleCollectionRecord, TupleRecord}
 import com.outworkers.util.samplers._
 import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.tables.bugs.TuplePartitionRecord
 
 class TupleColumnTest extends PhantomSuite {
   override def beforeAll(): Unit = {
@@ -26,6 +27,7 @@ class TupleColumnTest extends PhantomSuite {
     database.tuple2Table.createSchema()
     database.nestedTupleTable.createSchema()
     database.tupleCollectionsTable.createSchema()
+    database.tuplePartitionKeyTable.createSchema()
   }
 
   it should "store and retrieve a record with a tuple column" in {
@@ -130,10 +132,8 @@ class TupleColumnTest extends PhantomSuite {
 
     val appended = gen[Int] -> gen[String]
 
-    val insert = database.tupleCollectionsTable.store(sample)
-
     val chain = for {
-      store <- insert.future()
+      store <- database.tupleCollectionsTable.store(sample).future()
       rec <- database.tupleCollectionsTable.findById(sample.id)
       update <- database.tupleCollectionsTable.update
         .where(_.id eqs sample.id)
@@ -149,6 +149,44 @@ class TupleColumnTest extends PhantomSuite {
 
       afterUpdate shouldBe defined
       afterUpdate.value.tuples should contain (appended)
+    }
+  }
+
+  it should "allow using a tuple column as a partition key" in {
+    val sample = gen[TuplePartitionRecord]
+
+    val chain = for {
+      store <- database.tuplePartitionKeyTable.store(sample).future
+      rec <- database.tuplePartitionKeyTable.select.where(_.id eqs sample.id).one()
+    } yield rec
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+      res.value shouldEqual sample
+    }
+  }
+
+  it should "allow using a tuple column as a partition key to update records" in {
+    val sample = gen[TuplePartitionRecord]
+    val newUuid = gen[UUID]
+
+    val chain = for {
+      store <- database.tuplePartitionKeyTable.store(sample).future
+      rec <- database.tuplePartitionKeyTable.select.where(_.id eqs sample.id).one()
+      updateRec <- database.tuplePartitionKeyTable.update
+        .where(_.id eqs sample.id)
+          .modify(_.rec setTo newUuid)
+          .future()
+      recUpdated <- database.tuplePartitionKeyTable.select.where(_.id eqs sample.id).one()
+
+    } yield rec -> recUpdated
+
+    whenReady(chain) { case (beforeUpdate, afterUpdate) =>
+      beforeUpdate shouldBe defined
+      beforeUpdate.value shouldEqual sample
+
+      afterUpdate shouldBe defined
+      afterUpdate.value shouldEqual sample.copy(rec = newUuid)
     }
   }
 }

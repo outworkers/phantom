@@ -29,8 +29,9 @@ private[phantom] abstract class AbstractMapColumn[
   Record,
   K,
   V
-](table: CassandraTable[Owner, Record]) extends Column[Owner, Record, Map[K, V]](table)
-  with CollectionValueDefinition[V] {
+](
+  table: CassandraTable[Owner, Record]
+) extends Column[Owner, Record, Map[K, V]](table) with CollectionValueDefinition[V] {
 
   def keyAsCql(v: K): String
 

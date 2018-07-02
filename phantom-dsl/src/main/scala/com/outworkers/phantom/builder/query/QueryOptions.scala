@@ -15,27 +15,51 @@
  */
 package com.outworkers.phantom.builder.query
 
-import com.datastax.driver.core.{ConsistencyLevel, PagingState, Statement}
+import com.datastax.driver.core._
+import com.datastax.driver.core.policies.TokenAwarePolicy
+import com.outworkers.phantom.builder.ops.TokenizerKey
 
-class ConsistencyLevelModifier(level: Option[ConsistencyLevel]) extends (Statement => Statement) {
+trait Modifier extends (Statement => Statement)
+
+case class RoutingKeyModifier(
+  tokens: List[TokenizerKey]
+)(
+  implicit session: Session
+) extends (SimpleStatement => SimpleStatement) {
+  override def apply(st: SimpleStatement): SimpleStatement = {
+
+    val policy = session.getCluster.getConfiguration.getPolicies.getLoadBalancingPolicy
+
+    if (policy.isInstanceOf[TokenAwarePolicy] && tokens.nonEmpty) {
+      st
+        .setRoutingKey(tokens.map(_.apply(session)): _*)
+        .setKeyspace(session.getLoggedKeyspace)
+    } else {
+      st
+    }
+  }
+}
+
+class ConsistencyLevelModifier(level: Option[ConsistencyLevel]) extends Modifier {
   override def apply(v1: Statement): Statement = {
     (level map v1.setConsistencyLevel).getOrElse(v1)
   }
 }
 
-class SerialConsistencyLevelModifier(level: Option[ConsistencyLevel]) extends (Statement => Statement) {
+class SerialConsistencyLevelModifier(level: Option[ConsistencyLevel]) extends Modifier {
   override def apply(v1: Statement): Statement = {
     (level map v1.setSerialConsistencyLevel).getOrElse(v1)
   }
 }
 
-class PagingStateModifier(level: Option[PagingState]) extends (Statement => Statement) {
+
+class PagingStateModifier(level: Option[PagingState]) extends Modifier {
   override def apply(v1: Statement): Statement = {
     (level map v1.setPagingState).getOrElse(v1)
   }
 }
 
-class EnableTracingModifier(level: Option[Boolean]) extends (Statement => Statement) {
+class EnableTracingModifier(level: Option[Boolean]) extends Modifier {
   override def apply(v1: Statement): Statement = {
     level match {
       case Some(true) => v1.enableTracing()
@@ -45,7 +69,7 @@ class EnableTracingModifier(level: Option[Boolean]) extends (Statement => Statem
   }
 }
 
-class FetchSizeModifier(level: Option[Int]) extends (Statement => Statement) {
+class FetchSizeModifier(level: Option[Int]) extends Modifier {
   override def apply(v1: Statement): Statement = {
     (level map v1.setFetchSize).getOrElse(v1)
   }
@@ -60,7 +84,7 @@ case class QueryOptions(
 ) {
 
   def apply(st: Statement): Statement = {
-    val applier = List(
+    val applier = List[Statement => Statement](
       new ConsistencyLevelModifier(consistencyLevel),
       new SerialConsistencyLevelModifier(serialConsistencyLevel),
       new PagingStateModifier(pagingState),

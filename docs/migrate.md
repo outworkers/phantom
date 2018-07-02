@@ -114,6 +114,19 @@ This is done to distinguish the underlying consumer mechanism of parsing and fet
 - `com.outworkers.phantom.dsl.context` should be used instead of `scala.concurrent.ExecutionContext.Implicits.global`. This now has the type `ExecutionContextExecutor` which allows us to use the same context for both Scala and Java futures(which are used internally as part of the Datastax Java driver).
 
 
+#### The main import has changed
+
+Instead of `com.websudos.phantom.Implicits._`, you need to import `com.outworkers.phantom.dsl._`. It's
+also worth paying attention that if you're using any phantom after 2.14.0, you are also required to have
+this import in a lot more places than before.
+
+This is because the return type of the query methods is now tied to a specific package import.
+This was done to allow us to have uniform method names across modules like `phantom-dsl` and `phantom-finagle`.
+In the future, this is likely to be replaced with Free monads and `cats.free.Free`, but so far
+we have resisted adding new large dependencies such as Cats for any reason.
+
+To understand more about this, have a look at [execution backends](querying/execution.md).  
+
 #### You can remove manual `fromRow` method definitions
 
 As of phantom 2.4.0, phantom is capable of automatically generating a `Row` extractor for the majority of 

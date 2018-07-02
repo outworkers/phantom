@@ -31,5 +31,4 @@ trait TwitterFutures extends Waiters with ScalaFutures {
 
     override def isCanceled: Boolean = false
   }
-
 }

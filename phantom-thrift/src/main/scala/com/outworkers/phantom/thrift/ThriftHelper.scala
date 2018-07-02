@@ -15,17 +15,27 @@
  */
 package com.outworkers.phantom.thrift
 
-import com.twitter.scrooge.CompactThriftSerializer
+import com.twitter.scrooge.ThriftStructSerializer
+
 import scala.reflect.macros.blackbox
 
-trait ThriftHelper[ValueType <: ThriftStruct] {
-  def serializer: CompactThriftSerializer[ValueType]
+trait ThriftHelper[
+  ValueType <: ThriftStruct,
+  Serializer <: ThriftStructSerializer[ValueType]
+] {
+  def serializer: Serializer
 }
 
 object ThriftHelper {
-  def apply[T <: ThriftStruct](implicit ev: ThriftHelper[T]): ThriftHelper[T] = ev
+  def apply[
+    T <: ThriftStruct,
+    Serializer <: ThriftStructSerializer[T]
+  ](implicit ev: ThriftHelper[T, Serializer]): ThriftHelper[T, Serializer] = ev
 
-  implicit def materializer[T <: ThriftStruct]: ThriftHelper[T] = macro ThriftHelperMacro.materialize[T]
+  implicit def materializer[
+    T <: ThriftStruct,
+    Serializer <: ThriftStructSerializer[T]
+  ]: ThriftHelper[T, Serializer] = macro ThriftHelperMacro.materialize[T, Serializer]
 }
 
 @macrocompat.bundle
@@ -35,16 +45,21 @@ class ThriftHelperMacro(val c: blackbox.Context) {
 
   private[this] val pkgRoot = q"_root_.com.outworkers.phantom.thrift"
   private[this] val scroogePkg = q"_root_.com.twitter.scrooge"
-  private[this] val serializerTpe: Type => Tree = t => tq"$scroogePkg.CompactThriftSerializer[$t]"
 
-  def materialize[T <: ThriftStruct : WeakTypeTag]: Tree = {
+  def materialize[
+    T <: ThriftStruct : WeakTypeTag,
+    Serializer : WeakTypeTag
+  ]: Tree = {
     val tpe = weakTypeOf[T]
-    val companion = tpe.typeSymbol.companion
+    val sTpe = weakTypeOf[Serializer]
+    //sTpe.typeConstructor
+    val valueCompanion = tpe.typeSymbol.companion
+    val serializerCompanion = sTpe.typeSymbol.companion
 
     q"""
-      new $pkgRoot.ThriftHelper[$tpe] {
-        override val serializer: ${serializerTpe(tpe)} = new $scroogePkg.CompactThriftSerializer[$tpe] {
-          override val codec: $scroogePkg.ThriftStructCodec[$tpe] = $companion
+      new $pkgRoot.ThriftHelper[$tpe, $sTpe] {
+        override val serializer: $sTpe = {
+          $scroogePkg.$serializerCompanion.apply[$tpe]($valueCompanion)
         }
       }
     """

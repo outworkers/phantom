@@ -27,36 +27,22 @@ function setup_git_credentials {
 }
 
 function prepare_maven_release {
-    if [ "$TRAVIS_BRANCH" == "develop" ];
-    then
-        if [[ $COMMIT_MSG == *"$COMMIT_SKIP_MESSAGE"* ]];
-        then
-          echo "Skipping publication of a new Maven Artefact, the version was not bumped."
-        else
-          echo "Publishing new version to Maven Central"
-          echo "Creating GPG deploy key"
-          openssl aes-256-cbc -K $encrypted_759d2b7e5bb0_key -iv $encrypted_759d2b7e5bb0_iv -in build/deploy.asc.enc -out build/deploy.asc -d
+  echo "Publishing new version to Maven Central"
+  echo "Creating GPG deploy key"
+  openssl aes-256-cbc -K $encrypted_759d2b7e5bb0_key -iv $encrypted_759d2b7e5bb0_iv -in build/deploy.asc.enc -out build/deploy.asc -d
 
-          echo "importing GPG key to local GBP repo"
-          gpg --fast-import build/deploy.asc
+  echo "importing GPG key to local GBP repo"
+  gpg --fast-import build/deploy.asc
 
-          echo "Setting MAVEN_PUBLISH mode to true"
-          export MAVEN_PUBLISH="true"
-          export pgp_passphrase=${maven_password}
-        fi
-    else
-        echo "Not deploying to Maven Central, branch is not develop, current branch is ${TRAVIS_BRANCH}"
-    fi
+  echo "Setting MAVEN_PUBLISH mode to true"
+  export MAVEN_PUBLISH="true"
+  export pgp_passphrase=${maven_password}
 }
 
 function publish_to_bintray {
-    if [[ $COMMIT_MSG == *"$COMMIT_SKIP_MESSAGE"* ]];
-    then
-        echo "Not publishing to Bintray"
-    else
-        echo "Publishing new version to bintray"
-        sbt "such publish"
-    fi
+    export MAVEN_PUBLISH="false"
+    echo "Publishing new version to bintray"
+    sbt "such publish"
 }
 
 function setup_credentials {
@@ -120,14 +106,15 @@ then
         fix_git
         setup_git_credentials
 
-        COMMIT_MSG=$(git log -1 --pretty=%B 2>&1)
-        COMMIT_SKIP_MESSAGE="[version skip]"
-
         prepare_maven_release
         sbt "project readme" tut
+        git add docs
+        git commit -m "Added compiled tut documentation [ci skip]"
+
+        git status
         sbt "release with-defaults"
 
-        #publish_to_bintray
+        # publish_to_bintray
 
     else
         echo "Only publishing version for Scala $TARGET_SCALA_VERSION and Oracle JDK 8 to prevent multiple artifacts"

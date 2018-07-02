@@ -48,7 +48,7 @@ class CollectionColumn[
 
   override def asCql(v: M[RR]): String = ev.asCql(v)
 
-  override val cassandraType = QueryBuilder.Collections.collectionType(
+  override val cassandraType: String = QueryBuilder.Collections.collectionType(
     collection,
     vp.dataType,
     shouldFreeze,

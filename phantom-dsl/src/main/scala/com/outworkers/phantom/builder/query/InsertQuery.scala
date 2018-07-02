@@ -30,6 +30,7 @@ import shapeless.ops.hlist.Reverse
 import shapeless.{::, =:!=, HList, HNil}
 
 import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.duration.Duration
 
 case class InsertQuery[
   Table <: CassandraTable[Table, Record],
@@ -59,7 +60,7 @@ case class InsertQuery[
   final def json(value: PrepareMark): InsertJsonQuery[Table, Record, Status, String :: PS] = {
     new InsertJsonQuery[Table, Record, Status, String :: PS](
       table = table,
-      init = QueryBuilder.Insert.json(init, value.qb.queryString),
+      init = QueryBuilder.Insert.json(init, value),
       usingPart = usingPart,
       lightweightPart = lightweightPart,
       options = options
@@ -188,8 +189,40 @@ case class InsertQuery[
     copy(usingPart = usingPart append clause.qb)
   }
 
+  /**
+    * Allows specifying a timestamp using [[scala.concurrent.duration.Duration]].
+    * This will automatically convert the underlying duration to microseconds.
+    * @param value The duration value representing the microsecond epoch.
+    * @return An insert query where a timestamp is passed in the using part.
+    */
+  final def timestamp(value: Duration): InsertQuery[Table, Record, Status, PS] = {
+    timestamp(value.toMicros)
+  }
+
+  /**
+    * Allows specifying a timestamp using a Long value.
+    * This will NOT automatically convert the underlying duration to microseconds.
+    * You need to make sure the EPOCH is provided as microseconds.
+    *
+    * @param value The duration value representing the microsecond epoch.
+    * @return An insert query where a timestamp is passed in the using part.
+    */
   final def timestamp(value: Long): InsertQuery[Table, Record, Status, PS] = {
-    copy(usingPart = usingPart append QueryBuilder.timestamp(value))
+    copy(usingPart = usingPart append QueryBuilder.microstamp(value))
+  }
+
+  /**
+    * Allows specifying a timestamp using [[org.joda.time.DateTime]].
+    * This will automatically convert the underlying duration to microseconds.
+    * It's important to note [[org.joda.time.DateTime]] does not store dates as a microsecond value,
+    * the maximum granularity is milliseconds. The conversion done here is the simplest one, multiplying
+    * the millisecond epoch value by 1000.
+    *
+    * @param value The duration value representing the microsecond epoch.
+    * @return An insert query where a timestamp is passed in the using part.
+    */
+  final def timestamp(value: DateTime): InsertQuery[Table, Record, Status, PS] = {
+    timestamp(value.getMillis * 1000)
   }
 
   def consistencyLevel_=(level: ConsistencyLevel)(implicit session: Session): InsertQuery[Table, Record, Specified, PS] = {
@@ -200,15 +233,12 @@ case class InsertQuery[
     }
   }
 
-  final def timestamp(value: DateTime): InsertQuery[Table, Record, Status, PS] = {
-    timestamp(value.getMillis)
-  }
 
   def ifNotExists(): InsertQuery[Table, Record, Status, PS] = {
     copy(lightweightPart = lightweightPart append CQLQuery(CQLSyntax.ifNotExists))
   }
 
-  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options)
+  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options, Nil)
 }
 
 object InsertQuery {
@@ -264,7 +294,7 @@ class InsertJsonQuery[
 
   val qb: CQLQuery = (lightweightPart merge usingPart) build init
 
-  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options)
+  override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options, Nil)
 }
 
 

@@ -20,7 +20,7 @@ import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.util.{Date, UUID, List => JList, Map => JMap, Set => JSet}
 
-import com.datastax.driver.core.{DataType, LocalDate, ProtocolVersion, TypeCodec}
+import com.datastax.driver.core._
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.util.samplers.Sample
 import org.joda.time.DateTime
@@ -41,7 +41,7 @@ class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPrope
     PropertyCheckConfiguration(minSuccessful = 300)
   }
 
-  val registry = session.getCluster.getConfiguration.getCodecRegistry
+  val registry: CodecRegistry = session.getCluster.getConfiguration.getCodecRegistry
 
   def roundtrip[T : Primitive : Arbitrary](codec: TypeCodec[T]): Assertion = {
     val ev = Primitive[T]

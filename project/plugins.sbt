@@ -38,15 +38,13 @@ addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "1.5.0")
 
 addSbtPlugin("org.scoverage" %% "sbt-coveralls" % "1.1.0")
 
-addSbtPlugin("com.jsuereth" % "sbt-pgp" % "1.0.0")
+addSbtPlugin("com.jsuereth" % "sbt-pgp" % "1.1.1")
 
-addSbtPlugin("me.lessis" % "bintray-sbt" % "0.3.0")
-
-if (sys.env.get("MAVEN_PUBLISH").exists("true" ==)) {
-  addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "1.1")
-} else {
-  addSbtPlugin("me.lessis" % "bintray-sbt" % "0.3.0")
-}
+// if (sys.env.get("MAVEN_PUBLISH").exists("true" ==)) {
+  addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "2.3")
+//} else {
+  //addSbtPlugin("org.foundweekends" % "sbt-bintray" % "0.5.4")
+//}
 
 addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.7.0")
 

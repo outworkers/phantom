@@ -51,11 +51,14 @@ class PrimitiveRoundtripTests
 
   implicit val bigDecimalArb: Arbitrary[BigDecimal] = Sample.arbitrary[BigDecimal]
 
-  private[this] val protocol = ProtocolVersion.V5
+  implicit val asciiValue: Arbitrary[AsciiValue] = Arbitrary(Gen.containerOf[Array, Char](Gen.choose[Char](min = 0,max = 127)).map(v => AsciiValue(v.mkString)))
+
+  val protocolGen: Gen[ProtocolVersion] = Gen.alphaStr.map(_ => ProtocolVersion.V5)
+
 
   def roundtrip[T : Primitive](gen: Gen[T]): Assertion = {
     val ev = Primitive[T]
-    forAll(gen) { sample =>
+    forAll(gen, protocolGen) { (sample, protocol) =>
       ev.deserialize(ev.serialize(sample, protocol), protocol) shouldEqual sample
     }
   }
@@ -65,10 +68,7 @@ class PrimitiveRoundtripTests
   }
 
   def roundtrip[T : Primitive : Arbitrary]: Assertion = {
-    val ev = Primitive[T]
-    forAll { sample: T =>
-      ev.deserialize(ev.serialize(sample, protocol), protocol) shouldEqual sample
-    }
+    roundtrip(implicitly[Arbitrary[T]].arbitrary)
   }
 
   it should "serialize and deserialize a String primitive" in {
@@ -118,7 +118,6 @@ class PrimitiveRoundtripTests
   it should "serialize and deserialize an Option[DateTime] primitive" in {
     roundtrip(Gen.option(dateTimeGen))
   }
-
 
   it should "serialize and deserialize a java.sql.Timestamp primitive" in {
     roundtrip(timestampGen)
@@ -336,6 +335,10 @@ class PrimitiveRoundtripTests
 
   it should "serialize and deserialize a derived Primitive with a type" in {
     sroundtrip[Username[Serialized]]
+  }
+
+  it should "serialize and deserialize an ASCII Value" in {
+    roundtrip[AsciiValue]
   }
 
   it should "serialize and deserialize an Option wrapped derived Primitive with a type" in {

@@ -126,6 +126,10 @@ sealed class KeySpaceSerializer(
     new KeySpaceSerializer(keySpace, QueryBuilder.Alter.option(qb, clause.qb))
   }
 
+  def option(clause: BuilderClause): KeySpaceSerializer = {
+    new KeySpaceSerializer(keySpace, QueryBuilder.Alter.option(qb, clause.qb))
+  }
+
   def and(clause: BuilderClause): KeySpaceSerializer = {
     new KeySpaceSerializer(keySpace, QueryBuilder.Where.and(qb, clause.qb))
   }

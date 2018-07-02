@@ -17,13 +17,13 @@ package com.outworkers.phantom.builder.ops
 
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.QueryBuilder
-import com.outworkers.phantom.builder.clauses.{CompareAndSetClause, OrderingColumn, WhereClause}
+import com.outworkers.phantom.builder.clauses.{CompareAndSetClause, OrderingColumn, UpdateClause, WhereClause}
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.prepared.PrepareMark
 import com.outworkers.phantom.builder.query.sasi.{Mode, SASITextOps}
 import com.outworkers.phantom.column._
 import com.outworkers.phantom.keys._
-import shapeless.<:!<
+import shapeless.{<:!<, HNil}
 
 import scala.annotation.implicitNotFound
 
@@ -109,6 +109,21 @@ sealed class MapEntriesConditionals[K : Primitive, V : Primitive](val col: MapKe
   }
 }
 
+sealed class MapRemoveKeyQueries[T <: CassandraTable[T, R], R, K, V](val col: AbstractMapColumn[T, R, K, V]) {
+
+  def -(elems: Seq[K])(implicit ev: Primitive[K]): UpdateClause.Condition[HNil] = {
+    new UpdateClause.Condition(
+      QueryBuilder.Collections.removeAll(col.name, elems.map(ev.asCql))
+    )
+  }
+
+  def -(head: K, tail: K*)(implicit ev: Primitive[K]): UpdateClause.Condition[HNil] = {
+    new UpdateClause.Condition(
+      QueryBuilder.Collections.removeAll(col.name, (head +: tail).map(ev.asCql))
+    )
+  }
+}
+
 sealed class MapConditionals[T <: CassandraTable[T, R], R, K, V](val col: AbstractMapColumn[T, R, K, V]) {
 
   /**
@@ -130,7 +145,6 @@ sealed class MapConditionals[T <: CassandraTable[T, R], R, K, V](val col: Abstra
     )
   }
 }
-
 
 private[phantom] trait ImplicitMechanism extends ModifyMechanism {
 
@@ -160,6 +174,10 @@ private[phantom] trait ImplicitMechanism extends ModifyMechanism {
     new MapEntriesConditionals[K, V](cond)
   }
 
+  implicit def partitionColumnQueries[RR : Primitive](
+    col: AbstractColumn[RR] with PartitionKey
+  ): PartitionQueryColumn[RR] = new PartitionQueryColumn[RR](col.name)
+
   /**
     * Definition used to cast an index map column with values indexed to a query-able definition.
     * This will allow users to use "CONTAINS" clauses to search for matches based on map values.
@@ -175,6 +193,27 @@ private[phantom] trait ImplicitMechanism extends ModifyMechanism {
     col: AbstractMapColumn[T, R, K, V] with Index
   )(implicit ev: col.type <:!< Keys): MapConditionals[T, R, K, V] = {
     new MapConditionals(col)
+  }
+
+  /**
+    * Definition used to allow removing keys from a map column using UPDATE query syntax.
+    * Keys are serialised to their CQL value and passed along using SET syntax.
+    *
+    * Example: {{{
+    *   UPDATE db.table WHERE a = b SET mapColumn -= { "a", "b", "c" }
+    * }}}
+    *
+    * @param col The map column to cast to a Map column secondary index query.
+    * @tparam T The Cassandra table inner type.
+    * @tparam R The record type of the table.
+    * @tparam K The type of the key held in the map.
+    * @tparam V The type of the value held in the map.
+    * @return A MapConditionals class with CONTAINS support.
+    */
+  implicit def mapColumnToRemoveKeysQuery[T <: CassandraTable[T, R], R, K, V](
+    col: AbstractMapColumn[T, R, K, V]
+  )(implicit ev: col.type <:!< Keys): MapRemoveKeyQueries[T, R, K, V] = {
+    new MapRemoveKeyQueries(col)
   }
 
   implicit def sasiGenericOps[RR : Primitive](

@@ -20,6 +20,9 @@ import com.outworkers.phantom.builder.primitives.{DerivedField, DerivedTupleFiel
 import com.outworkers.phantom.dsl.{?, _}
 import com.outworkers.phantom.tables.{DerivedRecord, PrimitiveCassandra22, PrimitiveRecord, Recipe}
 import com.outworkers.util.samplers._
+import io.circe.generic.auto._
+import io.circe.syntax._
+import io.circe.{Encoder, Json}
 
 class PreparedInsertQueryTest extends PhantomSuite {
 
@@ -81,6 +84,38 @@ class PreparedInsertQueryTest extends PhantomSuite {
     }
   }
 
+
+  it should "execute a non-asynchronous prepared JSON insert query" in {
+    val sample = gen[Recipe]
+
+    val query = database.recipes.insert.json(?).prepare()
+
+    val chain = for {
+      _ <- query.bind(sample.asJson.noSpaces).future()
+      res <- database.recipes.select.where(_.url eqs sample.url).one()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+      res.value shouldEqual sample
+    }
+  }
+
+  it should "execute an asynchronous prepared JSON insert query" in {
+    val sample = gen[Recipe]
+
+    val chain = for {
+      query <- database.recipes.insert.json(?).prepareAsync()
+      _ <- query.bind(sample.asJson.noSpaces).future()
+      res <- database.recipes.select.where(_.url eqs sample.url).one()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+      res.value shouldEqual sample
+    }
+  }
+
   it should "serialize a primitives insert query" in {
     val sample = gen[PrimitiveRecord]
 
@@ -96,6 +131,7 @@ class PreparedInsertQueryTest extends PhantomSuite {
       .p_value(_.date, ?)
       .p_value(_.uuid, ?)
       .p_value(_.bi, ?)
+      .p_value(_.ascii, ?)
       .prepare()
 
     val chain = for {
@@ -239,6 +275,7 @@ class PreparedInsertQueryTest extends PhantomSuite {
       .p_value(_.date, ?)
       .p_value(_.uuid, ?)
       .p_value(_.bi, ?)
+      .p_value(_.ascii, ?)
       .prepare()
 
     val chain = for {
@@ -268,6 +305,7 @@ class PreparedInsertQueryTest extends PhantomSuite {
         .p_value(_.date, ?)
         .p_value(_.uuid, ?)
         .p_value(_.bi, ?)
+        .p_value(_.ascii, ?)
         .prepareAsync()
        store <- query.bind(sample).future()
       res <- database.primitives.select.where(_.pkey eqs sample.pkey).one()

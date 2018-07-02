@@ -13,26 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.suites
+package com.outworkers.phantom.thrift.util
 
 import java.util.UUID
 
 import com.outworkers.phantom.PhantomSuite
-import com.outworkers.phantom.tables.{ThriftDatabase, ThriftRecord}
-import com.outworkers.phantom.finagle._
+import com.outworkers.phantom.thrift.tests.ThriftRecord
 import com.outworkers.util.samplers._
+import com.twitter.util.{Future, Return, Throw}
 
-trait ThriftTestSuite extends PhantomSuite with TwitterFutures {
+trait ThriftTestSuite extends PhantomSuite {
 
-  def thriftDb: ThriftDatabase = ThriftDatabase
+  implicit def twitterFutureToConcept[T](f: Future[T]): FutureConcept[T] = new FutureConcept[T] {
+    override def eitherValue: Option[Either[Throwable, T]] = f.poll match {
+      case Some(Return(ret)) => Some(Right(ret))
+      case Some(Throw(err)) => Some(Left(err))
+      case None => None
+    }
 
-  override def beforeAll(): Unit = {
-    super.beforeAll()
-    thriftDb.create()
+    override def isExpired: Boolean = false
+
+    override def isCanceled: Boolean = false
   }
 
   type ThriftTest = com.outworkers.phantom.thrift.models.ThriftTest
   val ThriftTest = com.outworkers.phantom.thrift.models.ThriftTest
+
+  implicit object ThriftTestSample extends Sample[ThriftTest] {
+    def sample: ThriftTest = ThriftTest(
+      gen[Int],
+      gen[String],
+      test = false
+    )
+  }
 
   implicit object OutputSample extends Sample[ThriftRecord] {
     def sample: ThriftRecord = {
@@ -50,11 +63,4 @@ trait ThriftTestSuite extends PhantomSuite with TwitterFutures {
     }
   }
 
-  implicit object ThriftTestSample extends Sample[ThriftTest] {
-    def sample: ThriftTest = ThriftTest(
-      gen[Int],
-      gen[String],
-      test = false
-    )
-  }
 }
