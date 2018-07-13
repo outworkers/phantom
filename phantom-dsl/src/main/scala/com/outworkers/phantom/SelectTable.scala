@@ -15,13 +15,8 @@
  */
 package com.outworkers.phantom
 
-import com.outworkers.phantom.builder.QueryBuilder
-import com.outworkers.phantom.builder.clauses.TypedClause
 import com.outworkers.phantom.builder.ops.SelectColumn
 import com.outworkers.phantom.builder.query._
-import com.outworkers.phantom.connectors.KeySpace
-import shapeless.HList
-import shapeless.ops.hlist.{Reverse, Tupler}
 
 trait SelectTable[T <: CassandraTable[T, R], R] {
   self: CassandraTable[T, R] =>

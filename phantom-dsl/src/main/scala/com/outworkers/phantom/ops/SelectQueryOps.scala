@@ -70,14 +70,13 @@ class SelectQueryOps[
     * @return A Scala future guaranteed to contain a single result wrapped as an Option.
     */
   @implicitNotFound("You have already defined limit on this Query. You cannot specify multiple limits on the same builder.")
-  def aggregate[Inner]()(
+  def aggregate()(
     implicit session: Session,
     ev: Limit =:= Unlimited,
-    opt: Record <:< Tuple1[Option[Inner]],
     ec: ExecutionContextExecutor
-  ): F[Option[Inner]] = {
+  ): F[Option[Record]] = {
     val enforceLimit = if (query.count) LimitedPart.empty else query.limitedPart append QueryBuilder.limit(1.toString)
-    optionalFetch(adapter.fromGuava(query.copy(limitedPart = enforceLimit).executableQuery.statement()))
+    singleFetch(adapter.fromGuava(query.copy(limitedPart = enforceLimit).executableQuery.statement()))
   }
 
   override def fromRow(r: Row): Record = query.fromRow(r)
