@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import bintray.BintrayKeys._
-import com.typesafe.sbt.SbtGit.git
 import sbt.Keys._
 import sbt._
 import com.typesafe.sbt.pgp.PgpKeys._
@@ -106,6 +104,7 @@ object Publishing {
       inquireVersions,
       setReleaseVersion,
       commitReleaseVersion,
+      publishArtifacts,
       tagRelease,
       releaseStepCommandAndRemaining("such publishSigned"),
       releaseStepCommandAndRemaining("sonatypeReleaseAll"),
@@ -147,21 +146,26 @@ object Publishing {
 
   def publishToMaven: Boolean = sys.env.get("MAVEN_PUBLISH").exists("true" ==)
 
-  lazy val bintraySettings: Seq[Def.Setting[_]] = Seq(
-    publishMavenStyle := true,
-    bintrayOrganization := Some("outworkers"),
-    bintrayRepository := { if (version.value.trim.endsWith("SNAPSHOT")) "oss-snapshots" else "oss-releases" },
-    bintrayReleaseOnPublish in ThisBuild := true,
-    publishArtifact in Test := false,
-    pomIncludeRepository := { _ => true},
-    licenses += ("Apache-2.0", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt"))
-  )
+  /*
+  lazy val bintraySettings: Seq[Def.Setting[_]] = {
+    import bintray.BintrayKeys._
+    Seq(
+      publishMavenStyle := true,
+      bintrayOrganization := Some("outworkers"),
+      bintrayRepository := { if (version.value.trim.endsWith("SNAPSHOT")) "oss-snapshots" else "oss-releases" },
+      bintrayReleaseOnPublish in ThisBuild := true,
+      publishArtifact in Test := false,
+      pomIncludeRepository := { _ => true},
+      licenses += ("Apache-2.0", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt"))
+    )
+  }*/
 
   lazy val pgpPass: Option[Array[Char]] = Properties.envOrNone("pgp_passphrase").map(_.toCharArray)
 
   lazy val mavenSettings: Seq[Def.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     publishMavenStyle := true,
+    licenses += ("Apache-2.0", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt")),
     pgpPassphrase in ThisBuild := {
       if (runningUnderCi && pgpPass.isDefined) {
         println("Running under CI and PGP password specified under settings.")
@@ -183,7 +187,6 @@ object Publishing {
       }
     },
     externalResolvers := Resolver.withDefaultResolvers(resolvers.value, mavenCentral = true),
-    licenses += ("Outworkers License", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt")),
     publishArtifact in Test := false,
     pomIncludeRepository := { _ => true },
     pomExtra :=
@@ -205,7 +208,9 @@ object Publishing {
     if (publishToMaven) {
       mavenSettings ++ releaseSettings
     } else {
-      bintraySettings
+      // Intentional silly way to disable Bintray publishing temporarily
+      //bintraySettings ++ releaseSettings
+      mavenSettings ++ releaseSettings
     }
   }
 

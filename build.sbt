@@ -83,8 +83,6 @@ val scalacOptionsFn: String => Seq[String] = { s =>
   }
 }
 
-scalacOptions ++= ScalacOptions ++ YWarnOptions
-
 lazy val Versions = new {
   val logback = "1.2.3"
   val util = "0.40.0"
@@ -165,13 +163,13 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   scalaVersion := Versions.scala212,
   credentials ++= Publishing.defaultCredentials,
   resolvers ++= Seq(
-
     "Twitter Repository" at "http://maven.twttr.com",
     Resolver.typesafeRepo("releases"),
     Resolver.sonatypeRepo("releases"),
     Resolver.jcenterRepo
   ),
-  logLevel in ThisBuild := Level.Info,
+
+  logLevel in ThisBuild := { if (Publishing.runningUnderCi) Level.Error else Level.Info },
   libraryDependencies ++= Seq(
     "ch.qos.logback" % "logback-classic" % Versions.logback % Test,
     "org.slf4j" % "log4j-over-slf4j" % Versions.slf4j

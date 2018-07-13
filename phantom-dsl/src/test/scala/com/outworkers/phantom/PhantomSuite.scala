@@ -82,7 +82,6 @@ trait TestDatabaseProvider extends DatabaseProvider[TestDatabase] {
 
 trait PhantomSuite extends FlatSpec with PhantomBaseSuite with TestDatabaseProvider {
 
-
   implicit val datetimeEncoder: Encoder[DateTime] = Encoder.instance(dt => Json.fromLong(dt.getMillis))
   implicit val uuidEncoder: Encoder[UUID] = Encoder.instance(uuid => Json.fromString(uuid.toString))
 

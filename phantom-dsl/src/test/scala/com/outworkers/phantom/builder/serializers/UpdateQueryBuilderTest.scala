@@ -18,6 +18,9 @@ package com.outworkers.phantom.builder.serializers
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.query.QueryBuilderTest
 import com.outworkers.util.samplers._
+import org.joda.time.DateTime
+
+import scala.concurrent.duration._
 
 class UpdateQueryBuilderTest extends QueryBuilderTest {
 
@@ -45,8 +48,8 @@ class UpdateQueryBuilderTest extends QueryBuilderTest {
 
     "should allow specifying USING clause options" - {
       "should allow specifying a timestamp clause" in {
-        val str = gen[Long]
-        QueryBuilder.timestamp(str).queryString shouldEqual s"TIMESTAMP $str"
+        val str = gen[DateTime]
+        QueryBuilder.timestamp(str.getMillis.millis).queryString shouldEqual s"TIMESTAMP ${str.getMillis * 1000}"
       }
     }
 
@@ -60,5 +63,21 @@ class UpdateQueryBuilderTest extends QueryBuilderTest {
         QueryBuilder.Update.and(QueryBuilder.Where.eqs("a", "b")).queryString shouldEqual "AND a = b"
       }
     }
+
+
+    "should allow creating MAP update queries" - {
+
+      "remove a single key from a map column" in {
+        val qb = QueryBuilder.Collections.removeAll("mapColumn", Seq("a")).queryString
+        qb shouldEqual "mapColumn = mapColumn - {a}"
+      }
+
+      "remove multiple keys from a map column" in {
+        val qb = QueryBuilder.Collections.removeAll("mapColumn", Seq("a", "b", "c")).queryString
+        qb shouldEqual "mapColumn = mapColumn - {a, b, c}"
+      }
+
+    }
+
   }
 }
