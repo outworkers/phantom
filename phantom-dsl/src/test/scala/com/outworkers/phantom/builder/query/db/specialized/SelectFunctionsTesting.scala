@@ -453,7 +453,7 @@ class SelectFunctionsTesting extends PhantomSuite {
   }
 
 
-  it should "retrieve the average of a Long field from Cassandra" in {
+  it should "retrieve the average and the maximum of a Long field from Cassandra" in {
     val record = gen[PrimitiveRecord]
 
     val chain = for {
