@@ -18,9 +18,7 @@ package com.outworkers.phantom.thrift.tests.tjson.suites
 import com.outworkers.phantom.finagle._
 import com.outworkers.phantom.thrift.tests.ThriftRecord
 import com.outworkers.phantom.thrift.tests.tjson.TJsonSuite
-import com.outworkers.phantom.thrift.util.ThriftTestSuite
 import com.outworkers.util.samplers._
-import org.scalatest.FlatSpec
 
 class ThriftMapColumnTest extends TJsonSuite {
 
