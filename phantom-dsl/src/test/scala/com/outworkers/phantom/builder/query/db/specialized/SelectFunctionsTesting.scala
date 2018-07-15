@@ -41,12 +41,12 @@ class SelectFunctionsTesting extends PhantomSuite {
       timestamp <- database.recipes.select
         .function(t => writetime(t.description))
         .where(_.url eqs record.url)
-        .aggregate()
+        .agg()
     } yield timestamp
 
     whenReady(chain) { res =>
       res shouldBe defined
-      Try(new DateTime(res.value._1 / 1000, DateTimeZone.UTC)).isSuccess shouldEqual true
+      Try(new DateTime(res.value / 1000, DateTimeZone.UTC)).isSuccess shouldEqual true
     }
   }
 
@@ -89,12 +89,12 @@ class SelectFunctionsTesting extends PhantomSuite {
       timestamp <- database.timeuuidTable.select.function(t => ttl(t.name))
         .where(_.user eqs record.user)
         .and(_.id eqs record.id)
-        .one()
+        .agg()
     } yield timestamp
 
     whenReady(chain) { res =>
       res shouldBe defined
-      potentialList should contain (res.value._1.value)
+      potentialList should contain (res.value)
     }
   }
 

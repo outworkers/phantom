@@ -70,6 +70,24 @@ class SelectQueryOps[
     * @return A Scala future guaranteed to contain a single result wrapped as an Option.
     */
   @implicitNotFound("You have already defined limit on this Query. You cannot specify multiple limits on the same builder.")
+  def agg[T]()(
+    implicit session: Session,
+    ev: Limit =:= Unlimited,
+    ec: ExecutionContextExecutor,
+    unwrap: Record <:< Tuple1[T]
+  ): F[Option[T]] = {
+    val enforceLimit = if (query.count) LimitedPart.empty else query.limitedPart append QueryBuilder.limit(1.toString)
+    singleFetch(adapter.fromGuava(query.copy(limitedPart = enforceLimit).executableQuery.statement())).map(optRec => optRec.map(_._1))
+  }
+
+  /**
+    * Returns the first row from the select ignoring everything else
+    * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+    * @param ev The implicit limit for the query.
+    * @param ec The implicit Scala execution context.
+    * @return A Scala future guaranteed to contain a single result wrapped as an Option.
+    */
+  @implicitNotFound("You have already defined limit on this Query. You cannot specify multiple limits on the same builder.")
   def aggregate()(
     implicit session: Session,
     ev: Limit =:= Unlimited,
