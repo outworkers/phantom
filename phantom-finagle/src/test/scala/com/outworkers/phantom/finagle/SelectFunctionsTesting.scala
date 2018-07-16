@@ -92,7 +92,7 @@ class SelectFunctionsTesting extends PhantomSuite with TwitterFutures {
 
     whenReady(chain) { res =>
       res shouldBe defined
-      potentialList should contain (res.value)
+      potentialList should contain (res.value.value)
     }
   }
 

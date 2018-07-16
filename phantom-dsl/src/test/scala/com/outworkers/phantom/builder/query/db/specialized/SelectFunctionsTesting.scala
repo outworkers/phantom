@@ -94,7 +94,7 @@ class SelectFunctionsTesting extends PhantomSuite {
 
     whenReady(chain) { res =>
       res shouldBe defined
-      potentialList should contain (res.value)
+      potentialList should contain (res.value.value)
     }
   }
 
