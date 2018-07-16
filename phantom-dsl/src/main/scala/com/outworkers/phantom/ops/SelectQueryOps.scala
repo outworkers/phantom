@@ -77,7 +77,7 @@ class SelectQueryOps[
     unwrap: Record <:< Tuple1[T]
   ): F[Option[T]] = {
     val enforceLimit = if (query.count) LimitedPart.empty else query.limitedPart append QueryBuilder.limit(1.toString)
-    singleFetch(adapter.fromGuava(query.copy(limitedPart = enforceLimit).executableQuery.statement())).map(optRec => optRec.map(_._1))
+    singleFetch(adapter.fromGuava(query.copy(limitedPart = enforceLimit).executableQuery.statement())).map(_.map(_._1))
   }
 
   /**
