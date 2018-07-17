@@ -70,7 +70,7 @@ class SelectQueryOps[
     * @return A Scala future guaranteed to contain a single result wrapped as an Option.
     */
   @implicitNotFound("You have already defined limit on this Query. You cannot specify multiple limits on the same builder.")
-  def agg[T]()(
+  def aggregate[T]()(
     implicit session: Session,
     ev: Limit =:= Unlimited,
     ec: ExecutionContextExecutor,
@@ -88,7 +88,7 @@ class SelectQueryOps[
     * @return A Scala future guaranteed to contain a single result wrapped as an Option.
     */
   @implicitNotFound("You have already defined limit on this Query. You cannot specify multiple limits on the same builder.")
-  def aggregate()(
+  def multiAggregate()(
     implicit session: Session,
     ev: Limit =:= Unlimited,
     ec: ExecutionContextExecutor

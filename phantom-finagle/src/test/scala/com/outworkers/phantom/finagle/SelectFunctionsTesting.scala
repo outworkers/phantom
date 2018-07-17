@@ -39,7 +39,7 @@ class SelectFunctionsTesting extends PhantomSuite with TwitterFutures {
       timestamp <- database.recipes.select
         .function(t => writetime(t.description))
         .where(_.url eqs record.url)
-        .agg()
+        .aggregate()
     } yield timestamp
 
     whenReady(chain) { res =>
@@ -87,7 +87,7 @@ class SelectFunctionsTesting extends PhantomSuite with TwitterFutures {
       timestamp <- database.timeuuidTable.select.function(t => ttl(t.name))
         .where(_.user eqs record.user)
         .and(_.id eqs record.id)
-        .agg()
+        .aggregate()
     } yield timestamp
 
     whenReady(chain) { res =>
