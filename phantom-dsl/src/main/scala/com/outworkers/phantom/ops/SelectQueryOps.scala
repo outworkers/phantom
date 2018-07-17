@@ -63,13 +63,15 @@ class SelectQueryOps[
   }
 
   /**
-    * Returns the first row from the select ignoring everything else
+    * Returns the result of an aggregate function call, provided a single aggregate function was invoked.
+    * This is used to circumvent some compiler limitations around HLists being tupled. Phantom relies on HLists
+    * to compute a multiple aggregate return function extractor, and if a single aggregate is selected,
+    * a Tuple1(value) is returned. This function will extract the content of the Tuple1 to have a more presentable type.
     * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
     * @param ev The implicit limit for the query.
     * @param ec The implicit Scala execution context.
     * @return A Scala future guaranteed to contain a single result wrapped as an Option.
     */
-  @implicitNotFound("You have already defined limit on this Query. You cannot specify multiple limits on the same builder.")
   def aggregate[T]()(
     implicit session: Session,
     ev: Limit =:= Unlimited,
