@@ -32,11 +32,11 @@ branches:
   - master
   - develop
 jdk:
-- oraclejdk9
+- oraclejdk8
 matrix:
   include:
   - scala: 2.12.6
-    jdk: oraclejdk9
+    jdk: oraclejdk8
 before_install: unset SBT_OPTS JVM_OPTS
 install:
 - ./build/install_cassandra.sh
