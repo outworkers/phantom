@@ -3,7 +3,7 @@ sudo: required
 dist: trusty
 scala:
 - 2.10.6
-- 2.11.11
+- 2.11.12
 python: 2.7.13
 cache:
   directories:
@@ -15,7 +15,7 @@ before_cache:
 - find $HOME/.sbt -name "*.lock" -delete
 env:
   global:
-  - TARGET_SCALA_VERSION: 2.12.5
+  - TARGET_SCALA_VERSION: 2.12.6
   - GH_REF: github.com/outworkers/phantom.git
   - secure: V5iziDRj988+kcpW6PHOjZZYoayDi2+Fjx2Y6F9dL2mYw3kcjrwyyQgpWoMPMrXHdR61xoollyytgZPfavNViocNxYZMVRfQBLeTCd+mvuLQEvra6aRWl7XaYlpGi5+uHEh5k84MsRNsEZKiiuabxMRZvglZSC8QHYqYgDx3rho=
   - secure: nslC+pNpj8XnEnolwAhfVMP0j/mNnlMm9MCqD3IWiRlh5RRgt6t5s1XCSF6y9y/kOB4p0ny3ly7qR4uZxtKvVnJzjrrpf5UAlSpFjA+s7jMgumQWuUsDm6u3uP5DykTWNwa8xpRT7J2vcCM/MoP1DSwuHQ7ptO8yFfVlel3LFtY=
@@ -32,15 +32,11 @@ branches:
   - master
   - develop
 jdk:
-- oraclejdk8
+- oraclejdk9
 matrix:
   include:
-  - scala: 2.12.5
-    jdk: oraclejdk8
-addons:
-  apt:
-    packages:
-    - oracle-java8-installer
+  - scala: 2.12.6
+    jdk: oraclejdk9
 before_install: unset SBT_OPTS JVM_OPTS
 install:
 - ./build/install_cassandra.sh
