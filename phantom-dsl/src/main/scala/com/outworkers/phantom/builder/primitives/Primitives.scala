@@ -82,7 +82,7 @@ object Utils {
   }
 
   /**
-    * Utility method that "packs" together a list of {@link ByteBuffer}s containing
+    * Utility method that "packs" together a list of {{java.nio.ByteBuffer}}s containing
     * serialized collection elements.
     * Mainly intended for use with collection codecs when serializing collections.
     *

@@ -78,8 +78,7 @@ class SelectQueryOps[
     ec: ExecutionContextExecutor,
     unwrap: Record <:< Tuple1[T]
   ): F[Option[T]] = {
-    val enforceLimit = if (query.count) LimitedPart.empty else query.limitedPart append QueryBuilder.limit(1.toString)
-    singleFetch(adapter.fromGuava(query.copy(limitedPart = enforceLimit).executableQuery.statement())).map(_.map(_._1))
+    singleFetch(adapter.fromGuava(query.executableQuery.statement())).map(_.map { case Tuple1(vd: T) => vd })
   }
 
   /**
@@ -95,8 +94,7 @@ class SelectQueryOps[
     ev: Limit =:= Unlimited,
     ec: ExecutionContextExecutor
   ): F[Option[Record]] = {
-    val enforceLimit = if (query.count) LimitedPart.empty else query.limitedPart append QueryBuilder.limit(1.toString)
-    singleFetch(adapter.fromGuava(query.copy(limitedPart = enforceLimit).executableQuery.statement()))
+    singleFetch(adapter.fromGuava(query.executableQuery.statement()))
   }
 
   override def fromRow(r: Row): Record = query.fromRow(r)
