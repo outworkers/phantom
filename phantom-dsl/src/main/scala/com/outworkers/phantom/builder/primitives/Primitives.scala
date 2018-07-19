@@ -15,24 +15,13 @@
  */
 package com.outworkers.phantom.builder.primitives
 
-import java.math.BigInteger
-import java.net.{InetAddress, UnknownHostException}
-import java.nio.charset.Charset
 import java.nio.{BufferUnderflowException, ByteBuffer}
-import java.sql.{ Timestamp => JTimestamp }
-import java.time.Instant
-import java.util.{Date, UUID}
 
 import com.datastax.driver.core._
 import com.datastax.driver.core.exceptions.{DriverInternalError, InvalidTypeException}
-import com.datastax.driver.core.utils.Bytes
 import com.outworkers.phantom.builder.QueryBuilder
-import com.outworkers.phantom.builder.query.engine.CQLQuery
-import com.outworkers.phantom.builder.syntax.CQLSyntax
-import org.joda.time.{DateTime, DateTimeZone, LocalDate => JodaLocalDate}
 
 import scala.collection.generic.CanBuildFrom
-import scala.util.Try
 
 object Utils {
   private[phantom] def unsupported(version: ProtocolVersion): DriverInternalError = {
@@ -93,7 +82,7 @@ object Utils {
   }
 
   /**
-    * Utility method that "packs" together a list of {@link ByteBuffer}s containing
+    * Utility method that "packs" together a list of {{java.nio.ByteBuffer}}s containing
     * serialized collection elements.
     * Mainly intended for use with collection codecs when serializing collections.
     *

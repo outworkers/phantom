@@ -21,7 +21,9 @@ import com.outworkers.phantom.builder.query._
 trait SelectTable[T <: CassandraTable[T, R], R] {
   self: CassandraTable[T, R] =>
 
-  def select: RootSelectBlock[T, R] = RootSelectBlock[T, R](this.asInstanceOf[T], Nil, fromRow)
+  def table: T = this.asInstanceOf[T]
+
+  def select: RootSelectBlock[T, R] = RootSelectBlock[T, R](table, Nil, fromRow)
 
   def select[A](f1: T => SelectColumn[A]): RootSelectBlock[T, A] = {
     val t = this.asInstanceOf[T]

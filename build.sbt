@@ -105,8 +105,8 @@ lazy val Versions = new {
   val circe = "0.8.0"
 
   val scala210 = "2.10.6"
-  val scala211 = "2.11.11"
-  val scala212 = "2.12.5"
+  val scala211 = "2.11.12"
+  val scala212 = "2.12.6"
   val scalaAll = Seq(scala210, scala211, scala212)
 
   val scala = new {
@@ -169,7 +169,8 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     Resolver.jcenterRepo
   ),
 
-  logLevel in ThisBuild := { if (Publishing.runningUnderCi) Level.Error else Level.Info },
+  logLevel in Compile := { if (Publishing.runningUnderCi) Level.Error else Level.Info },
+  logLevel in Test := Level.Info,
   libraryDependencies ++= Seq(
     "ch.qos.logback" % "logback-classic" % Versions.logback % Test,
     "org.slf4j" % "log4j-over-slf4j" % Versions.slf4j

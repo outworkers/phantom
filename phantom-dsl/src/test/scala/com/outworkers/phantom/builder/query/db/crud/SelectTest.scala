@@ -33,7 +33,7 @@ class SelectTest extends PhantomSuite {
     val row = gen[PrimitiveRecord]
 
     val chain = for {
-      store <- database.primitives.store(row).future()
+      _ <- database.primitives.store(row).future()
       b <- database.primitives.select.where(_.pkey eqs row.pkey).one
     } yield b
 
@@ -47,8 +47,8 @@ class SelectTest extends PhantomSuite {
     val row = gen[UserSchema]
 
     val chain = for {
-      store <- database.userSchema.truncate().future()
-      store <- database.userSchema.store(row).future()
+      _ <- database.userSchema.truncate().future()
+      _ <- database.userSchema.store(row).future()
       res <- database.userSchema.select.one()
     } yield res
 
@@ -61,8 +61,8 @@ class SelectTest extends PhantomSuite {
     val row = gen[UserSchema]
 
     val chain = for {
-      store <- database.userSchema.truncate().future()
-      store <- database.userSchema.store(row).future()
+      _ <- database.userSchema.truncate().future()
+      _ <- database.userSchema.store(row).future()
       res <- database.userSchema.checkUserId
     } yield res
 

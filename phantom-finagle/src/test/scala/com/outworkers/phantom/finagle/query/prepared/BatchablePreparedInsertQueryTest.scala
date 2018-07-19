@@ -18,14 +18,14 @@ package com.outworkers.phantom.finagle.query.prepared
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.builder.query.prepared.ExecutablePreparedQuery
 import com.outworkers.phantom.finagle._
-import com.outworkers.phantom.tables.{Recipe, TestDatabase}
+import com.outworkers.phantom.tables.Recipe
 import com.outworkers.util.samplers._
 
 class BatchablePreparedInsertQueryTest extends PhantomSuite with TwitterFutures {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    TestDatabase.recipes.createSchema()
+    val _ = database.recipes.createSchema()
   }
 
   it should "serialize an prepared batch query" in {

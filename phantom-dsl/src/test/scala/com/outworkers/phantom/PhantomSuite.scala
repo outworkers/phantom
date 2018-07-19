@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit
 
 import com.datastax.driver.core.VersionNumber
 import com.outworkers.phantom.database.DatabaseProvider
-import com.outworkers.phantom.dsl.{DateTime, UUID}
+import com.outworkers.phantom.dsl.UUID
 import com.outworkers.phantom.tables.TestDatabase
 import com.outworkers.util.samplers._
 import io.circe.{Encoder, Json}
@@ -60,7 +60,7 @@ trait PhantomBaseSuite extends Suite with Matchers
     override def sample: LocalDate = LocalDate.now(DateTimeZone.UTC)
   }
 
-  override implicit val patienceConfig = PatienceConfig(
+  override implicit val patienceConfig: PatienceConfig = PatienceConfig(
     timeout = defaultTimeoutSpan,
     interval = Span(defaultScalaInterval, Millis)
   )

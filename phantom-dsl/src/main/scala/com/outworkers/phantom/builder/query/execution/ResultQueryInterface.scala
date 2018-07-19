@@ -35,12 +35,6 @@ abstract class ResultQueryInterface[
     row map fromRow
   }
 
-  protected[this] def flattenedOption[Inner](
-    row: Option[Row]
-  )(implicit ev: R <:< Option[Inner]): Option[Inner] = {
-    row flatMap fromRow
-  }
-
   protected[this] def directMapper(
     results: Iterator[Row]
   ): List[R] = results.map(fromRow).toList
@@ -55,13 +49,6 @@ abstract class ResultQueryInterface[
     f: F[ResultSet]
   )(implicit ctx: ExecutionContextExecutor): F[IteratorResult[R]] = {
     f map { r => IteratorResult(r.iterate().map(fromRow), r) }
-  }
-
-  private[phantom] def optionalFetch[Inner](source: F[ResultSet])(
-    implicit ec: ExecutionContextExecutor,
-    ev: R <:< Option[Inner]
-  ): F[Option[Inner]] = {
-    source map { res => flattenedOption(res.value()) }
   }
 
   private[phantom] def singleFetch(source: F[ResultSet])(

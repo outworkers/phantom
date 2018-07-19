@@ -22,7 +22,6 @@ import com.outworkers.phantom.tables.{DerivedRecord, PrimitiveCassandra22, Primi
 import com.outworkers.util.samplers._
 import io.circe.generic.auto._
 import io.circe.syntax._
-import io.circe.{Encoder, Json}
 
 class PreparedInsertQueryTest extends PhantomSuite {
 

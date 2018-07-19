@@ -63,6 +63,25 @@ class SelectQueryOps[
   }
 
   /**
+    * Returns the result of an aggregate function call, provided a single aggregate function was invoked.
+    * This is used to circumvent some compiler limitations around HLists being tupled. Phantom relies on HLists
+    * to compute a multiple aggregate return function extractor, and if a single aggregate is selected,
+    * a Tuple1(value) is returned. This function will extract the content of the Tuple1 to have a more presentable type.
+    * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
+    * @param ev The implicit limit for the query.
+    * @param ec The implicit Scala execution context.
+    * @return A Scala future guaranteed to contain a single result wrapped as an Option.
+    */
+  def aggregate[T]()(
+    implicit session: Session,
+    ev: Limit =:= Unlimited,
+    ec: ExecutionContextExecutor,
+    unwrap: Record <:< Tuple1[T]
+  ): F[Option[T]] = {
+    singleFetch(adapter.fromGuava(query.executableQuery.statement())).map(_.map { case Tuple1(vd: T) => vd })
+  }
+
+  /**
     * Returns the first row from the select ignoring everything else
     * @param session The implicit session provided by a [[com.outworkers.phantom.connectors.Connector]].
     * @param ev The implicit limit for the query.
@@ -70,14 +89,12 @@ class SelectQueryOps[
     * @return A Scala future guaranteed to contain a single result wrapped as an Option.
     */
   @implicitNotFound("You have already defined limit on this Query. You cannot specify multiple limits on the same builder.")
-  def aggregate[Inner]()(
+  def multiAggregate()(
     implicit session: Session,
     ev: Limit =:= Unlimited,
-    opt: Record <:< Option[Inner],
     ec: ExecutionContextExecutor
-  ): F[Option[Inner]] = {
-    val enforceLimit = if (query.count) LimitedPart.empty else query.limitedPart append QueryBuilder.limit(1.toString)
-    optionalFetch(adapter.fromGuava(query.copy(limitedPart = enforceLimit).executableQuery.statement()))
+  ): F[Option[Record]] = {
+    singleFetch(adapter.fromGuava(query.executableQuery.statement()))
   }
 
   override def fromRow(r: Row): Record = query.fromRow(r)

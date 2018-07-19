@@ -15,10 +15,22 @@
  */
 package com.outworkers.phantom.builder.ops
 
+import java.nio.ByteBuffer
+
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.prepared.PrepareMark
 import com.outworkers.phantom.column.AbstractColumn
 import shapeless._
+
+/**
+  *
+  * @param cql
+  * @param bytes
+  */
+case class RoutingKeyValue(
+  cql: String,
+  bytes: ByteBuffer
+)
 
 object TokenTypes {
   sealed trait Root

@@ -15,8 +15,6 @@
  */
 package com.outworkers.phantom.builder.query
 
-import java.nio.ByteBuffer
-
 import com.datastax.driver.core.{ConsistencyLevel, Session}
 import com.outworkers.phantom.builder.clauses._
 import com.outworkers.phantom.builder.ops.TokenizerKey
@@ -28,7 +26,7 @@ import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.builder.{ConsistencyBound, LimitBound, OrderBound, WhereBound, _}
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.{CassandraTable, Row}
-import shapeless.ops.hlist.{Prepend, Reverse}
+import shapeless.ops.hlist.{Prepend, Reverse, Tupler}
 import shapeless.{::, =:!=, HList, HNil}
 
 import scala.annotation.implicitNotFound
@@ -235,13 +233,19 @@ private[phantom] class RootSelectBlock[
     }
   }
 
-  def function[RR](f1: TypedClause.Condition[RR])(
-    implicit keySpace: KeySpace
-  ): SelectQuery.Default[T, RR] = {
+  def function[
+    HL <: HList,
+    Rev <: HList,
+    TP
+  ](projection: T => TypedClause.TypedProjection[HL])(
+    implicit keySpace: KeySpace,
+    rev: Reverse.Aux[HL, Rev],
+    ev: Tupler.Aux[Rev, TP]
+  ): SelectQuery.Default[T, TP] = {
     new SelectQuery(
       table,
-      f1.extractor,
-      QueryBuilder.Select.select(table.tableName, keySpace.name, f1.qb),
+      row => ev.apply(rev.apply(projection(table).extractor(row))),
+      QueryBuilder.Select.select(table.tableName, keySpace.name, projection(table).qb),
       Nil,
       WherePart.empty,
       OrderPart.empty,
@@ -252,13 +256,13 @@ private[phantom] class RootSelectBlock[
     )
   }
 
-  def function[RR](f1: T => TypedClause.Condition[RR])(
+  def function[RR](f1: TypedClause.Condition[RR])(
     implicit keySpace: KeySpace
   ): SelectQuery.Default[T, RR] = {
     new SelectQuery(
       table,
-      f1(table).extractor,
-      QueryBuilder.Select.select(table.tableName, keySpace.name, f1(table).qb),
+      f1.extractor,
+      QueryBuilder.Select.select(table.tableName, keySpace.name, f1.qb),
       Nil,
       WherePart.empty,
       OrderPart.empty,
