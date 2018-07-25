@@ -18,6 +18,7 @@ package com.outworkers.phantom.builder.query.execution
 
 import com.datastax.driver.core.PagingState
 import com.outworkers.phantom.ResultSet
+import com.outworkers.phantom.builder.query.Payload
 
 trait RecordResult[R] {
 
@@ -25,10 +26,15 @@ trait RecordResult[R] {
 
   def pagingState: PagingState = result.getExecutionInfo.getPagingState
 
+  def incomingPayload: Payload = result.getIncomingPayload
+
   def state: Option[PagingState] = Option(result.getExecutionInfo.getPagingState)
 }
 
-case class ListResult[R](records: List[R], result: ResultSet) extends RecordResult[R]
+case class ListResult[R](
+  records: List[R],
+  result: ResultSet
+) extends RecordResult[R]
 
 object ListResult {
   def apply[R](res: ResultSet, records: List[R]): ListResult[R] = ListResult(records, res)
