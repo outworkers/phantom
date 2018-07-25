@@ -18,8 +18,6 @@ package com.outworkers.phantom.builder.query.db.specialized
 import com.datastax.driver.core.utils.UUIDs
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.macros.TableHelper
-import com.outworkers.phantom.tables.{StaticCollectionRecord, StaticCollectionTable}
 import com.outworkers.util.samplers._
 
 class StaticColumnTest extends PhantomSuite {

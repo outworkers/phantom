@@ -122,7 +122,8 @@ case class QueryOptions(
   serialConsistencyLevel: Option[ConsistencyLevel],
   pagingState: Option[PagingState] = None,
   enableTracing: Option[Boolean] = None,
-  fetchSize: Option[Int] = None
+  fetchSize: Option[Int] = None,
+  outgoingPayload: Payload = Payload.empty
 ) {
 
   def apply(st: Statement): Statement = {
@@ -131,7 +132,8 @@ case class QueryOptions(
       new SerialConsistencyLevelModifier(serialConsistencyLevel),
       new PagingStateModifier(pagingState),
       new EnableTracingModifier(enableTracing),
-      new FetchSizeModifier(fetchSize)
+      new FetchSizeModifier(fetchSize),
+      new PayloadModifier(outgoingPayload)
     ) reduce(_ andThen _)
 
     applier(st)
@@ -147,8 +149,8 @@ case class QueryOptions(
     opt
   }
 
-  def outgoingPayload_=(payload: ByteBuffer): QueryOptions = {
-    this.copy(outgoingPayload = Some(payload))
+  def outgoingPayload_=(payload: Payload): QueryOptions = {
+    this.copy(outgoingPayload = payload)
   }
 
   def consistencyLevel_=(level: ConsistencyLevel): QueryOptions = {
