@@ -15,12 +15,36 @@
  */
 package com.outworkers.phantom.builder.query
 
+import java.nio.ByteBuffer
+import java.util.{Collections, Map => JMap}
+
 import com.datastax.driver.core._
 import com.datastax.driver.core.policies.TokenAwarePolicy
 import com.outworkers.phantom.Manager
 import com.outworkers.phantom.builder.ops.TokenizerKey
+import com.outworkers.phantom.builder.primitives.Primitive
 
 trait Modifier extends (Statement => Statement)
+
+case class Payload(underlying: JMap[String, ByteBuffer]) {
+  def isEmpty: Boolean = underlying.isEmpty
+
+  def add(other: (String, ByteBuffer)): Payload = {
+    val (key, value) = other
+    underlying.put(key, value)
+    Payload(underlying)
+  }
+
+  def add[T : Primitive](other: (String, T), protocolVersion: ProtocolVersion): Payload = {
+    val (key, value) = other
+    underlying.put(key, Primitive[T].serialize(value, protocolVersion))
+    Payload(underlying)
+  }
+}
+
+object Payload {
+  def empty: Payload = Payload(Collections.emptyMap())
+}
 
 case class RoutingKeyModifier(
   tokens: List[TokenizerKey]
@@ -57,6 +81,18 @@ class SerialConsistencyLevelModifier(level: Option[ConsistencyLevel]) extends Mo
     (level map v1.setSerialConsistencyLevel).getOrElse(v1)
   }
 }
+
+
+class PayloadModifier(payload: Payload) extends Modifier {
+  override def apply(v1: Statement): Statement = {
+    if (payload.isEmpty) {
+      v1
+    } else {
+      v1.setOutgoingPayload(payload.underlying)
+    }
+  }
+}
+
 
 
 class PagingStateModifier(level: Option[PagingState]) extends Modifier {
@@ -109,6 +145,10 @@ case class QueryOptions(
     fetchSize map opt.setFetchSize
 
     opt
+  }
+
+  def outgoingPayload_=(payload: ByteBuffer): QueryOptions = {
+    this.copy(outgoingPayload = Some(payload))
   }
 
   def consistencyLevel_=(level: ConsistencyLevel): QueryOptions = {
