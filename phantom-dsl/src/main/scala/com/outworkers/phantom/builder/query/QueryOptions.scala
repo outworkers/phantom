@@ -17,6 +17,7 @@ package com.outworkers.phantom.builder.query
 
 import java.nio.ByteBuffer
 import java.util.{Collections, Map => JMap}
+import scala.collection.JavaConverters._
 
 import com.datastax.driver.core._
 import com.datastax.driver.core.policies.TokenAwarePolicy
@@ -35,15 +36,27 @@ case class Payload(underlying: JMap[String, ByteBuffer]) {
     Payload(underlying)
   }
 
-  def add[T : Primitive](other: (String, T), protocolVersion: ProtocolVersion): Payload = {
+  def add[T](other: (String, T))(
+    implicit ev: Primitive[T],
+    pv: ProtocolVersion
+  ): Payload = {
     val (key, value) = other
-    underlying.put(key, Primitive[T].serialize(value, protocolVersion))
+    underlying.put(key, ev.serialize(value, pv))
     Payload(underlying)
   }
 }
 
 object Payload {
-  def empty: Payload = Payload(Collections.emptyMap())
+  def empty: Payload = new Payload(Collections.emptyMap())
+
+  def apply(map: Map[String, ByteBuffer]): Payload = new Payload(map.asJava)
+
+  def apply(tp: (String, ByteBuffer)): Payload = apply(Seq(tp).toMap)
+
+  def apply[T](tp: (String, T))(implicit ev: Primitive[T], pv: ProtocolVersion): Payload = {
+    val (key, value) = tp
+    apply(Seq(key -> ev.serialize(value, pv)).toMap)
+  }
 }
 
 case class RoutingKeyModifier(

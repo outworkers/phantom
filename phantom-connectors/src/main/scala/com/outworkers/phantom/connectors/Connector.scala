@@ -15,7 +15,7 @@
  */
 package com.outworkers.phantom.connectors
 
-import com.datastax.driver.core.Session
+import com.datastax.driver.core.{ProtocolVersion, Session}
 
 /* Trait to be mixed into the table classes that extend
  * phantom's CassandraTable.
@@ -62,5 +62,12 @@ trait Connector {
    * table implementations.
    */
   implicit lazy val session: Session = provider.session
+
+  implicit lazy val protocolVersion: ProtocolVersion = provider
+    .session
+    .getCluster
+    .getConfiguration
+    .getProtocolOptions
+    .getProtocolVersion
 
 }

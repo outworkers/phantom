@@ -52,10 +52,6 @@ case class UpdateQuery[
 
   val qb: CQLQuery = usingPart merge setPart merge wherePart build init
 
-  def ttl(seconds: Long): UpdateQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
-    copy(setPart = setPart append QueryBuilder.ttl(seconds.toString))
-  }
-
   /**
     * The where method of a select query.
     * @param condition A where clause condition restricted by path dependant types.
@@ -136,6 +132,13 @@ case class UpdateQuery[
     )
   }
 
+  def ttl(seconds: Long): UpdateQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
+    copy(setPart = setPart append QueryBuilder.ttl(seconds.toString))
+  }
+
+  def withOptions(opts: QueryOptions => QueryOptions): UpdateQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
+    copy(options = opts(this.options))
+  }
 
   def consistencyLevel_=(level: ConsistencyLevel)(
     implicit ev: Status =:= Unspecified,
@@ -390,11 +393,11 @@ object UpdateQuery {
 
   def apply[T <: CassandraTable[T, _], R](table: T)(implicit keySpace: KeySpace): UpdateQuery.Default[T, R] = {
     new UpdateQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, HNil](
-      table,
-      QueryBuilder.Update.update(
+      table = table,
+      init = QueryBuilder.Update.update(
         QueryBuilder.keyspace(keySpace.name, table.tableName).queryString
       ),
-      Nil
+      tokens = Nil
     )
   }
 
