@@ -82,28 +82,17 @@ class IteratorTest extends BigTest with ScalaFutures {
   }
 
   it should "allow setting metadata using a payload" in {
-    val generationSize = 100
-    val fetchSize = generationSize / 2
-    val user = gen[UUID]
-
-    val row = gen[TimeUUIDRecord]
+    val row = gen[TimeUUIDRecord].copy(id = UUIDs.timeBased())
+    val payload = Payload("test" -> 5)
 
     val chain = for {
       queryRes <- database.timeuuidTable.store(row)
-        .withOptions(_.outgoingPayload_=(Payload("test" -> 5)))
+        .withOptions(_.outgoingPayload_=(payload))
+        .future()
     } yield queryRes
 
-    whenReady(chain) { case (count, firstBatch, secondBatch) =>
-      count shouldBe defined
-      count.value shouldEqual generationSize
-
-      Option(firstBatch.pagingState) shouldBe defined
-      firstBatch.state shouldBe defined
-      firstBatch.records.size shouldEqual fetchSize
-      firstBatch.records should contain theSameElementsAs (rows take fetchSize)
-
-      secondBatch.records.size shouldEqual fetchSize
-      secondBatch.records should contain theSameElementsAs (rows drop fetchSize)
+    whenReady(chain) { res =>
+      res.wasApplied() shouldEqual true
     }
   }
 }
