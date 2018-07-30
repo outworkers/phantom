@@ -58,7 +58,7 @@ class BatchTest extends PhantomSuite {
         Batch.unlogged.add(topics.map(topic => prepared.bind(tenantId, AsciiValue(topic))))
       }
       executables <- Future.sequence(statements.map(_.future()))
-      count <- database.batchBugTable.select(_.tenantId).fetch()
+      count <- database.batchBugTable.select(_.tenantId).distinct().fetch()
     } yield count
 
     chain.futureValue.size shouldEqual data.size
