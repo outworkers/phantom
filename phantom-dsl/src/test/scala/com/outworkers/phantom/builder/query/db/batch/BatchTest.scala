@@ -48,7 +48,7 @@ class BatchTest extends PhantomSuite {
     batch.iterator.size shouldEqual 2
   }
 
-  it should "allow executing groupped conditional batch prepared statements" in {
+  it should "allow executing grouped conditional batch prepared statements" in {
     val data = genList[(Int, List[String])]()
 
     val chain = for {
@@ -58,7 +58,7 @@ class BatchTest extends PhantomSuite {
         Batch.unlogged.add(topics.map(topic => prepared.bind(tenantId, AsciiValue(topic))))
       }
       executables <- Future.sequence(statements.map(_.future()))
-      count <- database.batchBugTable.select(_.tenantId).distinct().fetch()
+      count <- database.batchBugTable.select(_.tenantId).fetch()
     } yield count
 
     chain.futureValue.size shouldEqual data.size
