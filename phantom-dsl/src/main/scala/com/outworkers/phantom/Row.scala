@@ -42,7 +42,7 @@ case class ResultSet(
 
   override def getColumnDefinitions: ColumnDefinitions = inner.getColumnDefinitions
 
-  def getIncomingPayload: Payload = Payload(inner.getExecutionInfo.getIncomingPayload)
+  def incomingPayload: Payload = Payload(inner.getExecutionInfo.getIncomingPayload)
 
   override def getExecutionInfo: ExecutionInfo = inner.getExecutionInfo
 

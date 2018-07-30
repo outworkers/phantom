@@ -26,7 +26,7 @@ trait RecordResult[R] {
 
   def pagingState: PagingState = result.getExecutionInfo.getPagingState
 
-  def incomingPayload: Payload = result.getIncomingPayload
+  def incomingPayload: Payload = result.incomingPayload
 
   def state: Option[PagingState] = Option(result.getExecutionInfo.getPagingState)
 }
