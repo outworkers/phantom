@@ -22,6 +22,8 @@ import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.JodaRow
 import org.joda.time.DateTime
 
+import scala.concurrent.Future
+
 class BatchTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
@@ -46,11 +48,27 @@ class BatchTest extends PhantomSuite {
     batch.iterator.size shouldEqual 2
   }
 
+  it should "allow executing groupped conditional batch prepared statements" in {
+    val data = genList[(Int, List[String])]()
+
+    val chain = for {
+      _ <- database.batchBugTable.truncate().future()
+      prepared <- database.batchBugTable.prepared
+      statements = data.map { case (tenantId, topics) =>
+        Batch.unlogged.add(topics.map(topic => prepared.bind(tenantId, AsciiValue(topic))))
+      }
+      executables <- Future.sequence(statements.map(_.future()))
+      count <- database.batchBugTable.select(_.tenantId).distinct().fetch()
+    } yield count
+
+    chain.futureValue.size shouldEqual data.size
+  }
+
+
   it should "allow batching prepared statements" in {
 
     val records = genList[(Int, String)]()
     val fixedPartition = gen[Int]
-
     val chain = for {
       bound <- database.batchBugTable.prepared
        statements = for { (key, topic) <- records } yield bound.bind(fixedPartition, AsciiValue(topic))
