@@ -26,7 +26,8 @@ class BatchTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    val _ = database.primitivesJoda.createSchema()
+    database.primitivesJoda.createSchema()
+    database.batchBugTable.createSchema()
   }
 
   it should "get the correct count for batch queries" in {
@@ -48,14 +49,13 @@ class BatchTest extends PhantomSuite {
   it should "allow batching prepared statements" in {
 
     val records = genList[(Int, String)]()
-
-    val statements = for {
-      (key, topic) <- records
-    } yield database.batchBugTable.prepared.bind(key, AsciiValue(topic))
+    val fixedPartition = gen[Int]
 
     val chain = for {
+      bound <- database.batchBugTable.prepared
+       statements = for { (key, topic) <- records } yield bound.bind(fixedPartition, AsciiValue(topic))
       _ <- database.batchBugTable.truncate().future()
-      execBatch <- Batch.unlogged.add(statements).future()
+      _ <- Batch.unlogged.add(statements).future()
       select <- database.batchBugTable.select.count().one()
     } yield select
 

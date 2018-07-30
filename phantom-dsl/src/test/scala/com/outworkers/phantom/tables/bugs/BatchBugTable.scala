@@ -37,7 +37,7 @@ abstract class BatchBugTable extends Table[BatchBugTable, BatchBugRecord] {
       .p_value(_.topic, ?)
       .value(_.isScheduled, false)
       .ifNotExists()
-      .prepare()
+      .prepareAsync()
 
 }
 
