@@ -16,6 +16,7 @@
 package com.outworkers.phantom.builder.query.db.batch
 
 import com.outworkers.phantom.PhantomSuite
+import com.outworkers.phantom.builder.primitives.AsciiValue
 import com.outworkers.util.samplers._
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.JodaRow
@@ -42,6 +43,23 @@ class BatchTest extends PhantomSuite {
     val batch = Batch.logged.add(statement3, statement4)
 
     batch.iterator.size shouldEqual 2
+  }
+
+  it should "allow batching prepared statements" in {
+
+    val records = genList[(Int, String)]()
+
+    val statements = for {
+      (key, topic) <- records
+    } yield database.batchBugTable.prepared.bind(key, AsciiValue(topic))
+
+    val chain = for {
+      _ <- database.batchBugTable.truncate().future()
+      execBatch <- Batch.unlogged.add(statements).future()
+      select <- database.batchBugTable.select.count().one()
+    } yield select
+
+    chain.futureValue.value shouldEqual records.size
   }
 
   ignore should "serialize a multiple table batch query applied to multiple statements" in {

@@ -55,6 +55,7 @@ class TestDatabase(
   object primitives extends PrimitivesTable with Connector
   object oldPrimitives extends OldDslPrimitivesTable with Connector
 
+  object batchBugTable extends BatchBugTable with Connector
   object primitivesJoda extends PrimitivesJoda with Connector
 
   object primitivesCassandra22 extends PrimitivesCassandra22 with Connector
