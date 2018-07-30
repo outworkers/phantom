@@ -18,6 +18,7 @@ package com.outworkers.phantom.macros
 import com.outworkers.phantom.macros.toolbelt.{HListHelpers, WhiteboxToolbelt}
 import shapeless.HList
 
+import scala.annotation.implicitNotFound
 import scala.reflect.macros.whitebox
 
 /**
@@ -29,6 +30,7 @@ import scala.reflect.macros.whitebox
   * @tparam LL The left [[shapeless.HList]] type.
   * @tparam RR The right [[shapeless.HList]] type.
   */
+@implicitNotFound(msg = "HList ${LL} does not contain the same types as ${RR}")
 trait ==:==[LL <: HList, RR <: HList]
 
 object ==:== {

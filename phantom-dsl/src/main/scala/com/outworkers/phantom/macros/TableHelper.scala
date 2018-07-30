@@ -25,9 +25,11 @@ import com.outworkers.phantom.macros.toolbelt.WhiteboxToolbelt
 import com.outworkers.phantom.{CassandraTable, NamingStrategy, Row}
 import shapeless.HList
 
+import scala.annotation.implicitNotFound
 import scala.collection.immutable.ListMap
 import scala.reflect.macros.whitebox
 
+@implicitNotFound(msg = "Table ${T} is missing a PartitionKey column.")
 trait TableHelper[T <: CassandraTable[T, R], R] extends Serializable {
 
   type Repr <: HList
