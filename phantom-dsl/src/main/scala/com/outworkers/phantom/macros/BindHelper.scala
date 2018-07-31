@@ -18,8 +18,10 @@ package com.outworkers.phantom.macros
 import com.datastax.driver.core.{BoundStatement, PreparedStatement, ProtocolVersion}
 import com.outworkers.phantom.macros.toolbelt.WhiteboxToolbelt
 
+import scala.annotation.implicitNotFound
 import scala.reflect.macros.whitebox
 
+@implicitNotFound(msg = "${TP} is probably missing a Primitive for one or more of the bound types.")
 trait BindHelper[TP] {
 
   def debugString(values: TP): String

@@ -126,6 +126,10 @@ case class DeleteQuery[
     )
   }
 
+  def withOptions(opts: QueryOptions => QueryOptions): DeleteQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
+    copy(options = opts(this.options))
+  }
+
   def consistencyLevel_=(level: ConsistencyLevel)(
     implicit ev: Status =:= Unspecified, session: Session
   ): DeleteQuery[Table, Record, Limit, Order, Specified, Chain, PS] = {

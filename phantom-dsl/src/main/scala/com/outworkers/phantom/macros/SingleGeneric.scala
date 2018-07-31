@@ -18,6 +18,7 @@ package com.outworkers.phantom.macros
 import com.outworkers.phantom.macros.toolbelt.{HListHelpers, WhiteboxToolbelt}
 import shapeless.Generic
 
+import scala.annotation.implicitNotFound
 import scala.reflect.macros.whitebox
 
 /**
@@ -45,6 +46,7 @@ import scala.reflect.macros.whitebox
   * @tparam Store The HList input type inferred by [[TableHelper]].
   * @tparam GenR The generic HList type inferred by [[shapeless.Generic]].
   */
+@implicitNotFound(msg = "The type you're trying to store ${T} should match either ${Store} or ${GenR}")
 trait SingleGeneric[T, Store, GenR] extends Serializable {
   /** The generic representation type for {T}, which will be composed of {Coproduct} and {HList} types  */
   type Repr

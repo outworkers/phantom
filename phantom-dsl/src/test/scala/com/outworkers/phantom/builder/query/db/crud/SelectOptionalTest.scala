@@ -19,6 +19,7 @@ import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
 import com.outworkers.util.samplers._
+import org.scalatest.Assertion
 
 class SelectOptionalTest extends PhantomSuite {
 
@@ -49,7 +50,7 @@ class SelectOptionalTest extends PhantomSuite {
     }
   }
 
-  private[this] def checkRow(row: OptionalPrimitive): Unit = {
+  private[this] def checkRow(row: OptionalPrimitive): Assertion = {
     val rcp = for {
       store <- database.optionalPrimitives.store(row).future()
       b <- database.optionalPrimitives.select.where(_.pkey eqs row.pkey).one

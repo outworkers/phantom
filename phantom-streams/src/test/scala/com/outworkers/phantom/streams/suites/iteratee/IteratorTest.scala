@@ -16,6 +16,7 @@
 package com.outworkers.phantom.streams.suites.iteratee
 
 import com.datastax.driver.core.utils.UUIDs
+import com.outworkers.phantom.builder.query.Payload
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.TimeUUIDRecord
 import com.outworkers.util.samplers._
@@ -77,6 +78,21 @@ class IteratorTest extends BigTest with ScalaFutures {
 
       secondBatch.records.size shouldEqual fetchSize
       secondBatch.records should contain theSameElementsAs (rows drop fetchSize)
+    }
+  }
+
+  it should "allow setting metadata using a payload" in {
+    val row = gen[TimeUUIDRecord].copy(id = UUIDs.timeBased())
+    val payload = Payload("test" -> 5)
+
+    val chain = for {
+      queryRes <- database.timeuuidTable.store(row)
+        .withOptions(_.outgoingPayload_=(payload))
+        .future()
+    } yield queryRes
+
+    whenReady(chain) { res =>
+      res.wasApplied() shouldEqual true
     }
   }
 }

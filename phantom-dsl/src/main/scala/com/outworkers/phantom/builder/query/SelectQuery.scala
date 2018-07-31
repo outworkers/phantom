@@ -134,6 +134,10 @@ case class SelectQuery[
     copy(usingPart = usingPart append clause.qb)
   }
 
+  def withOptions(opts: QueryOptions => QueryOptions): SelectQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
+    copy(options = opts(this.options))
+  }
+
   def consistencyLevel_=(level: ConsistencyLevel)(
     implicit ev: Status =:= Unspecified,
     session: Session

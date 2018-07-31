@@ -21,6 +21,7 @@ import java.util
 import scala.collection.JavaConverters._
 import com.datastax.driver.core.{ColumnDefinitions, ExecutionInfo, GettableByIndexData, ProtocolVersion, ResultSet => DatastaxResultSet, Row => DatastaxRow}
 import com.google.common.util.concurrent.ListenableFuture
+import com.outworkers.phantom.builder.query.Payload
 
 import scala.util.Try
 
@@ -40,6 +41,8 @@ case class ResultSet(
   override def wasApplied(): Boolean = inner.wasApplied()
 
   override def getColumnDefinitions: ColumnDefinitions = inner.getColumnDefinitions
+
+  def incomingPayload: Payload = Payload(inner.getExecutionInfo.getIncomingPayload)
 
   override def getExecutionInfo: ExecutionInfo = inner.getExecutionInfo
 

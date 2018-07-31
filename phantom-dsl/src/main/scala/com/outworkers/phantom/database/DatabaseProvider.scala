@@ -15,7 +15,7 @@
  */
 package com.outworkers.phantom.database
 
-import com.datastax.driver.core.{Session, VersionNumber}
+import com.datastax.driver.core.{ProtocolVersion, Session, VersionNumber}
 import com.outworkers.phantom.connectors.{KeySpace, SessionAugmenterImplicits}
 
 trait DatabaseProvider[T <: Database[T]] extends SessionAugmenterImplicits {
@@ -25,6 +25,8 @@ trait DatabaseProvider[T <: Database[T]] extends SessionAugmenterImplicits {
   def cassandraVersions: Set[VersionNumber] = database.connector.cassandraVersions
 
   implicit def session: Session = database.session
+
+  implicit lazy val protocolVersion: ProtocolVersion = session.protocolVersion
 
   implicit def space: KeySpace = database.space
 

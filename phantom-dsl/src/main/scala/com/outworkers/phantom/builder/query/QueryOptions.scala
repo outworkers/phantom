@@ -15,12 +15,49 @@
  */
 package com.outworkers.phantom.builder.query
 
+import java.nio.ByteBuffer
+import java.util.{Collections, Map => JMap}
+import scala.collection.JavaConverters._
+
 import com.datastax.driver.core._
 import com.datastax.driver.core.policies.TokenAwarePolicy
 import com.outworkers.phantom.Manager
 import com.outworkers.phantom.builder.ops.TokenizerKey
+import com.outworkers.phantom.builder.primitives.Primitive
 
 trait Modifier extends (Statement => Statement)
+
+case class Payload(underlying: JMap[String, ByteBuffer]) {
+  def isEmpty: Boolean = underlying.isEmpty
+
+  def add(other: (String, ByteBuffer)): Payload = {
+    val (key, value) = other
+    underlying.put(key, value)
+    Payload(underlying)
+  }
+
+  def add[T](other: (String, T))(
+    implicit ev: Primitive[T],
+    pv: ProtocolVersion
+  ): Payload = {
+    val (key, value) = other
+    underlying.put(key, ev.serialize(value, pv))
+    Payload(underlying)
+  }
+}
+
+object Payload {
+  def empty: Payload = new Payload(Collections.emptyMap())
+
+  def apply(map: Map[String, ByteBuffer]): Payload = new Payload(map.asJava)
+
+  def apply(tp: (String, ByteBuffer)): Payload = apply(Seq(tp).toMap)
+
+  def apply[T](tp: (String, T))(implicit ev: Primitive[T], pv: ProtocolVersion): Payload = {
+    val (key, value) = tp
+    apply(Seq(key -> ev.serialize(value, pv)).toMap)
+  }
+}
 
 case class RoutingKeyModifier(
   tokens: List[TokenizerKey]
@@ -59,6 +96,18 @@ class SerialConsistencyLevelModifier(level: Option[ConsistencyLevel]) extends Mo
 }
 
 
+class PayloadModifier(payload: Payload) extends Modifier {
+  override def apply(v1: Statement): Statement = {
+    if (payload.isEmpty) {
+      v1
+    } else {
+      v1.setOutgoingPayload(payload.underlying)
+    }
+  }
+}
+
+
+
 class PagingStateModifier(level: Option[PagingState]) extends Modifier {
   override def apply(v1: Statement): Statement = {
     (level map v1.setPagingState).getOrElse(v1)
@@ -86,7 +135,8 @@ case class QueryOptions(
   serialConsistencyLevel: Option[ConsistencyLevel],
   pagingState: Option[PagingState] = None,
   enableTracing: Option[Boolean] = None,
-  fetchSize: Option[Int] = None
+  fetchSize: Option[Int] = None,
+  outgoingPayload: Payload = Payload.empty
 ) {
 
   def apply(st: Statement): Statement = {
@@ -95,7 +145,8 @@ case class QueryOptions(
       new SerialConsistencyLevelModifier(serialConsistencyLevel),
       new PagingStateModifier(pagingState),
       new EnableTracingModifier(enableTracing),
-      new FetchSizeModifier(fetchSize)
+      new FetchSizeModifier(fetchSize),
+      new PayloadModifier(outgoingPayload)
     ) reduce(_ andThen _)
 
     applier(st)
@@ -109,6 +160,10 @@ case class QueryOptions(
     fetchSize map opt.setFetchSize
 
     opt
+  }
+
+  def outgoingPayload_=(payload: Payload): QueryOptions = {
+    this.copy(outgoingPayload = payload)
   }
 
   def consistencyLevel_=(level: ConsistencyLevel): QueryOptions = {

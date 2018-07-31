@@ -225,6 +225,10 @@ case class InsertQuery[
     timestamp(value.getMillis * 1000)
   }
 
+  def withOptions(opts: QueryOptions => QueryOptions): InsertQuery[Table, Record, Status, PS] = {
+    copy(options = opts(this.options))
+  }
+
   def consistencyLevel_=(level: ConsistencyLevel)(implicit session: Session): InsertQuery[Table, Record, Specified, PS] = {
     if (session.protocolConsistency) {
       copy(options = options.consistencyLevel_=(level))

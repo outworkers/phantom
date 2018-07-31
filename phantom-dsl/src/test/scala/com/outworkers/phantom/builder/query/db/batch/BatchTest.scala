@@ -16,16 +16,20 @@
 package com.outworkers.phantom.builder.query.db.batch
 
 import com.outworkers.phantom.PhantomSuite
+import com.outworkers.phantom.builder.primitives.AsciiValue
 import com.outworkers.util.samplers._
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.JodaRow
 import org.joda.time.DateTime
 
+import scala.concurrent.Future
+
 class BatchTest extends PhantomSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    val _ = database.primitivesJoda.createSchema()
+    database.primitivesJoda.createSchema()
+    database.batchBugTable.createSchema()
   }
 
   it should "get the correct count for batch queries" in {
@@ -42,6 +46,38 @@ class BatchTest extends PhantomSuite {
     val batch = Batch.logged.add(statement3, statement4)
 
     batch.iterator.size shouldEqual 2
+  }
+
+  it should "allow executing grouped conditional batch prepared statements" in {
+    val data = genList[(Int, List[String])]()
+
+    val chain = for {
+      _ <- database.batchBugTable.truncate().future()
+      prepared <- database.batchBugTable.prepared
+      statements = data.map { case (tenantId, topics) =>
+        Batch.unlogged.add(topics.map(topic => prepared.bind(tenantId, AsciiValue(topic))))
+      }
+      executables <- Future.sequence(statements.map(_.future()))
+      count <- database.batchBugTable.select(_.tenantId).distinct().fetch()
+    } yield count
+
+    chain.futureValue.size shouldEqual data.size
+  }
+
+
+  it should "allow batching prepared statements" in {
+
+    val records = genList[(Int, String)]()
+    val fixedPartition = gen[Int]
+    val chain = for {
+      bound <- database.batchBugTable.prepared
+       statements = for { (key, topic) <- records } yield bound.bind(fixedPartition, AsciiValue(topic))
+      _ <- database.batchBugTable.truncate().future()
+      _ <- Batch.unlogged.add(statements).future()
+      select <- database.batchBugTable.select.count().one()
+    } yield select
+
+    chain.futureValue.value shouldEqual records.size
   }
 
   ignore should "serialize a multiple table batch query applied to multiple statements" in {
