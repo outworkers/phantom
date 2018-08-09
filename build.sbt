@@ -213,7 +213,6 @@ lazy val phantom = (project in file("."))
   ).settings(
     name := "phantom",
     moduleName := "phantom",
-    pgpPassphrase := Publishing.pgpPass,
     commands += Command.command("testsWithCoverage") { state =>
       "coverage" ::
       "test" ::
@@ -370,7 +369,7 @@ lazy val phantomSbtPlugin = (project in file("phantom-sbt"))
     crossScalaVersions := Seq(Versions.scala210),
     publishMavenStyle := false,
     sbtPlugin := true,
-    publishArtifact := !Publishing.publishingToMaven && { scalaVersion.value.startsWith("2.10") },
+    publishArtifact := scalaVersion.value.startsWith("2.10"),
     libraryDependencies ++= Seq(
       "com.datastax.cassandra" % "cassandra-driver-core" % Versions.datastax,
       "org.cassandraunit" % "cassandra-unit"  % Versions.cassandraUnit excludeAll (
