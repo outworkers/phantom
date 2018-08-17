@@ -119,7 +119,7 @@ case class Recipe(
   side_id: UUID
 )
 
-class Recipes extends Table[Recipes, Recipe] {
+abstract class Recipes extends Table[Recipes, Recipe] {
 
   object url extends StringColumn with PartitionKey
 
