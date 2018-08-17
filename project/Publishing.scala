@@ -106,8 +106,7 @@ object Publishing {
       commitReleaseVersion,
       publishArtifacts,
       tagRelease,
-      releaseStepCommandAndRemaining("such publishSigned"),
-      releaseStepCommandAndRemaining("sonatypeReleaseAll"),
+      releaseStepCommandAndRemaining("such publish"),
       setNextVersion,
       commitTutFilesAndVersion,
       pushChanges
@@ -146,7 +145,6 @@ object Publishing {
 
   def publishToMaven: Boolean = sys.env.get("MAVEN_PUBLISH").exists("true" ==)
 
-  /*
   lazy val bintraySettings: Seq[Def.Setting[_]] = {
     import bintray.BintrayKeys._
     Seq(
@@ -158,69 +156,16 @@ object Publishing {
       pomIncludeRepository := { _ => true},
       licenses += ("Apache-2.0", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt"))
     )
-  }*/
-
-  lazy val pgpPass: Option[Array[Char]] = Properties.envOrNone("pgp_passphrase").map(_.toCharArray)
-
-  lazy val mavenSettings: Seq[Def.Setting[_]] = Seq(
-    credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
-    publishMavenStyle := true,
-    licenses += ("Apache-2.0", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt")),
-    pgpPassphrase in ThisBuild := {
-      if (runningUnderCi && pgpPass.isDefined) {
-        println("Running under CI and PGP password specified under settings.")
-        println(s"Password longer than five characters: ${pgpPass.exists(_.length > 5)}")
-        pgpPass
-      } else {
-        println("Could not find settings for a PGP passphrase.")
-        println(s"pgpPass defined in environemnt: ${pgpPass.isDefined}")
-        println(s"Running under CI: $runningUnderCi")
-        None
-      }
-    },
-    publishTo := {
-      val nexus = "https://oss.sonatype.org/"
-      if (version.value.trim.endsWith("SNAPSHOT")) {
-        Some("snapshots" at nexus + "content/repositories/snapshots")
-      } else {
-        Some("releases" at nexus + "service/local/staging/deploy/maven2")
-      }
-    },
-    externalResolvers := Resolver.withDefaultResolvers(resolvers.value, mavenCentral = true),
-    publishArtifact in Test := false,
-    pomIncludeRepository := { _ => true },
-    pomExtra :=
-      <url>https://github.com/outworkers/phantom</url>
-        <scm>
-          <url>git@github.com:outworkers/phantom.git</url>
-          <connection>scm:git:git@github.com:outworkers/phantom.git</connection>
-        </scm>
-        <developers>
-          <developer>
-            <id>alexflav</id>
-            <name>Flavian Alexandru</name>
-            <url>http://github.com/alexflav23</url>
-          </developer>
-        </developers>
-  )
+  }
 
   def effectiveSettings: Seq[Def.Setting[_]] = {
     if (publishToMaven) {
-      mavenSettings ++ releaseSettings
+      bintraySettings ++ releaseSettings
     } else {
       // Intentional silly way to disable Bintray publishing temporarily
       //bintraySettings ++ releaseSettings
-      mavenSettings ++ releaseSettings
+      bintraySettings ++ releaseSettings
     }
-  }
-
-  /**
-   * This exists because SBT is not capable of reloading publishing configuration during tasks or commands.
-   * Unfortunately we have to load a specific configuration based on an environment variable that we "flip"
-   * during CI.
-   */
-  def publishingToMaven: Boolean = {
-    sys.env.exists { case (k, v) => k.equalsIgnoreCase("MAVEN_PUBLISH") && v.equalsIgnoreCase("true") }
   }
 
   def runningUnderCi: Boolean = sys.env.get("CI").isDefined || sys.env.get("TRAVIS").isDefined
