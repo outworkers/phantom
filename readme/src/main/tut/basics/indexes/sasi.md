@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/outworkers/phantom.svg?branch=develop)](https://travis-ci.org/outworkers/phantom?branch=develop) [![Coverage Status](https://coveralls.io/repos/github/outworkers/phantom/badge.svg?branch=develop)](https://coveralls.io/github/outworkers/phantom?branch=develop)  [![Codacy Rating](https://api.codacy.com/project/badge/grade/25bee222a7d142ff8151e6ceb39151b4)](https://www.codacy.com/app/flavian/phantom_2) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11) [![Bintray](https://api.bintray.com/packages/outworkers/oss-releases/phantom-dsl/images/download.svg) ](https://bintray.com/outworkers/oss-releases/phantom-dsl/_latestVersion) [![ScalaDoc](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11.svg?label=scaladoc)](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/outworkers/phantom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+======================================
+
 ### SASI Index support
 
 Available as of phantom 2.11.0, SASI indexes introduce support for a Cassandra 3.4+ feature, namely SS Table attached
@@ -10,7 +13,7 @@ performance wise after a couple thousand records.
 
 ### Using SASI support in phantom.
 
-SASI indexes are natively supported in the standard `phantom-dsl` module, so as long as you have the following in your 
+SASI indexes are natively supported in the standard `phantom-dsl` module, so as long as you have the following in your
 `build.sbt` you will not require any special dependencies.
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11)
@@ -104,8 +107,8 @@ than specialised forms.
 Phantom SASI support incldues all three supported modes for SASI. All analyzers include support for basic comparison
  operations, as listed below. Some operators have two flavours, such as `==` and `eqs`, `<` and `lt` and so on. They
  are all available via the standard `import com.outworkers.phantom.dsl._` import.
- 
-  
+
+
 | Operator | Natural Language equivalent            |
 | -------- | -------------------------------------- |
 | `==`     | Equality operator                      |
@@ -118,18 +121,18 @@ Phantom SASI support incldues all three supported modes for SASI. All analyzers 
 | `gt`     | Strictly greater than operator         |
 | `>=`     | Greater than or equal to operator      |
 | `gte`    | Greater than or equal to operator      |   
-  
-  
+
+
 There are two modes directed specifically at text columns, namely `Mode.Prefix` and `Mode.Contains`. By using
-  these modes, you will be able to perform text specific queries using the `like` operator. 
-  
+  these modes, you will be able to perform text specific queries using the `like` operator.
+
 ##### Mode.Prefix
 
 In addition to the standard operations, the `Prefix` mode will allow you to perform `like(prefix("text"))` style
  queries.
- 
+
 Examples can be found in [SASIIntegrationTest.scala](/phantom-dsl/src/test/scala/com/outworkers/phantom/builder/query/sasi/SASIIntegrationTest.scala).
- 
+
 Example query, based on the schema defined above.
 
 ```tut:silent
@@ -140,9 +143,9 @@ trait PrefixExamples extends db.Connector {
   db.multiSasiTable.select.where(_.phoneNumber like prefix("example")).fetch()
 }
 ```
-  
+
 #### Mode.Contains
-  
+
 This will enable further queries for text columns, such as `like(suffix("value"))` and `like(contains("value`))`, as well
 as prefix style queries.
 
