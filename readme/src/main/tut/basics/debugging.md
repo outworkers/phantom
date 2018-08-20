@@ -1,3 +1,7 @@
+phantom
+[![Build Status](https://travis-ci.org/outworkers/phantom.svg?branch=develop)](https://travis-ci.org/outworkers/phantom?branch=develop) [![Coverage Status](https://coveralls.io/repos/github/outworkers/phantom/badge.svg?branch=develop)](https://coveralls.io/github/outworkers/phantom?branch=develop)  [![Codacy Rating](https://api.codacy.com/project/badge/grade/25bee222a7d142ff8151e6ceb39151b4)](https://www.codacy.com/app/flavian/phantom_2) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11) [![Bintray](https://api.bintray.com/packages/outworkers/oss-releases/phantom-dsl/images/download.svg) ](https://bintray.com/outworkers/oss-releases/phantom-dsl/_latestVersion) [![ScalaDoc](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11.svg?label=scaladoc)](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/outworkers/phantom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+=====================================================================================================================
+
 # Debugging
 
 This section is about the various debug options in phantom, logging, enabling special compilation flags and other such options
@@ -8,7 +12,7 @@ that allow you to see what's going on behind the scenes. Most of these options d
 
 Phantom does not configure a specific logging backend for you, it relies on SLF4J to allow you to choose your own. All
 queries are logged through one central logger, namely `com.outworkers.phantom`, and we also create one logger instance
-per Cassandra table, to allow you to track queries belonging to a particular table more easily. 
+per Cassandra table, to allow you to track queries belonging to a particular table more easily.
 
 
 It's worth noting what the most verbose loggers will be in this setup, as you will need to pay attention to them:
@@ -100,7 +104,7 @@ This is a very simple example using the more popular Logback framework
 
 Phantom relies quite heavily on Scala macros to work, which means a lot of logic happens hidden away in compilation time.
 Because the macro API is not always consistent, some errors are "masked" and incorrectly hidden by the compiler. This can
-prove difficult to debug, which is why we've created a collection of macro debug flags. 
+prove difficult to debug, which is why we've created a collection of macro debug flags.
 
 If you are entirely new to macros, it's worth understanding they are effectively used to generate code, for instance
 automated JSON formats solely based on the structure of a case class, like `play-json` does with its `Json.format[CaseClass]` syntax.
@@ -109,7 +113,7 @@ Phantom uses macros to extract table descriptors, a list of names and types for 
 to automatically infer the `fromRow` extractor. Without macros, you would need to do this manually, just like in previous versions of phantom.
 
 A lot of the macros are used to "compute" or template implicits on the fly, which means we programmatically determine
-the structure of various implicits entirely using macros, generating actual code behind the scenes. 
+the structure of various implicits entirely using macros, generating actual code behind the scenes.
 
 *Note*: To use any of these flags, you will need to import them in the right place. Unlike traditional compilation flags,
 these flags are not global, they are just normal implicits. You need to make sure they are imported in all the scopes where
@@ -147,20 +151,20 @@ case class Recipe(
 abstract class Recipes extends Table[Recipes, Recipe] {
 
   object url extends StringColumn with PartitionKey
- 
+
    object description extends OptionalStringColumn
- 
+
    object ingredients extends ListColumn[String]
- 
+
    object servings extends OptionalIntColumn
- 
+
    object lastcheckedat extends DateTimeColumn
- 
+
    object props extends MapColumn[String, String]
- 
+
    object uid extends UUIDColumn
  }
- 
+
  class MyDb(override val connector: CassandraConnection) extends Database[MyDb](connector) {
    object recipes extends Recipes with Connector
  }
@@ -221,7 +225,7 @@ This is mostly an internal flag, but it allows you to peak in to the implicit re
 macros are not always trivial, and we cache intermediary results to make sure we don't try to workout the same thing twice.
 
 
-This is again triggered, like all other options, by importing the relevant implicit in the scope where you want to see the 
+This is again triggered, like all other options, by importing the relevant implicit in the scope where you want to see the
 cache.
 
 ```scala

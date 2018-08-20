@@ -1,3 +1,7 @@
+phantom
+[![Build Status](https://travis-ci.org/outworkers/phantom.svg?branch=develop)](https://travis-ci.org/outworkers/phantom?branch=develop) [![Coverage Status](https://coveralls.io/repos/github/outworkers/phantom/badge.svg?branch=develop)](https://coveralls.io/github/outworkers/phantom?branch=develop)  [![Codacy Rating](https://api.codacy.com/project/badge/grade/25bee222a7d142ff8151e6ceb39151b4)](https://www.codacy.com/app/flavian/phantom_2) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11) [![Bintray](https://api.bintray.com/packages/outworkers/oss-releases/phantom-dsl/images/download.svg) ](https://bintray.com/outworkers/oss-releases/phantom-dsl/_latestVersion) [![ScalaDoc](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11.svg?label=scaladoc)](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/outworkers/phantom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+=====================================================================================================================
+
 ### How Cassandra tables are implemented in Phantom
 
 #### 2.0.0 changed the way the table name is inferred.
@@ -145,7 +149,7 @@ It would look kind of like this:
 ```
 
 Which is just boilerplate, because you already have the schema defined using the modelling DSL, so you don't
-really want another layer of manual work. 
+really want another layer of manual work.
 
 #### Extractor derivation and limitations
 
@@ -178,13 +182,13 @@ either enable `debug` logging for `com.outworkers.phantom` or alternatively call
 that to see a debug output of how phantom thinks your record maps to your table.
 
 
-##### Field arity 
+##### Field arity
 
 - The macro will successfully derive an extractor if your table contains all the types in your record and will fail if there
 is at least one record type it couldn't find in a table. It looks for direct matches as well as existing implicit conversions
 from A to B simultaneously. If your table has more fields than your record, the macro will also succeed, it will use only
-those fields 
- 
+those fields
+
 
 ##### Limitations
 
@@ -210,13 +214,13 @@ The inner workings of this generation are non trivial, but the TLDR is quite sim
 - If the `TableType` has as many fields as your `RecordType`, the store method will take as an argument
 an instance of the `RecordType`.
 
-- If your `TableType` has more fields than the `RecordType`, your input looks like this: 
+- If your `TableType` has more fields than the `RecordType`, your input looks like this:
 `def store(input: (Field1Type, Field2Type, ..., RecordType))`, so basically the columns that were found
 in the table but not in the `RecordType` will be added to the front of the tuple in the order they were
  written.
 
 Let's analyse the most common examples and see how this would work.
- 
+
 #### The simple case
 
 This is the most standard use case, where your table has the exact same number of columns as your
@@ -257,7 +261,7 @@ abstract class MyTable extends Table[MyTable, Record] {
 
 Sometimes we need to store a given `Record` in more than one table to achieve denormalisation. This is
 fairly trivial and standard in Cassandra, but it introduces a subtle problem, namely that the new table
-needs to store a `Record` and at least one more column representing an index. 
+needs to store a `Record` and at least one more column representing an index.
 
 We refer to the columns that exist in the `Table` but not in the `Record` as unmatched columns, both in the
 documentation as well as the schema.
@@ -280,7 +284,7 @@ This is better visible below, where both the body of the new `store` method as w
 schema we might use for it are clearly visible.
 
 **Warning!!**, the order in which the columns are written inside the table is irrelevant, by design the macro
-will take all that columns that exist in the table but not in the `Record` and put them **in front** of the 
+will take all that columns that exist in the table but not in the `Record` and put them **in front** of the
 `Record` type inside the `store` method input type signature.
 
 The macro will always create a `Tuple` as described initially, of all the types of unmatched columns, succeeded

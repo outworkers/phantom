@@ -1,3 +1,7 @@
+phantom
+[![Build Status](https://travis-ci.org/outworkers/phantom.svg?branch=develop)](https://travis-ci.org/outworkers/phantom?branch=develop) [![Coverage Status](https://coveralls.io/repos/github/outworkers/phantom/badge.svg?branch=develop)](https://coveralls.io/github/outworkers/phantom?branch=develop)  [![Codacy Rating](https://api.codacy.com/project/badge/grade/25bee222a7d142ff8151e6ceb39151b4)](https://www.codacy.com/app/flavian/phantom_2) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11) [![Bintray](https://api.bintray.com/packages/outworkers/oss-releases/phantom-dsl/images/download.svg) ](https://bintray.com/outworkers/oss-releases/phantom-dsl/_latestVersion) [![ScalaDoc](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11.svg?label=scaladoc)](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/outworkers/phantom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+=====================================================================================================================
+
 Phantom 2.0.0 series
 ====================
 
@@ -15,11 +19,11 @@ Feedback and contributions are welcome, and we are happy to prioritise any cruci
 
 #### Licensing and distribution
 
-- [x] Revert all Outworkers projects and all their dependencies to the Apache V2 License. 
+- [x] Revert all Outworkers projects and all their dependencies to the Apache V2 License.
 - [x] Publish `outworkers-util` and all sub modules to Maven Central.
 - [x] Publish `outworkers-diesel` and all sub modules to Maven Central.
 - [x] Drop all dependencies outside of `shapeless` and `datastax-java-driver` from `phantom-dsl`.
-- [x] Remove all non standard resolvers from Phantom, all dependencies should build from JCenter and Maven Central by default with no custom resolvers required. 
+- [x] Remove all non standard resolvers from Phantom, all dependencies should build from JCenter and Maven Central by default with no custom resolvers required.
 - [x] Change all package names and resolvers to reflect our business name change from `Websudos` to `Outworkers`.
 - [x] Create a `1.30.x` release that allows users to transition to a no custom resolver version of Phantom 1.0.x even before 2.0.0 is stable.
 
@@ -73,7 +77,7 @@ Feedback and contributions are welcome, and we are happy to prioritise any cruci
 
 #### Documentation
 
-- [x] Migration guide for transitioning to Phantom 2.0.0. [Guide here](https://github.com/outworkers/phantom/tree/feature/2.0.0#200-migration-guide). 
+- [x] Migration guide for transitioning to Phantom 2.0.0. [Guide here](https://github.com/outworkers/phantom/tree/feature/2.0.0#200-migration-guide).
 - [x] Move documentation back to the docs folder.
 - [ ] Add a documentation website on the main page.
 - [ ] Create a navigator that allows viewing the documentation at a particular point in time.
@@ -129,7 +133,7 @@ To understand more about this, have a look at [execution backends](querying/exec
 
 #### You can remove manual `fromRow` method definitions
 
-As of phantom 2.4.0, phantom is capable of automatically generating a `Row` extractor for the majority of 
+As of phantom 2.4.0, phantom is capable of automatically generating a `Row` extractor for the majority of
 use cases using implicit macros, meaning you will never again need to define that part of the boilerplate.
 
 For more details, you can refer to the [how extractors work](basics/tables#extractors) guideline in the documentation.
@@ -137,7 +141,7 @@ For more details, you can refer to the [how extractors work](basics/tables#extra
 #### You can remove manual `store` method definitions
 
 As of phantom 2.5.0, if you have a manually defined method to insert records into your table, this is now no longer necessary.
-For a full set of details on how the `store` method is generated, refer to [the store method](basics/tables#store-methods) docs. 
+For a full set of details on how the `store` method is generated, refer to [the store method](basics/tables#store-methods) docs.
 This is because phantom successfully auto-generates a basic store method that looks like this below.
 
 ```tut:silent
@@ -168,14 +172,14 @@ abstract class MyTable extends Table[MyTable, Record] {
       .value(_.firstName, record.firstName)
       .value(_.email, record.email)
   }
-  
+
   // you can trivially extend the default insert method
   // and add more clauses or features to it.
   def newRecord(record: Record): Future[ResultSet] = {
     store(record)
       .ttl(5.minutes)
       .consistencyLevel_=(ConsistencyLevel.ALL).future()
-  } 
+  }
 }
 
 ```

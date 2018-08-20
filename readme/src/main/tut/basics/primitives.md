@@ -1,3 +1,7 @@
+phantom
+[![Build Status](https://travis-ci.org/outworkers/phantom.svg?branch=develop)](https://travis-ci.org/outworkers/phantom?branch=develop) [![Coverage Status](https://coveralls.io/repos/github/outworkers/phantom/badge.svg?branch=develop)](https://coveralls.io/github/outworkers/phantom?branch=develop)  [![Codacy Rating](https://api.codacy.com/project/badge/grade/25bee222a7d142ff8151e6ceb39151b4)](https://www.codacy.com/app/flavian/phantom_2) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11) [![Bintray](https://api.bintray.com/packages/outworkers/oss-releases/phantom-dsl/images/download.svg) ](https://bintray.com/outworkers/oss-releases/phantom-dsl/_latestVersion) [![ScalaDoc](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11.svg?label=scaladoc)](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/outworkers/phantom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+=====================================================================================================================
+
 ## Primitives
 
  `Primitive` is a fundamental concept in phantom. Java uses the same terminology
@@ -62,7 +66,7 @@ The ```Optional``` part is only handled at a DSL level, it's not translated to C
 | OptionalUUIDColumn            | Option[java.util.UUID]            | uuid              |
 | OptionalTimeUUID              | Option[java.util.UUID]            | timeuuid          |
 
-It is also possible to express your entire table logic using just `Col` or `Column` if you. 
+It is also possible to express your entire table logic using just `Col` or `Column` if you.
 `Primitives` that do the real heavy lifting, which makes the examples below equivalent:
 
 ```scala
@@ -247,7 +251,7 @@ this is what allows to retrieve the timezone information back and have a bijecti
 primitive.
 
 #### Using the compact `Table` DSL with JDK 8 columns
- 
+
 Note unlike other columns in the framework, the JDK8 columns will require you to pass in the `this` argument
 even when you are using `Table`. This is a limitation of the Scala language itself, as we are not able
 to add class members to another class via implicit augmentation.
@@ -320,4 +324,3 @@ These will be by default available under `import com.outworkers.phantom.jdk8.ind
 | ZonedDateTimeColumn           | java.time.ZonedDateTime   | timestamp           |
 | LocalDate                     | java.time.LocalDate       | localdate           |
 | LocalDateTime                 | java.time.LocalDateTime   | timestamp           |
-
