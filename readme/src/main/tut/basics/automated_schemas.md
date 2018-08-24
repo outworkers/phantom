@@ -24,9 +24,9 @@ Secondary indexes are a non scalable flavour of Cassandra indexing that allows u
 
 That aside, it's worth noting phantom is capable of auto-generating your CQL schema and initialising all your indexes automatically, and this functionality is exposed through the exact same `table.create.future()`.
 
-```scala
+```tut:silent
 
-sealed class IndexedCollectionsTable extends CassandraTable[ConcreteIndexedCollectionsTable, TestRow] {
+abstract class IndexedCollectionsTable extends Table[IndexedCollectionsTable, TestRow] {
 
   object key extends StringColumn(this) with PartitionKey[String]
 
@@ -41,18 +41,6 @@ sealed class IndexedCollectionsTable extends CassandraTable[ConcreteIndexedColle
   object mapIntToText extends MapColumn[Int, String](this) with Index[Map[Int, String]] with Keys
 
   object mapIntToInt extends MapColumn[Int, Int](this) with Index[Map[Int, Int]] with Entries
-
-  def fromRow(r: Row): TestRow = {
-    TestRow(
-      key = key(r),
-      list = list(r),
-      setText = setText(r),
-      mapTextToText = mapTextToText(r),
-      setInt = setInt(r),
-      mapIntToText = mapIntToText(r),
-      mapIntToInt = mapIntToInt(r)
-    )
-  }
 }
 ```
 

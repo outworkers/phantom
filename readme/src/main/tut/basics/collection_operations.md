@@ -19,7 +19,7 @@ db.table.update
 <a id="list-operators">List operators</a>
 ==========================================
 
-Examples in [ListOperatorsTest.scala](https://github.com/websudos/phantom/blob/develop/phantom-dsl/src/test/scala/com/websudos/phantom/builder/query/db/crud/ListOperatorsTest.scala).
+
 
 | Name                          | Description                                   |
 | ----------------------------- | --------------------------------------------- |
