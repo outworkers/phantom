@@ -34,7 +34,7 @@ case class TestRow(
   list: List[String],
   setText: Set[String],
   mapTextToText: Map[String, String],
-  setInt: Set[Int]
+  setInt: Set[Int],
   mapIntToText: Map[Int, String],
   mapIntToInt: Map[Int, Int]
 )

@@ -99,3 +99,58 @@ trait LoggedQueries extends TestDbProvider {
     .add(db.articles.update.where(_.id eqs UUID.randomUUID).modify(_.content setTo "blabla2"))
     .future()
 }
+
+```
+
+
+<a id="unlogged-batch-statements">UNLOGGED batch statements</a>
+============================================================
+
+```scala
+
+import com.outworkers.phantom.dsl._
+
+trait UnloggedQueries extends TestDbProvider {
+
+  Batch.unlogged
+    .add(db.articles.update.where(_.id eqs UUID.randomUUID).modify(_.name setTo "blabla"))
+    .add(db.articles.update.where(_.id eqs UUID.randomUUID).modify(_.content setTo "blabla2"))
+    .future()
+}
+
+```
+
+
+<a id="counter-batch-statements">COUNTER batch statements</a>
+============================================================
+<a href="#table-of-contents">back to top</a>
+
+```scala
+
+import com.outworkers.phantom.dsl._
+
+trait CounterQueries extends TestDbProvider {
+
+  Batch.counter
+    .add(db.counterTable.update.where(_.id eqs UUID.randomUUID).modify(_.entries increment 500L))
+    .add(db.counterTable.update.where(_.id eqs UUID.randomUUID).modify(_.entries decrement 300L))
+    .future()
+}
+
+```
+
+Counter operations also offer a standard overloaded operator syntax, so instead of `increment` and `decrement`
+you can also use `+=` and `-=` to achieve the same thing.
+
+```scala
+
+import com.outworkers.phantom.dsl._
+
+trait CounterOpsQueries extends TestDbProvider {
+
+  Batch.counter
+    .add(db.counterTable.update.where(_.id eqs UUID.randomUUID).modify(_.entries += 500L))
+    .add(db.counterTable.update.where(_.id eqs UUID.randomUUID).modify(_.entries -= 300L))
+    .future()
+}    
+```
