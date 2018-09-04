@@ -5,7 +5,7 @@
 
 Keyspace level generation and setting properties for keyspaces is provided separately, but CQL 3 Table schemas are automatically generated from the Scala code. To create a schema in Cassandra from a table definition:
 
-```tut:silent
+```scala
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -24,7 +24,7 @@ Secondary indexes are a non scalable flavour of Cassandra indexing that allows u
 
 That aside, it's worth noting phantom is capable of auto-generating your CQL schema and initialising all your indexes automatically, and this functionality is exposed through the exact same `table.create.future()`.
 
-```tut:silent
+```scala
 
 
 import com.outworkers.phantom.dsl._
@@ -34,7 +34,7 @@ case class TestRow(
   list: List[String],
   setText: Set[String],
   mapTextToText: Map[String, String],
-  setInt: Set[Int],
+  setInt: Set[Int]
   mapIntToText: Map[Int, String],
   mapIntToInt: Map[Int, Int]
 )
