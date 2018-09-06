@@ -1,7 +1,5 @@
-phantom
 [![Build Status](https://travis-ci.org/outworkers/phantom.svg?branch=develop)](https://travis-ci.org/outworkers/phantom?branch=develop) [![Coverage Status](https://coveralls.io/repos/github/outworkers/phantom/badge.svg?branch=develop)](https://coveralls.io/github/outworkers/phantom?branch=develop)  [![Codacy Rating](https://api.codacy.com/project/badge/grade/25bee222a7d142ff8151e6ceb39151b4)](https://www.codacy.com/app/flavian/phantom_2) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11) [![Bintray](https://api.bintray.com/packages/outworkers/oss-releases/phantom-dsl/images/download.svg) ](https://bintray.com/outworkers/oss-releases/phantom-dsl/_latestVersion) [![ScalaDoc](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11.svg?label=scaladoc)](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/outworkers/phantom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-===============================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================
-
+======================================
 
 Connectors are a thin abstraction layer around a construct native to the Datastax Java Driver, and provide a way to implicitly "inject" a `Session`
 where it is required. On top of that, they also allow specifying all the settings you might care about when connecting to Cassandra, such as heartbeat intervals,
@@ -40,7 +38,7 @@ object ConnectorExample {
 
 To take advantage of the native Java Driver options, simply use the `withClusterBuilder` method. In the example below,
 we are going use password protected authentication to Cassandra, using `PlainTextAuthProvider`. Hopefully it is
-easy to see how you would 
+easy to see how you would
 
 ```tut:silent
 
@@ -78,7 +76,7 @@ Your keyspace creation query is passed through to initialised session, and toget
 creation functionality, you can use phantom to initialise both keyspaces and tables inside it on the fly, not to mention
 indexes and UDT types(phantom pro only).
 
- 
+
 To build a keyspace query, use `with` and `and` to chain options on the query. It's important to note they require
 a special assigning operator, namely `eqs` instead of `=`, just like phantom queries. This is to prevent a potentially
 confusing overload of standard operators.
