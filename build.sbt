@@ -85,24 +85,24 @@ val scalacOptionsFn: String => Seq[String] = { s =>
 
 lazy val Versions = new {
   val logback = "1.2.3"
-  val util = "0.40.0"
-  val json4s = "3.5.1"
+  val util = "0.43.0"
+  val json4s = "3.6.1"
   val datastax = "3.6.0"
-  val scalatest = "3.0.4"
-  val shapeless = "2.3.2"
+  val scalatest = "3.0.5"
+  val shapeless = "2.3.3"
   val thrift = "0.8.0"
   val finagle = "17.12.0"
   val scalameter = "0.8.2"
-  val scalacheck = "1.13.5"
+  val scalacheck = "1.14.0"
   val slf4j = "1.7.25"
-  val reactivestreams = "1.0.0"
-  val cassandraUnit = "3.3.0.2"
-  val joda = "2.9.9"
-  val jodaConvert = "1.8.1"
-  val scalamock = "3.5.0"
+  val reactivestreams = "1.0.2"
+  val cassandraUnit = "3.5.0.1"
+  val joda = "2.10"
+  val jodaConvert = "2.1.1"
+  val scalamock = "3.6.0"
   val macrocompat = "1.1.1"
-  val macroParadise = "2.1.0"
-  val circe = "0.8.0"
+  val macroParadise = "2.1.1"
+  val circe = "0.9.3"
 
   val scala210 = "2.10.6"
   val scala211 = "2.11.12"
@@ -114,7 +114,7 @@ lazy val Versions = new {
   }
 
   val typesafeConfig: String = if (Publishing.isJdk8) {
-    "1.3.1"
+    "1.3.3"
   } else {
     "1.2.0"
   }
