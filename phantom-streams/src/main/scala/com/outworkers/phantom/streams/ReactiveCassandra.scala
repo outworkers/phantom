@@ -160,7 +160,9 @@ class BatchActor[CT <: CassandraTable[CT, T], T](
   }
 
   // Stops the scheduler if it exists
-  override def postStop(): Unit = scheduler.map(_.cancel())
+  override def postStop(): Unit = {
+    val _ = scheduler.map(_.cancel())
+  }
 
   private[this] def shutdown(): Unit = {
     completionFn()
