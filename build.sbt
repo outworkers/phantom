@@ -85,7 +85,7 @@ val scalacOptionsFn: String => Seq[String] = { s =>
 
 lazy val Versions = new {
   val logback = "1.2.3"
-  val util = "0.43.0"
+  val util = "0.44.0"
   val json4s = "3.6.1"
   val datastax = "3.6.0"
   val scalatest = "3.0.5"
@@ -349,8 +349,8 @@ lazy val phantomThrift = (project in file("phantom-thrift"))
     crossScalaVersions := Seq(Versions.scala211, Versions.scala212),
     name := "phantom-thrift",
     moduleName := "phantom-thrift",
-    addCompilerPlugin("org.scalamacros" % "paradise" % Versions.macrosVersion(scalaVersion.value) cross CrossVersion.full),
     libraryDependencies ++= Seq(
+      compilerPlugin("org.scalamacros" % "paradise" % Versions.macrosVersion(scalaVersion.value) cross CrossVersion.full),
       "org.typelevel" %% "macro-compat" % Versions.macrocompat,
       "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
       "org.apache.thrift"            % "libthrift"                          % Versions.thrift,
