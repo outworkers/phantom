@@ -154,6 +154,14 @@ lazy val Versions = new {
       case _ => "2.4.8"
     }
   }
+
+
+  val macrosVersion: String => String = {
+    s => CrossVersion.partialVersion(s) match {
+      case Some((_, minor)) if minor >= 11 => macroParadise
+      case _ => "2.1.0"
+    }
+  }
 }
 
 val defaultConcurrency = 4
@@ -234,7 +242,7 @@ lazy val readme = (project in file("readme"))
     libraryDependencies ++= Seq(
       "org.typelevel" %% "macro-compat" % Versions.macrocompat % "tut",
       "org.scala-lang" % "scala-compiler" % scalaVersion.value % "tut",
-      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
+      compilerPlugin("org.scalamacros" % "paradise" % Versions.macrosVersion(scalaVersion.value) cross CrossVersion.full),
       "com.outworkers" %% "util-samplers" % Versions.util % "tut",
       "io.circe" %% "circe-parser" % Versions.circe % "tut",
       "io.circe" %% "circe-generic" % Versions.circe % "tut",
@@ -262,7 +270,7 @@ lazy val phantomDsl = (project in file("phantom-dsl"))
     libraryDependencies ++= Seq(
       "org.typelevel" %% "macro-compat" % Versions.macrocompat,
       "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
-      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
+      compilerPlugin("org.scalamacros" % "paradise" % Versions.macrosVersion(scalaVersion.value) cross CrossVersion.full),
       "com.chuusai"                  %% "shapeless"                         % Versions.shapeless,
       "joda-time"                    %  "joda-time"                         % Versions.joda,
       "org.joda"                     %  "joda-convert"                      % Versions.jodaConvert,
@@ -292,7 +300,7 @@ lazy val phantomJdk8 = (project in file("phantom-jdk8"))
       Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
     ),
     libraryDependencies ++= Seq(
-      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full)
+      compilerPlugin("org.scalamacros" % "paradise" % Versions.macrosVersion(scalaVersion.value) cross CrossVersion.full)
     )
   ).settings(
     sharedSettings: _*
@@ -325,7 +333,7 @@ lazy val phantomFinagle = (project in file("phantom-finagle"))
     crossScalaVersions := Versions.scalaAll,
     testFrameworks in Test ++= Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
     libraryDependencies ++= Seq(
-      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
+      compilerPlugin("org.scalamacros" % "paradise" % Versions.macrosVersion(scalaVersion.value) cross CrossVersion.full),
       "com.twitter"                  %% "util-core"                         % Versions.twitterUtil(scalaVersion.value),
       "com.outworkers"               %% "util-testing"                      % Versions.util % Test,
       "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter % Test
@@ -341,7 +349,7 @@ lazy val phantomThrift = (project in file("phantom-thrift"))
     crossScalaVersions := Seq(Versions.scala211, Versions.scala212),
     name := "phantom-thrift",
     moduleName := "phantom-thrift",
-    addCompilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
+    addCompilerPlugin("org.scalamacros" % "paradise" % Versions.macrosVersion(scalaVersion.value) cross CrossVersion.full),
     libraryDependencies ++= Seq(
       "org.typelevel" %% "macro-compat" % Versions.macrocompat,
       "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
@@ -388,7 +396,7 @@ lazy val phantomStreams = (project in file("phantom-streams"))
     crossScalaVersions := Versions.scalaAll,
     testFrameworks in Test ++= Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
     libraryDependencies ++= Seq(
-      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
+      compilerPlugin("org.scalamacros" % "paradise" % Versions.macrosVersion(scalaVersion.value) cross CrossVersion.full),
       "com.typesafe" % "config" % Versions.typesafeConfig force(),
       "com.typesafe.play"   %% "play-iteratees" % Versions.play(scalaVersion.value) exclude ("com.typesafe", "config"),
       "org.reactivestreams" % "reactive-streams"            % Versions.reactivestreams,
@@ -411,7 +419,7 @@ lazy val phantomExample = (project in file("phantom-example"))
     moduleName := "phantom-example",
     crossScalaVersions := Seq(Versions.scala211, Versions.scala212),
     libraryDependencies ++= Seq(
-      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
+      compilerPlugin("org.scalamacros" % "paradise" % Versions.macrosVersion(scalaVersion.value) cross CrossVersion.full),
       "org.json4s"                   %% "json4s-native"                     % Versions.json4s % Test,
       "com.outworkers"               %% "util-samplers"                      % Versions.util % Test
     ),
