@@ -85,24 +85,24 @@ val scalacOptionsFn: String => Seq[String] = { s =>
 
 lazy val Versions = new {
   val logback = "1.2.3"
-  val util = "0.40.0"
-  val json4s = "3.5.1"
-  val datastax = "3.4.0"
-  val scalatest = "3.0.4"
-  val shapeless = "2.3.2"
+  val util = "0.44.0"
+  val json4s = "3.6.1"
+  val datastax = "3.6.0"
+  val scalatest = "3.0.5"
+  val shapeless = "2.3.3"
   val thrift = "0.8.0"
   val finagle = "17.12.0"
   val scalameter = "0.8.2"
-  val scalacheck = "1.13.5"
+  val scalacheck = "1.14.0"
   val slf4j = "1.7.25"
-  val reactivestreams = "1.0.0"
-  val cassandraUnit = "3.3.0.2"
-  val joda = "2.9.9"
-  val jodaConvert = "1.8.1"
-  val scalamock = "3.5.0"
+  val reactivestreams = "1.0.2"
+  val cassandraUnit = "3.5.0.1"
+  val joda = "2.10"
+  val jodaConvert = "2.1.1"
+  val scalamock = "3.6.0"
   val macrocompat = "1.1.1"
-  val macroParadise = "2.1.0"
-  val circe = "0.8.0"
+  val macroParadise = "2.1.1"
+  val circe = "0.9.3"
 
   val scala210 = "2.10.6"
   val scala211 = "2.11.12"
@@ -114,7 +114,7 @@ lazy val Versions = new {
   }
 
   val typesafeConfig: String = if (Publishing.isJdk8) {
-    "1.3.1"
+    "1.3.3"
   } else {
     "1.2.0"
   }
@@ -152,6 +152,14 @@ lazy val Versions = new {
       case Some((_, minor)) if minor == 12 => "2.6.1"
       case Some((_, minor)) if minor == 11 => "2.5.8"
       case _ => "2.4.8"
+    }
+  }
+
+
+  val macrosVersion: String => String = {
+    s => CrossVersion.partialVersion(s) match {
+      case Some((_, minor)) if minor >= 11 => macroParadise
+      case _ => "2.1.0"
     }
   }
 }
@@ -234,7 +242,7 @@ lazy val readme = (project in file("readme"))
     libraryDependencies ++= Seq(
       "org.typelevel" %% "macro-compat" % Versions.macrocompat % "tut",
       "org.scala-lang" % "scala-compiler" % scalaVersion.value % "tut",
-      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
+      compilerPlugin("org.scalamacros" % "paradise" % Versions.macrosVersion(scalaVersion.value) cross CrossVersion.full),
       "com.outworkers" %% "util-samplers" % Versions.util % "tut",
       "io.circe" %% "circe-parser" % Versions.circe % "tut",
       "io.circe" %% "circe-generic" % Versions.circe % "tut",
@@ -262,7 +270,7 @@ lazy val phantomDsl = (project in file("phantom-dsl"))
     libraryDependencies ++= Seq(
       "org.typelevel" %% "macro-compat" % Versions.macrocompat,
       "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
-      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
+      compilerPlugin("org.scalamacros" % "paradise" % Versions.macrosVersion(scalaVersion.value) cross CrossVersion.full),
       "com.chuusai"                  %% "shapeless"                         % Versions.shapeless,
       "joda-time"                    %  "joda-time"                         % Versions.joda,
       "org.joda"                     %  "joda-convert"                      % Versions.jodaConvert,
@@ -292,7 +300,7 @@ lazy val phantomJdk8 = (project in file("phantom-jdk8"))
       Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
     ),
     libraryDependencies ++= Seq(
-      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full)
+      compilerPlugin("org.scalamacros" % "paradise" % Versions.macrosVersion(scalaVersion.value) cross CrossVersion.full)
     )
   ).settings(
     sharedSettings: _*
@@ -325,7 +333,7 @@ lazy val phantomFinagle = (project in file("phantom-finagle"))
     crossScalaVersions := Versions.scalaAll,
     testFrameworks in Test ++= Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
     libraryDependencies ++= Seq(
-      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
+      compilerPlugin("org.scalamacros" % "paradise" % Versions.macrosVersion(scalaVersion.value) cross CrossVersion.full),
       "com.twitter"                  %% "util-core"                         % Versions.twitterUtil(scalaVersion.value),
       "com.outworkers"               %% "util-testing"                      % Versions.util % Test,
       "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter % Test
@@ -341,8 +349,8 @@ lazy val phantomThrift = (project in file("phantom-thrift"))
     crossScalaVersions := Seq(Versions.scala211, Versions.scala212),
     name := "phantom-thrift",
     moduleName := "phantom-thrift",
-    addCompilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
     libraryDependencies ++= Seq(
+      compilerPlugin("org.scalamacros" % "paradise" % Versions.macrosVersion(scalaVersion.value) cross CrossVersion.full),
       "org.typelevel" %% "macro-compat" % Versions.macrocompat,
       "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
       "org.apache.thrift"            % "libthrift"                          % Versions.thrift,
@@ -388,7 +396,7 @@ lazy val phantomStreams = (project in file("phantom-streams"))
     crossScalaVersions := Versions.scalaAll,
     testFrameworks in Test ++= Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
     libraryDependencies ++= Seq(
-      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
+      compilerPlugin("org.scalamacros" % "paradise" % Versions.macrosVersion(scalaVersion.value) cross CrossVersion.full),
       "com.typesafe" % "config" % Versions.typesafeConfig force(),
       "com.typesafe.play"   %% "play-iteratees" % Versions.play(scalaVersion.value) exclude ("com.typesafe", "config"),
       "org.reactivestreams" % "reactive-streams"            % Versions.reactivestreams,
@@ -411,7 +419,7 @@ lazy val phantomExample = (project in file("phantom-example"))
     moduleName := "phantom-example",
     crossScalaVersions := Seq(Versions.scala211, Versions.scala212),
     libraryDependencies ++= Seq(
-      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
+      compilerPlugin("org.scalamacros" % "paradise" % Versions.macrosVersion(scalaVersion.value) cross CrossVersion.full),
       "org.json4s"                   %% "json4s-native"                     % Versions.json4s % Test,
       "com.outworkers"               %% "util-samplers"                      % Versions.util % Test
     ),
