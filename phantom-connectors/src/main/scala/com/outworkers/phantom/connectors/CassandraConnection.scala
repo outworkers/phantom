@@ -38,7 +38,7 @@ class CassandraConnection(
   errorHander: Throwable => Throwable = identity
 ) { outer =>
 
-  lazy val provider = new DefaultSessionProvider(
+  lazy val provider: SessionProvider = new DefaultSessionProvider(
     KeySpace(name),
     clusterBuilder,
     autoinit,
@@ -88,7 +88,7 @@ class CassandraConnection(
    */
   trait Connector extends com.outworkers.phantom.connectors.Connector with SessionAugmenterImplicits {
 
-    lazy val provider: DefaultSessionProvider = outer.provider
+    lazy val provider: SessionProvider = outer.provider
 
     lazy val keySpace: String = outer.name
 
