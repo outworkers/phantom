@@ -112,6 +112,7 @@ then
         git commit -m "Added compiled tut documentation [ci skip]"
 
         git status
+
         sbt "release with-defaults"
 
         # publish_to_bintray

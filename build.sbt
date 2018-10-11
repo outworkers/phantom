@@ -83,9 +83,11 @@ val scalacOptionsFn: String => Seq[String] = { s =>
   }
 }
 
+scalacOptions in Global ++= scalacOptionsFn(scalaVersion.value)
+
 lazy val Versions = new {
   val logback = "1.2.3"
-  val util = "0.44.0"
+  val util = "0.45.0"
   val json4s = "3.6.1"
   val datastax = "3.6.0"
   val scalatest = "3.0.5"
@@ -106,7 +108,7 @@ lazy val Versions = new {
 
   val scala210 = "2.10.6"
   val scala211 = "2.11.12"
-  val scala212 = "2.12.6"
+  val scala212 = "2.12.7"
   val scalaAll = Seq(scala210, scala211, scala212)
 
   val scala = new {
@@ -185,8 +187,6 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     "org.slf4j" % "log4j-over-slf4j" % Versions.slf4j
   ),
   fork in Test := true,
-
-  scalacOptions ++= scalacOptionsFn(scalaVersion.value),
   scalacOptions in (Compile, console) := ScalacOptions.filterNot(
     Set(
       "-Ywarn-unused:imports",
@@ -221,6 +221,7 @@ lazy val phantom = (project in file("."))
   ).settings(
     name := "phantom",
     moduleName := "phantom",
+    pgpPassphrase := Publishing.pgpPass,
     commands += Command.command("testsWithCoverage") { state =>
       "coverage" ::
       "test" ::
