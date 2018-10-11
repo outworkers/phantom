@@ -83,6 +83,8 @@ val scalacOptionsFn: String => Seq[String] = { s =>
   }
 }
 
+scalacOptions in Global ++= scalacOptionsFn(scalaVersion.value)
+
 lazy val Versions = new {
   val logback = "1.2.3"
   val util = "0.45.0"
@@ -163,8 +165,6 @@ lazy val Versions = new {
     }
   }
 }
-
-scalacOptions in ThisBuild ++= scalacOptionsFn(scalaVersion.value)
 
 val defaultConcurrency = 4
 
