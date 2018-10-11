@@ -47,14 +47,15 @@ object Publishing {
 
   def commitTutFilesAndVersion: ReleaseStep = ReleaseStep { st: State =>
     val settings = Project.extract(st)
-    println(s"Found modified files: ${vcs(st).hasModifiedFiles}")
+    val logger = st.log
+    logger.info(s"Found modified files: ${vcs(st).hasModifiedFiles}")
 
     val log = toProcessLogger(st)
     val versionsFile = settings.get(releaseVersionFile).getCanonicalFile
     val docsFolder = settings.get(releaseTutFolder).getCanonicalFile
 
-    println(s"Docs folder path : ${docsFolder.getPath}")
-    println(s"Docs folder path : ${docsFolder.getAbsolutePath}")
+    logger.info(s"Docs folder path : ${docsFolder.getPath}")
+    logger.info(s"Docs folder path : ${docsFolder.getAbsolutePath}")
     val base = vcs(st).baseDir.getCanonicalFile
     val sign = settings.get(releaseVcsSign)
 
@@ -65,14 +66,14 @@ object Publishing {
 
     val commitablePaths = Seq(relativePath) ++ {
       if (docsFolder.exists) {
-        println(s"Docs folder exists under ${docsFolder}")
+        logger.info(s"Docs folder exists under $docsFolder")
         val relativeDocsPath = IO.relativize(
           base,
           docsFolder
         ).getOrElse("Docs folder [%s] is outside of this VCS repository with base directory [%s]!" format(docsFolder, base))
         Seq(relativeDocsPath)
       } else {
-        println(s"Docs folder doesn't exist under, $base and $docsFolder")
+        logger.info(s"Docs folder doesn't exist under, $base and $docsFolder")
         Seq.empty
       }
     }
@@ -106,7 +107,8 @@ object Publishing {
       commitReleaseVersion,
       publishArtifacts,
       tagRelease,
-      releaseStepCommandAndRemaining("such publish"),
+      releaseStepCommandAndRemaining("such publishSigned"),
+      releaseStepCommandAndRemaining("sonatypeReleaseAll"),
       setNextVersion,
       commitTutFilesAndVersion,
       pushChanges
@@ -145,6 +147,51 @@ object Publishing {
 
   def publishToMaven: Boolean = sys.env.get("MAVEN_PUBLISH").exists("true" ==)
 
+  lazy val pgpPass: Option[Array[Char]] = Properties.envOrNone("pgp_passphrase").map(_.toCharArray)
+
+  lazy val mavenSettings: Seq[Def.Setting[_]] = Seq(
+    credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
+    publishMavenStyle := true,
+    licenses += ("Apache-2.0", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt")),
+    pgpPassphrase in ThisBuild := {
+      val logger = ConsoleLogger()
+      if (runningUnderCi && pgpPass.isDefined) {
+        logger.info("Running under CI and PGP password specified under settings.")
+        logger.info(s"Password longer than five characters: ${pgpPass.exists(_.length > 5)}")
+        pgpPass
+      } else {
+        logger.info("Could not find settings for a PGP passphrase.")
+        logger.info(s"pgpPass defined in environemnt: ${pgpPass.isDefined}")
+        logger.info(s"Running under CI: $runningUnderCi")
+        None
+      }
+    },
+    publishTo := {
+      val nexus = "https://oss.sonatype.org/"
+      if (version.value.trim.endsWith("SNAPSHOT")) {
+        Some("snapshots" at nexus + "content/repositories/snapshots")
+      } else {
+        Some("releases" at nexus + "service/local/staging/deploy/maven2")
+      }
+    },
+    externalResolvers := Resolver.withDefaultResolvers(resolvers.value, mavenCentral = true),
+    publishArtifact in Test := false,
+    pomIncludeRepository := { _ => true },
+    pomExtra :=
+      <url>https://github.com/outworkers/phantom</url>
+        <scm>
+          <url>git@github.com:outworkers/phantom.git</url>
+          <connection>scm:git:git@github.com:outworkers/phantom.git</connection>
+        </scm>
+        <developers>
+          <developer>
+            <id>alexflav</id>
+            <name>Flavian Alexandru</name>
+            <url>http://github.com/alexflav23</url>
+          </developer>
+        </developers>
+  )
+
   lazy val bintraySettings: Seq[Def.Setting[_]] = {
     import bintray.BintrayKeys._
     Seq(
@@ -160,10 +207,9 @@ object Publishing {
 
   def effectiveSettings: Seq[Def.Setting[_]] = {
     if (publishToMaven) {
-      bintraySettings ++ releaseSettings
+      mavenSettings ++ releaseSettings
     } else {
       // Intentional silly way to disable Bintray publishing temporarily
-      //bintraySettings ++ releaseSettings
       bintraySettings ++ releaseSettings
     }
   }
