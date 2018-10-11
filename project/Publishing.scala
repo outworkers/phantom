@@ -154,7 +154,7 @@ object Publishing {
     publishMavenStyle := true,
     licenses += ("Apache-2.0", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt")),
     pgpPassphrase in ThisBuild := {
-      val logger = streams.value.log
+      val logger = ConsoleLogger()
       if (runningUnderCi && pgpPass.isDefined) {
         logger.info("Running under CI and PGP password specified under settings.")
         logger.info(s"Password longer than five characters: ${pgpPass.exists(_.length > 5)}")

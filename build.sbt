@@ -164,6 +164,8 @@ lazy val Versions = new {
   }
 }
 
+scalacOptions in ThisBuild ++= scalacOptionsFn(scalaVersion.value)
+
 val defaultConcurrency = 4
 
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
@@ -185,8 +187,6 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     "org.slf4j" % "log4j-over-slf4j" % Versions.slf4j
   ),
   fork in Test := true,
-
-  scalacOptions ++= scalacOptionsFn(scalaVersion.value),
   scalacOptions in (Compile, console) := ScalacOptions.filterNot(
     Set(
       "-Ywarn-unused:imports",
