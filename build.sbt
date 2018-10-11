@@ -221,6 +221,7 @@ lazy val phantom = (project in file("."))
   ).settings(
     name := "phantom",
     moduleName := "phantom",
+    pgpPassphrase := Publishing.pgpPass,
     commands += Command.command("testsWithCoverage") { state =>
       "coverage" ::
       "test" ::
