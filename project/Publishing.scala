@@ -192,25 +192,27 @@ object Publishing {
         </developers>
   )
 
-  lazy val bintraySettings: Seq[Def.Setting[_]] = {
-    import bintray.BintrayKeys._
-    Seq(
-      publishMavenStyle := true,
-      bintrayOrganization := Some("outworkers"),
-      bintrayRepository := { if (version.value.trim.endsWith("SNAPSHOT")) "oss-snapshots" else "oss-releases" },
-      bintrayReleaseOnPublish in ThisBuild := true,
-      publishArtifact in Test := false,
-      pomIncludeRepository := { _ => true},
-      licenses += ("Apache-2.0", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt"))
-    )
-  }
 
   def effectiveSettings: Seq[Def.Setting[_]] = {
     if (publishToMaven) {
       mavenSettings ++ releaseSettings
     } else {
       // Intentional silly way to disable Bintray publishing temporarily
-      bintraySettings ++ releaseSettings
+      // lazy val bintraySettings: Seq[Def.Setting[_]] = {
+      //   import bintray.BintrayKeys._
+      //   Seq(
+      //     publishMavenStyle := true,
+      //     bintrayOrganization := Some("outworkers"),
+      //     bintrayRepository := { if (version.value.trim.endsWith("SNAPSHOT")) "oss-snapshots" else "oss-releases" },
+      //     bintrayReleaseOnPublish in ThisBuild := true,
+      //     publishArtifact in Test := false,
+      //     pomIncludeRepository := { _ => true},
+      //     licenses += ("Apache-2.0", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt"))
+      //   )
+      // }
+      //
+      // bintraySettings ++
+      releaseSettings
     }
   }
 

@@ -115,8 +115,6 @@ then
 
         sbt "release with-defaults"
 
-        # publish_to_bintray
-
     else
         echo "Only publishing version for Scala $TARGET_SCALA_VERSION and Oracle JDK 8 to prevent multiple artifacts"
     fi
