@@ -37,7 +37,15 @@ matrix:
   include:
   - scala: 2.12.7
     jdk: oraclejdk8
+  - scala: 2.12.7
+    jdk: oraclejdk8
+    env: CASSANDRA_VERSION=3.11.3
+  - scala: 2.12.7
+    jdk: oraclejdk8
+    env: CASSANDRA_VERSION=3.0.17
+
 before_install: unset SBT_OPTS JVM_OPTS
+
 install:
 - ./build/install_cassandra.sh
 before_script:
