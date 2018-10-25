@@ -44,6 +44,9 @@ matrix:
   - scala: 2.12.7
     jdk: oraclejdk8
     env: CASSANDRA_VERSION=3.0.17
+  - scala: 2.11.12
+    jdk: oraclejdk8
+    env: CASSANDRA_VERSION=2.2.9
 
 before_install: unset SBT_OPTS JVM_OPTS
 
