@@ -147,7 +147,8 @@ object Publishing {
 
   def publishToMaven: Boolean = sys.env.get("MAVEN_PUBLISH").exists("true" ==)
 
-  lazy val pgpPass: Option[Array[Char]] = Properties.envOrNone("pgp_passphrase").map(_.toCharArray)
+  lazy val pgpPass: Option[Array[Char]] = Properties.envOrNone("pgp_passphrase")
+    .orElse(Properties.envOrNone("PGP_PASSPHRASE")).map(_.toCharArray)
 
   lazy val mavenSettings: Seq[Def.Setting[_]] = Seq(
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),

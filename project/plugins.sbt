@@ -56,8 +56,6 @@ dependencyOverrides += "org.apache.thrift" % "libthrift" % "0.8.0"
 
 addSbtPlugin("org.tpolecat" % "tut-plugin" % "0.5.6")
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-site" % "0.8.1")
-
 addSbtPlugin("com.eed3si9n" % "sbt-doge" % "0.1.5")
 
 libraryDependencies += "org.slf4j" % "slf4j-nop" % "1.7.22"

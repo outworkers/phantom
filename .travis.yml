@@ -15,6 +15,7 @@ before_cache:
 - find $HOME/.sbt -name "*.lock" -delete
 env:
   global:
+  - CASSANDRA_VERSION: 3.11
   - TARGET_SCALA_VERSION: 2.12.7
   - GH_REF: github.com/outworkers/phantom.git
   - secure: V5iziDRj988+kcpW6PHOjZZYoayDi2+Fjx2Y6F9dL2mYw3kcjrwyyQgpWoMPMrXHdR61xoollyytgZPfavNViocNxYZMVRfQBLeTCd+mvuLQEvra6aRWl7XaYlpGi5+uHEh5k84MsRNsEZKiiuabxMRZvglZSC8QHYqYgDx3rho=
@@ -37,7 +38,18 @@ matrix:
   include:
   - scala: 2.12.7
     jdk: oraclejdk8
+  - scala: 2.12.7
+    jdk: oraclejdk8
+    env: CASSANDRA_VERSION=3.11.3
+  - scala: 2.12.7
+    jdk: oraclejdk8
+    env: CASSANDRA_VERSION=3.0.17
+  - scala: 2.11.12
+    jdk: oraclejdk8
+    env: CASSANDRA_VERSION=2.2.9
+
 before_install: unset SBT_OPTS JVM_OPTS
+
 install:
 - ./build/install_cassandra.sh
 before_script:
