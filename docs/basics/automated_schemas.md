@@ -1,20 +1,64 @@
 [![Build Status](https://travis-ci.org/outworkers/phantom.svg?branch=develop)](https://travis-ci.org/outworkers/phantom?branch=develop) [![Coverage Status](https://coveralls.io/repos/github/outworkers/phantom/badge.svg?branch=develop)](https://coveralls.io/github/outworkers/phantom?branch=develop)  [![Codacy Rating](https://api.codacy.com/project/badge/grade/25bee222a7d142ff8151e6ceb39151b4)](https://www.codacy.com/app/flavian/phantom_2) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11) [![Bintray](https://api.bintray.com/packages/outworkers/oss-releases/phantom-dsl/images/download.svg) ](https://bintray.com/outworkers/oss-releases/phantom-dsl/_latestVersion) [![ScalaDoc](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11.svg?label=scaladoc)](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/outworkers/phantom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 ======================================
+
 <a id="automated-schema-generation">Automated schema generation</a>
 ===================================================================
 
-Keyspace level generation and setting properties for keyspaces is provided separately, but CQL 3 Table schemas are automatically generated from the Scala code. To create a schema in Cassandra from a table definition:
+One of the most convenient features of phantom is that you can drive your schema directly from the code. So instead of
+having to create the schema first inside Cassandra and then struggle to write matching code, you can drive your entire
+database layer from the Scala code.
+
+This is called schema auto-generation, and it's pretty much self explanatory. Phantom will provide you with simple methods
+to allow you to drive the schema from the code. Let's explore this simple schema and the database below.
 
 ```scala
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
+import scala.concurrent.Future
 import com.outworkers.phantom.dsl._
 
-//database.table.createAsync()
+case class User(id: UUID, email: String, name: String)
+
+abstract class Users extends Table[Users, User] {
+  object id extends UUIDColumn with PartitionKey
+  object email extends StringColumn
+  object name extends StringColumn
+
+  def findById(id: UUID): Future[Option[User]] = {
+    select.where(_.id eqs id).one()
+  }
+}
+
+abstract class UsersByEmail extends Table[UsersByEmail, User] {
+  object email extends StringColumn with PartitionKey
+  object id extends UUIDColumn
+  object name extends StringColumn
+
+  def findByEmail(email: String): Future[Option[User]] = {
+    select.where(_.email eqs email).one()
+  }
+}
+
+class AppDatabase(
+  override val connector: CassandraConnection
+) extends Database[AppDatabase](connector) {
+  object users extends Users with Connector
+  object usersByEmail extends UsersByEmail with Connector
+}
 ```
 
-Of course, you don't have to block unless you want to. Phantom is capable of handling more advanced scenarios as well, including and not limited to things like creating secondary indexes and initialising them in due time and so on.
+The simplest level of auto-generation is at table level. Let's look at how we could create the schema automatically.
+
+```scala
+
+object TestConnector {
+  val connector = ContactPoint.local
+    .noHeartbeat()
+    .keySpace("myapp_example")
+}
+
+object TestDatabase extends AppDatabase(TestConnector.connector)
+
+```
 
 
 More advanced indexing scenarios
