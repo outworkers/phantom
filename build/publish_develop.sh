@@ -93,9 +93,7 @@ function setup_credentials {
 
 if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "develop" ];
 then
-    if [ "${TRAVIS_SCALA_VERSION}" == "${TARGET_SCALA_VERSION}" ] &&
-        [ "${TRAVIS_JDK_VERSION}" == "oraclejdk8" ] &&
-        [ "${CASSANDRA_VERSION}" == "3.11.3" ];
+    if [ "${PUBLISH_ARTIFACT}" == "true" ]
     then
 
         echo "Setting git user email to ci@outworkers.com"
@@ -118,9 +116,9 @@ then
         sbt "release with-defaults"
 
     else
-        echo "Only publishing version for Scala $TARGET_SCALA_VERSION and Oracle JDK 8 to prevent multiple artifacts"
+        echo "Publish arfifact: ${PUBLISH_ARTIFACT}; Only publishing version for Scala $TARGET_SCALA_VERSION and Oracle JDK 8 to prevent multiple artifacts"
     fi
 else
-    echo "Travis PR: ${TRAVIS_PULL_REQUEST}; Scala Version: ${TRAVIS_SCALA_VERSION}; Target version: ${TARGET_SCALA_VERSION}"
+    echo "Publish arfifact: ${PUBLISH_ARTIFACT}; Travis PR: ${TRAVIS_PULL_REQUEST}; Scala Version: ${TRAVIS_SCALA_VERSION}; Target version: ${TARGET_SCALA_VERSION}"
     echo "This is either a pull request or the branch is not develop, deployment not necessary."
 fi
