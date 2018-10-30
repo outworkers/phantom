@@ -105,10 +105,9 @@ object Publishing {
       inquireVersions,
       setReleaseVersion,
       commitReleaseVersion,
-      publishArtifacts,
-      tagRelease,
       releaseStepCommandAndRemaining("such publishSigned"),
       releaseStepCommandAndRemaining("sonatypeReleaseAll"),
+      tagRelease,
       setNextVersion,
       commitTutFilesAndVersion,
       pushChanges
