@@ -93,7 +93,9 @@ function setup_credentials {
 
 if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "develop" ];
 then
-    if [ "${TRAVIS_SCALA_VERSION}" == "${TARGET_SCALA_VERSION}" ] && [ "${TRAVIS_JDK_VERSION}" == "oraclejdk8" ];
+    if [ "${TRAVIS_SCALA_VERSION}" == "${TARGET_SCALA_VERSION}" ] &&
+        [ "${TRAVIS_JDK_VERSION}" == "oraclejdk8" ] &&
+        [ "${CASSANDRA_VERSION}" == "3.11.3" ];
     then
 
         echo "Setting git user email to ci@outworkers.com"
