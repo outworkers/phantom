@@ -15,7 +15,6 @@ before_cache:
 - find $HOME/.sbt -name "*.lock" -delete
 env:
   global:
-  - PUBLISH_ARTIFACT: false
   - CASSANDRA_VERSION: 3.11
   - TARGET_SCALA_VERSION: 2.12.7
   - GH_REF: github.com/outworkers/phantom.git
@@ -41,7 +40,7 @@ matrix:
     jdk: oraclejdk8
   - scala: 2.12.7
     jdk: oraclejdk8
-    env: CASSANDRA_VERSION=3.11.3 PUBLISH_ARTIFACT=true
+    env: CASSANDRA_VERSION=3.11.3
   - scala: 2.12.7
     jdk: oraclejdk8
     env: CASSANDRA_VERSION=3.0.17
