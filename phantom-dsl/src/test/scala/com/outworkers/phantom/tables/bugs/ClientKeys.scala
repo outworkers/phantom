@@ -16,7 +16,6 @@
 package com.outworkers.phantom.tables.bugs
 
 import com.outworkers.phantom.dsl._
-
 import scala.concurrent.Future
 
 case class ClientKey(sessionId: UUID, key: String, other: String)
@@ -33,4 +32,5 @@ abstract class ClientKeys extends Table[ClientKeys, ClientKey] {
   def insert(c: ClientKey): Future[ResultSet] = {
     insert().future()
   }
+
 }
