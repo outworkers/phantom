@@ -234,7 +234,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
 
   /**
     * This works by recursively parsing a list of fields extracted here as record members.
-    * The algorithm will take every fiel from the record and:
+    * The algorithm will take every field from the record and:
     * - If there are record fields to address left, we will search within the available columns
     * for a type that either matches or can be implicitly converted to the record type.
     * - If a single match is found, we declare that as a match, without comparing the field names.

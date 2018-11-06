@@ -15,9 +15,10 @@
  */
 package com.outworkers.phantom
 
-import com.outworkers.phantom.builder.QueryBuilder
+import com.outworkers.phantom.builder.{QueryBuilder, Unspecified}
 import com.outworkers.phantom.builder.clauses.DeleteClause
 import com.outworkers.phantom.builder.primitives.Primitive
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, QueryCollection}
 import com.outworkers.phantom.builder.query.sasi.Mode
 import com.outworkers.phantom.builder.query.{RootCreateQuery, _}
@@ -26,7 +27,7 @@ import com.outworkers.phantom.connectors.{KeySpace, RootConnector}
 import com.outworkers.phantom.keys.SASIIndex
 import com.outworkers.phantom.macros.{==:==, SingleGeneric, TableHelper}
 import org.slf4j.{Logger, LoggerFactory}
-import shapeless.{Generic, HList}
+import shapeless.{Generic, HList, HNil}
 
 /**
  * Main representation of a Cassandra table.
@@ -36,6 +37,12 @@ import shapeless.{Generic, HList}
 abstract class CassandraTable[T <: CassandraTable[T, R], R](
   implicit val helper: TableHelper[T, R]
 ) extends SelectTable[T, R] { self =>
+
+  def `insertValues`(insertions: (CQLQuery, CQLQuery)*)(
+    implicit keySpace: KeySpace
+  ): InsertQuery[T, R, Unspecified, HNil] = {
+   insert.values(insertions: _*)
+  }
 
   def columns: Seq[AbstractColumn[_]] = helper.fields(instance)
 
@@ -62,7 +69,7 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
    * This uses the phantom proprietary QueryBuilder instead of the already available one in the underlying Java Driver.
    * @return A root create block, with full support for all CQL Create query options.
    */
-  final def create: RootCreateQuery[T, R] = new RootCreateQuery(instance)
+  final def create: RootCreateQuery[T, R] = new RootCreateQuery[T, R](instance)
 
   def autocreate(keySpace: KeySpace): CreateQuery.Default[T, R] = create.ifNotExists()(keySpace)
 
