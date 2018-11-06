@@ -289,7 +289,7 @@ trait RootMacro extends HListHelpers with WhiteboxToolbelt {
 
         info(s"Inferred store input type: ${printType(sTpe)} for ${printType(tableTpe)}")
 
-        val tree = q"""$tableTerm.insert.values(..$finalDefinitions)"""
+        val tree = q"""$tableTerm.`insertValues`(..$finalDefinitions)"""
         Some(tree)
       } else {
         None
