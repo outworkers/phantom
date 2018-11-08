@@ -38,6 +38,8 @@ addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "1.5.0")
 
 addSbtPlugin("org.scoverage" %% "sbt-coveralls" % "1.1.0")
 
+addSbtPlugin("io.get-coursier" % "sbt-coursier" % "1.0.3")
+
 addSbtPlugin("com.jsuereth" % "sbt-pgp" % "1.1.1")
 
 if (sys.env.get("MAVEN_PUBLISH").exists("true" ==)) {
@@ -45,8 +47,6 @@ if (sys.env.get("MAVEN_PUBLISH").exists("true" ==)) {
 } else {
   addSbtPlugin("org.foundweekends" % "sbt-bintray" % "0.5.4")
 }
-
-addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.7.0")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "0.8.5")
 
