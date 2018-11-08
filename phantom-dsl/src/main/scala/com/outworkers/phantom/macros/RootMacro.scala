@@ -132,14 +132,6 @@ trait RootMacro extends HListHelpers with WhiteboxToolbelt {
         case None => lm
       }
     }
-
-    /**
-      * Every entry in this ordered map is a traversable of type [[M]].
-      * That means every key holds a sequence of elements.
-      * This function will remove the element [[elem]] from that sequence
-      * for the provided key.
-      */
-    def -(key: K, elem: V): ListMap[K, M[V]] = remove(key, elem)
   }
 
   case class TableDescriptor(
@@ -434,7 +426,7 @@ trait RootMacro extends HListHelpers with WhiteboxToolbelt {
           root.typeSignature.typeParams match {
             // We use the special API to see what type was passed through to AbstractColumn[_]
             // with special thanks to https://github.com/joroKr21 for helping me not rip
-            // the remainder of my hair off while uncovering this marvelous macro API method.
+            // off the remainder of my already receding hairline.
             case head :: Nil => Column.Field(
               member.asModule.name.toTermName,
               head.asType.toType.asSeenFrom(memberType, colSymbol)
