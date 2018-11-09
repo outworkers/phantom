@@ -25,7 +25,7 @@ import scala.reflect.macros.blackbox
 class PrimitiveMacro(override val c: blackbox.Context) extends BlackboxToolbelt {
   import c.universe._
 
-  private[this] val protocolVersion = typeOf[_root_.com.datastax.driver.core.ProtocolVersion]
+  private[this] val protocolVersion = tq"_root_.com.datastax.driver.core.ProtocolVersion"
   private[this] val versionTerm = q"version"
 
   private[this] val boolType = typeOf[scala.Boolean]
