@@ -159,7 +159,7 @@ class PrimitiveMacro(override val c: blackbox.Context) extends BlackboxToolbelt 
     val extractorTerms = indexedFields.map { case (_, i) => fqTerm(i) }
     val fieldExtractor = q"for (..$deserializedFields) yield new $tpe(..$extractorTerms)"
 
-    val tree = q"""new $prefix.Primitive[$tpe] {
+    q"""new $prefix.Primitive[$tpe] {
       override def dataType: $strType = {
         $builder.QueryBuilder.Collections
           .tupleType(..${fields.map(_.cassandraType)})
@@ -202,8 +202,6 @@ class PrimitiveMacro(override val c: blackbox.Context) extends BlackboxToolbelt 
 
       override def shouldFreeze: $boolType = true
     }"""
-
-    evalTree(tree)
   }
 
   def mapPrimitive(tpe: Type): Tree = {
@@ -274,7 +272,14 @@ class PrimitiveMacro(override val c: blackbox.Context) extends BlackboxToolbelt 
       case Symbols.listSymbol => listPrimitive(wkType)
       case Symbols.setSymbol => setPrimitive(wkType)
       case Symbols.mapSymbol => mapPrimitive(wkType)
-      case _ => c.abort(c.enclosingPosition, s"Cannot find primitive implementation for $tpe")
+      case _ => c.abort(
+        c.enclosingPosition,
+        s"""
+          Cannot derive or find primitive implementation for $tpe.
+          |Please create a Primitive manually using Primitive.iso or make sure
+          |the implicit Primitve for $tpe is imported in the right scope.
+        """.stripMargin
+      )
     }
 
     evalTree(tree)
