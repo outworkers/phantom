@@ -155,16 +155,10 @@ object Publishing {
     licenses += ("Apache-2.0", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt")),
     pgpPassphrase in ThisBuild := {
       val logger = ConsoleLogger()
-      if (runningUnderCi && pgpPass.isDefined) {
-        logger.info("Running under CI and PGP password specified under settings.")
-        logger.info(s"Password longer than five characters: ${pgpPass.exists(_.length > 5)}")
-        pgpPass
-      } else {
-        logger.info("Could not find settings for a PGP passphrase.")
-        logger.info(s"pgpPass defined in environemnt: ${pgpPass.isDefined}")
-        logger.info(s"Running under CI: $runningUnderCi")
-        None
-      }
+      logger.info(s"Running under CI: $runningUnderCi")
+      logger.info(s"pgpPass defined in local environment: ${pgpPass.isDefined}")
+      logger.info(s"Password longer than five characters: ${pgpPass.exists(_.length > 5)}")
+      pgpPass
     },
     publishTo := {
       val nexus = "https://oss.sonatype.org/"
