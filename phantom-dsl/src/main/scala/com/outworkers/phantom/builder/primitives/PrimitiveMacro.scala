@@ -15,70 +15,33 @@
  */
 package com.outworkers.phantom.builder.primitives
 
-import java.net.InetAddress
-import java.nio.{BufferUnderflowException, ByteBuffer}
-import java.util.{Date, UUID}
+import java.nio.BufferUnderflowException
 
 import com.datastax.driver.core.exceptions.InvalidTypeException
-import com.outworkers.phantom.builder.query.prepared.ListValue
 import com.outworkers.phantom.macros.toolbelt.BlackboxToolbelt
-import org.joda.time.DateTime
-
-import scala.collection.concurrent.TrieMap
 import scala.reflect.macros.blackbox
 
 @macrocompat.bundle
 class PrimitiveMacro(override val c: blackbox.Context) extends BlackboxToolbelt {
   import c.universe._
 
-  def printType(tpe: Type): String = showCode(tq"${tpe.dealias}")
-
-  val rowByNameType = tq"_root_.com.datastax.driver.core.GettableByNameData"
-  val rowByIndexType = tq"_root_.com.outworkers.phantom.IndexedRow"
-  val protocolVersion = tq"_root_.com.datastax.driver.core.ProtocolVersion"
+  private[this] val protocolVersion = tq"_root_.com.datastax.driver.core.ProtocolVersion"
   private[this] val versionTerm = q"version"
 
-  val boolType = tq"_root_.scala.Boolean"
-  val strType: Tree = tq"_root_.java.lang.String"
-  val intType: Tree = tq"_root_.scala.Int"
-  val byteType: Tree = tq"_root_.scala.Byte"
-  val doubleType: Tree = tq"_root_.scala.Double"
-  val shortType: Tree = tq"_root_.scala.Short"
-  val uuidType: Tree = tq"_root_.java.util.UUID"
-  val longType: Tree = tq"_root_.scala.Long"
-  val floatType: Tree = tq"_root_.scala.Float"
-  val dateType: Tree = tq"_root_.java.util.Date"
-  val tupleValue: Tree = tq"_root_.com.datastax.driver.core.TupleValue"
-  val localDate: Tree = tq"_root_.com.datastax.driver.core.LocalDate"
-  val dateTimeType: Tree = tq"_root_.org.joda.time.DateTime"
-  val localJodaDate: Tree = tq"_root_.org.joda.time.LocalDate"
-  val bigDecimalType: Tree = tq"_root_.scala.math.BigDecimal"
-  val inetType: Tree = tq"_root_.java.net.InetAddress"
-  val bigIntType = tq"_root_.scala.math.BigInt"
-  val bufferType = tq"_root_.java.nio.ByteBuffer"
-  val bufferCompanion = q"_root_.java.nio.ByteBuffer"
+  private[this] val boolType = typeOf[scala.Boolean]
+  private[this] val strType = typeOf[java.lang.String]
+  private[this] val bufferType = typeOf[_root_.java.nio.ByteBuffer]
+  private[this] val bufferCompanion = q"_root_.java.nio.ByteBuffer"
 
-  private[this] val listValueType: Type = typeOf[ListValue[_]]
   private[this] val bufferException = typeOf[BufferUnderflowException]
   private[this] val invalidTypeException = typeOf[InvalidTypeException]
 
-  val codecUtils = q"_root_.com.datastax.driver.core.CodecUtils"
-  val builder = q"_root_.com.outworkers.phantom.builder"
-  val cql = q"_root_.com.outworkers.phantom.builder.query.engine.CQLQuery"
-  val syntax = q"_root_.com.outworkers.phantom.builder.syntax.CQLSyntax"
+  private[this] val codecUtils = q"_root_.com.datastax.driver.core.CodecUtils"
+  private[this] val builder = q"_root_.com.outworkers.phantom.builder"
 
-  val prefix = q"_root_.com.outworkers.phantom.builder.primitives"
-
-  def tryT(x: Tree): Tree = tq"scala.util.Try[$x]"
-  def tryT(x: Type): Tree = tq"scala.util.Try[$x]"
+  private[this] val prefix = q"_root_.com.outworkers.phantom.builder.primitives"
 
   def typed[A : c.WeakTypeTag]: Symbol = weakTypeOf[A].typeSymbol
-
-  /**
-    * Adds a caching layer for subsequent requests to materialise the same primitive type.
-    * This adds a simplistic caching layer that computes primitives based on types.
-    */
-  val treeCache: TrieMap[Symbol, Tree] = TrieMap.empty[Symbol, Tree]
 
   def isTuple(tpe: Type): Boolean = {
     tpe.typeSymbol.fullName startsWith "scala.Tuple"
@@ -88,28 +51,12 @@ class PrimitiveMacro(override val c: blackbox.Context) extends BlackboxToolbelt 
     tpe.typeSymbol.fullName startsWith "scala.Option"
   }
 
+  def printType(tpe: Type): String = showCode(tq"${tpe.dealias}")
+
   object Symbols {
-    val intSymbol: Symbol = typed[Int]
-    val byteSymbol: Symbol = typed[Byte]
-    val stringSymbol: Symbol = typed[String]
-    val boolSymbol: Symbol = typed[Boolean]
-    val shortSymbol: Symbol = typed[Short]
-    val longSymbol: Symbol = typed[Long]
-    val doubleSymbol: Symbol = typed[Double]
-    val floatSymbol: Symbol = typed[Float]
-    val dateSymbol: Symbol = typed[Date]
     val listSymbol: Symbol = typed[scala.collection.immutable.List[_]]
     val setSymbol: Symbol = typed[scala.collection.immutable.Set[_]]
     val mapSymbol: Symbol = typed[scala.collection.immutable.Map[_, _]]
-    val dateTimeSymbol: Symbol = typed[DateTime]
-    val localDateSymbol: Symbol = typed[com.datastax.driver.core.LocalDate]
-    val uuidSymbol: Symbol = typed[UUID]
-    val jodaLocalDateSymbol: Symbol = typed[org.joda.time.LocalDate]
-    val timestampSymbol: Symbol = typed[java.sql.Timestamp]
-    val inetSymbol: Symbol = typed[InetAddress]
-    val bigInt: Symbol = typed[BigInt]
-    val bigDecimal: Symbol = typed[BigDecimal]
-    val buffer: Symbol = typed[ByteBuffer]
     val enumValue: Symbol = typed[Enumeration#Value]
     val enum: Symbol = typed[Enumeration]
   }
@@ -212,7 +159,7 @@ class PrimitiveMacro(override val c: blackbox.Context) extends BlackboxToolbelt 
     val extractorTerms = indexedFields.map { case (_, i) => fqTerm(i) }
     val fieldExtractor = q"for (..$deserializedFields) yield new $tpe(..$extractorTerms)"
 
-    val tree = q"""new $prefix.Primitive[$tpe] {
+    q"""new $prefix.Primitive[$tpe] {
       override def dataType: $strType = {
         $builder.QueryBuilder.Collections
           .tupleType(..${fields.map(_.cassandraType)})
@@ -255,10 +202,6 @@ class PrimitiveMacro(override val c: blackbox.Context) extends BlackboxToolbelt 
 
       override def shouldFreeze: $boolType = true
     }"""
-
-    if (showTrees) c.echo(c.enclosingPosition, showCode(tree))
-
-    tree
   }
 
   def mapPrimitive(tpe: Type): Tree = {
@@ -274,8 +217,6 @@ class PrimitiveMacro(override val c: blackbox.Context) extends BlackboxToolbelt 
       case None => c.abort(c.enclosingPosition, "Expected inner type to be defined")
     }
   }
-
-
 
   def optionPrimitive(tpe: Type): Tree = {
     tpe.typeArgs match {
@@ -331,10 +272,17 @@ class PrimitiveMacro(override val c: blackbox.Context) extends BlackboxToolbelt 
       case Symbols.listSymbol => listPrimitive(wkType)
       case Symbols.setSymbol => setPrimitive(wkType)
       case Symbols.mapSymbol => mapPrimitive(wkType)
-      case _ => c.abort(c.enclosingPosition, s"Cannot find primitive implementation for $tpe")
+      case _ => c.abort(
+        c.enclosingPosition,
+        s"""
+          Cannot derive or find primitive implementation for $tpe.
+          |Please create a Primitive manually using Primitive.iso or make sure
+          |the implicit Primitve for $tpe is imported in the right scope.
+        """.stripMargin
+      )
     }
 
-    tree
+    evalTree(tree)
   }
 
   def materializer[T : c.WeakTypeTag]: Tree = {
