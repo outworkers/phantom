@@ -24,6 +24,7 @@ import com.outworkers.phantom.builder.query.execution._
 import com.outworkers.phantom.builder.query.prepared.{PrepareMark, PreparedFlattener, PreparedSelectBlock}
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.builder.{ConsistencyBound, LimitBound, OrderBound, WhereBound, _}
+import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.{CassandraTable, Row}
 import shapeless.ops.hlist.{Prepend, Reverse, Tupler}
@@ -277,7 +278,25 @@ private[phantom] class RootSelectBlock[
     )
   }
 
-  @implicitNotFound("You haven't provided a KeySpace in scope. Use a Connector to automatically inject one.")
+
+  def count[RR](fn: T => AbstractColumn[RR])(
+    implicit keySpace: KeySpace,
+    ev: Primitive[Long]
+  ): SelectQuery.Default[T, Long] = {
+    new SelectQuery(
+      table,
+      extractCount,
+      QueryBuilder.Select.count(table.tableName, keySpace.name, fn(table).name),
+      Nil,
+      WherePart.empty,
+      OrderPart.empty,
+      LimitedPart.empty,
+      FilteringPart.empty,
+      UsingPart.empty,
+      count = true
+    )
+  }
+
   def count()(
     implicit keySpace: KeySpace,
     ev: Primitive[Long]
