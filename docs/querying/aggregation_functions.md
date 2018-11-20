@@ -11,6 +11,8 @@
     - [ttl operator](#using-the-`ttl`-operator)
 - [UUID and TimeUUID specific operators](#uuid-and-timeuuid-specific-functions.)
     - [dateOf operator](#using-the-`dateof`-operator)
+    - [unixTimestamp operator](#using-the-`unixtimestamp`-operator)
+    - [minTimeuuid and maxTimeuuid](#using-`mintimeuuid`-and-`maxtimeuuid`-operators.)
     
 ####  Aggregation functions
 
@@ -179,7 +181,7 @@ trait TTLExamples extends db.Connector {
       db.timeuuidTable.select.function(t => ttl(t.name))
         .where(_.user eqs record.user)
         .and(_.id eqs record.id)
-        .aggregate()
+        .aggregate().map(_.flatten)
     }
 }
 ```
@@ -200,11 +202,11 @@ and it will return an error if you attempt to use it with anything else.
 
 trait DateOfExamples extends db.Connector {
     
-    def findDateOf(record: TimeUUIDRecord): Future[Option[Long]] = {
+    def findDateOf(record: TimeUUIDRecord): Future[Option[DateTime]] = {
         db.timeuuidTable.select
             .function(t => dateOf(t.id))
             .where(_.user eqs record.user)
-            .aggregate()
+            .aggregate().map(_.flatten)
     }
 }
 ```
@@ -226,7 +228,52 @@ trait UnixTimestampExamples extends db.Connector {
             .function(t => unixTimestampOf(t.id))
             .where(_.user eqs record.user)
             .and(_.id eqs record.id)
-            .aggregate()
+            .aggregate().map(_.flatten)
     }
+}
+```
+
+
+##### Using `minTimeuuid` and `maxTimeuuid` operators.
+
+These two operators exist to provide a time range query capability directly using the partition
+key of a given table. This allows to define both uniqueness requirements and timestamps in a single timeuuid value.
+
+E.g Cassandra will store both an id and timestamp for a record in the same field, so it greatly simplifies
+our storage and query models, just by using a `timeuuid` column.
+
+
+```scala
+
+import org.joda.time.DateTime
+
+trait TimeUUIDRangeExamples extends db.Connector {
+    
+    // Here we retrieve all records between start and end just by using the partition key column.
+    def getInterval(start: DateTime, end: DateTime): Future[List[TimeUUIDRecord]] = {
+        db.timeuuidTable.select
+            .where(_.id >= minTimeuuid(start))
+            .and(_.id <= maxTimeuuid(end))
+            .fetch()
+    }
+}
+```
+
+
+#### Using multiple aggregation operators in a single query
+
+Phantom offers the `~` operator, which allows queries to retrieve the values of multiple operators
+at the same time, and a `multiAggregate` DB action to provide a cleaner return type.
+
+```scala
+trait MultiAggregates extends db.Connector {
+
+   def averageAndMax: Future[Option[(Option[Long], Option[Long])]] = {
+       db.primitives.select
+            .function(t => avg(t.long) ~ max(t.long))
+            .multiAggregate()
+   }
+
+ 
 }
 ```
