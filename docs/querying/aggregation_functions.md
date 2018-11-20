@@ -43,7 +43,7 @@ Let's take a look at how to leverage this functionality using phantom. First, we
 a connector, the schema and record for our table, and a database.
 
 
-```tut:silent
+```scala
 
 import scala.concurrent.Future
 import com.datastax.driver.core.SocketOptions
@@ -151,7 +151,7 @@ such as UUID and timeuuid specific ones, are described further down.
 This operator is user to determine the UTC timestamp of a write, e.g the timestamp at which
 the record was written to Cassandra. More details [here](https://docs.datastax.com/en/cql/3.3/cql/cql_using/useWritetime.html).
 
-```tut:silent
+```scala
 
 import java.util.UUID
 import scala.concurrent.Future
@@ -160,23 +160,22 @@ import scala.concurrent.Future
 trait WriteTimeExamples extends db.Connector {
 
     def findWritetime(record: PrimitiveRecord): Future[Option[Long]] = {
-        db.recipes.select
+        database.recipes.select
             .function(t => writetime(t.description))
             .where(_.url eqs record.url)
             .aggregate()
     }
 }
 ```
-
 ##### Using the `ttl` operator
 
 This will only return a value if there is a `ttl` set on the respective column.
 
-```tut:silent
+```scala
 trait TTLExamples extends db.Connector {
 
     def findTTL(record: PrimitiveRecord): Future[Option[Int]] = {
-      db.timeuuidTable.select.function(t => ttl(t.name))
+      database.timeuuidTable.select.function(t => ttl(t.name))
         .where(_.user eqs record.user)
         .and(_.id eqs record.id)
         .aggregate()
@@ -196,7 +195,7 @@ It's important to remember this operator is specifically designed to work only w
 and it will return an error if you attempt to use it with anything else.
 
 
-```tut:silent
+```scala
 
 import java.util.UUID
 import scala.concurrent.Future
@@ -204,7 +203,7 @@ import scala.concurrent.Future
 trait DateOfExamples extends db.Connector {
     
     def findDateOf(record: TimeUUIDRecord): Future[Option[Long]] = {
-        db.timeuuidTable.select
+        database.timeuuidTable.select
             .function(t => dateOf(t.id))
             .where(_.user eqs record.user)
             .aggregate()
@@ -216,7 +215,7 @@ trait DateOfExamples extends db.Connector {
 
 Just like `dateOf`, this operator will only work with `uuid` and `timeuuid` columns.
 
-```tut:silent
+```scala
 
 import java.util.UUID
 import scala.concurrent.Future
@@ -224,7 +223,7 @@ import scala.concurrent.Future
 trait UnixTimestampExamples extends db.Connector {
     
     def findUnixTimestampOf(record: TimeUUIDRecord): Future[Option[Long]] = {
-        db.timeuuidTable
+        database.timeuuidTable
             .select
             .function(t => unixTimestampOf(t.id))
             .where(_.user eqs record.user)

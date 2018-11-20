@@ -10,7 +10,6 @@ If you use phantom, please consider adding your company to our list of adopters.
 
 ![phantom](https://s3-eu-west-1.amazonaws.com/websudos/oss/logos/phantom.png "Outworkers Phantom")
 
-
 Documentation
 ===================
 
@@ -21,21 +20,27 @@ If this is your very first time with phantom, a good place to start would be the
     - [Comparing phantom with other drivers](./comparison.md)
     - [Connecting to Cassandra](./basics/connectors.md)
     - [Understanding the Database construct](./basics/database.md)
-    - [Creating Cassandra Tables](./basics/tables.md)
-    - [Primitive datatypes](./basics/primitives.md)
-    - [Json columns](./basics/json_columns.md)
-    - [Using Batches in Cassandra](./basics/batches.md)
-    - [Advanced debugging](./basics/debugging.md)
-    - [Changelog](./basics/changelog.md)
-    - [Indexes](./basics/indexes)
-        - [SASI Indexes](./basics/indexes/sasi.md)
+    
+    - *Defining Cassandra tables * 
+        - [Schema DSL](./basics/tables.md)
+            - [Indexes](./basics/indexes)
+                - [SASI Indexes](./basics/indexes/sasi.md)
+        - [Primitive datatypes](./basics/primitives.md)
+        - [Json columns](./basics/json_columns.md)
+        - [Using Batches in Cassandra](./basics/batches.md)
+        - [Advanced debugging](./basics/debugging.md)
+    
 - [Querying with Phantom](./querying)
-    - [Using SELECT queries](./querying/select.md)
+    - [SELECT queries](./querying/select.md)
+        - [WHERE clause](./querying/where_clause.md)
+        - [Aggregation functions](./querying/aggregation_functions.md)
+        
     - [Using the different kinds of Futures](./querying/execution.md)    
 - [Commercial](./commercial)
     - [Enterprise level support](./commercial/support.md)
 
 - [Roadmap](./roadmap.md)
+- [Changelog](./basics/changelog.md)
 
 
 
