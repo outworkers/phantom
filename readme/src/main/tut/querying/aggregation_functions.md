@@ -159,10 +159,10 @@ import scala.concurrent.Future
 
 trait WriteTimeExamples extends db.Connector {
 
-    def findWritetime(record: PrimitiveRecord): Future[Option[Long]] = {
-        db.recipes.select
-            .function(t => writetime(t.description))
-            .where(_.url eqs record.url)
+    def findWritetime(record: TimeUUIDRecord): Future[Option[Long]] = {
+        db.timeuuidTable.select
+            .function(t => writetime(t.user))
+            .where(_.id eqs record.id)
             .aggregate()
     }
 }
@@ -175,7 +175,7 @@ This will only return a value if there is a `ttl` set on the respective column.
 ```tut:silent
 trait TTLExamples extends db.Connector {
 
-    def findTTL(record: PrimitiveRecord): Future[Option[Int]] = {
+    def findTTL(record: TimeUUIDRecord): Future[Option[Int]] = {
       db.timeuuidTable.select.function(t => ttl(t.name))
         .where(_.user eqs record.user)
         .and(_.id eqs record.id)
@@ -197,9 +197,6 @@ and it will return an error if you attempt to use it with anything else.
 
 
 ```tut:silent
-
-import java.util.UUID
-import scala.concurrent.Future
 
 trait DateOfExamples extends db.Connector {
     
@@ -235,3 +232,27 @@ trait UnixTimestampExamples extends db.Connector {
 ```
 
 
+#### Using `minTimeuuid` and `maxTimeuuid` operators.
+
+These two operators exist to provide a time range query capability directly using the partition
+key of a given table. This allows to define both uniqueness requirements and timestamps in a single timeuuid value.
+
+E.g Cassandra will store both an id and timestamp for a record in the same field, so it greatly simplifies
+our storage and query models, just by using a `timeuuid` column.
+
+
+```tut:silent
+
+import org.joda.time.DateTime
+
+trait TimeUUIDRangeExamples extends db.Connector {
+    
+    // Here we retrieve all records between start and end just by using the partition key column.
+    def getInterval(start: DateTime, end: DateTime): Future[List[TimeUUIDRecord]] = {
+        database.timeuuidTable.select
+            .where(_.id >= minTimeuuid(start))
+            .and(_.id <= maxTimeuuid(end))
+            .fetch()
+    }
+}
+```

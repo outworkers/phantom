@@ -159,14 +159,15 @@ import scala.concurrent.Future
 
 trait WriteTimeExamples extends db.Connector {
 
-    def findWritetime(record: PrimitiveRecord): Future[Option[Long]] = {
-        database.recipes.select
-            .function(t => writetime(t.description))
-            .where(_.url eqs record.url)
+    def findWritetime(record: TimeUUIDRecord): Future[Option[Long]] = {
+        db.timeuuidTable.select
+            .function(t => writetime(t.user))
+            .where(_.id eqs record.id)
             .aggregate()
     }
 }
 ```
+
 ##### Using the `ttl` operator
 
 This will only return a value if there is a `ttl` set on the respective column.
@@ -174,8 +175,8 @@ This will only return a value if there is a `ttl` set on the respective column.
 ```scala
 trait TTLExamples extends db.Connector {
 
-    def findTTL(record: PrimitiveRecord): Future[Option[Int]] = {
-      database.timeuuidTable.select.function(t => ttl(t.name))
+    def findTTL(record: TimeUUIDRecord): Future[Option[Int]] = {
+      db.timeuuidTable.select.function(t => ttl(t.name))
         .where(_.user eqs record.user)
         .and(_.id eqs record.id)
         .aggregate()
@@ -197,13 +198,10 @@ and it will return an error if you attempt to use it with anything else.
 
 ```scala
 
-import java.util.UUID
-import scala.concurrent.Future
-
 trait DateOfExamples extends db.Connector {
     
     def findDateOf(record: TimeUUIDRecord): Future[Option[Long]] = {
-        database.timeuuidTable.select
+        db.timeuuidTable.select
             .function(t => dateOf(t.id))
             .where(_.user eqs record.user)
             .aggregate()
@@ -223,7 +221,7 @@ import scala.concurrent.Future
 trait UnixTimestampExamples extends db.Connector {
     
     def findUnixTimestampOf(record: TimeUUIDRecord): Future[Option[Long]] = {
-        database.timeuuidTable
+        db.timeuuidTable
             .select
             .function(t => unixTimestampOf(t.id))
             .where(_.user eqs record.user)
@@ -232,5 +230,3 @@ trait UnixTimestampExamples extends db.Connector {
     }
 }
 ```
-
-
