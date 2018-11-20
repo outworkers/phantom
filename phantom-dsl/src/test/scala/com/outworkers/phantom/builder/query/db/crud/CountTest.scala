@@ -30,12 +30,32 @@ class CountTest extends PhantomSuite {
   it should "retrieve a count of 0 if the table has been truncated" in {
 
     val chain = for {
-      truncate <- database.primitivesJoda.truncate.future()
+      _ <- database.primitivesJoda.truncate.future()
       count <- database.primitivesJoda.select.count.one()
     } yield count
 
     whenReady(chain) { res =>
       res.value shouldEqual 0L
+    }
+  }
+
+  it should "correctly retrieve a count of 1000 when select a column" in {
+    val limit = 100
+
+    val rows = genList[JodaRow](limit)
+
+    val batch = rows.foldLeft(Batch.unlogged)((b, row) => {
+      b.add(TestDatabase.primitivesJoda.store(row))
+    })
+
+    val chain = for {
+      _ <- database.primitivesJoda.truncate.future()
+      _ <- batch.future()
+      count <- database.primitivesJoda.select.count(_.pkey).one()
+    } yield count
+
+    whenReady(chain) { res =>
+      res.value shouldEqual limit.toLong
     }
   }
 
@@ -49,8 +69,8 @@ class CountTest extends PhantomSuite {
     })
 
     val chain = for {
-      truncate <- database.primitivesJoda.truncate.future()
-      batch <- batch.future()
+      _ <- database.primitivesJoda.truncate.future()
+      _ <- batch.future()
       count <- database.primitivesJoda.select.count.one()
     } yield count
 

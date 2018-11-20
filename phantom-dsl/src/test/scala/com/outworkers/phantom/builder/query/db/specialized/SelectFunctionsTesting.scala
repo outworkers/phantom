@@ -441,6 +441,34 @@ class SelectFunctionsTesting extends PhantomSuite {
   }
 
   // COUNT function
+  it should "retrieve the count of records from Cassandra" in {
+    val record = gen[PrimitiveRecord]
+
+    val chain = for {
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(count()).one()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+    }
+  }
+
+  // COUNT function
+  it should "retrieve the count of records from Cassandra using a specific column name" in {
+    val record = gen[PrimitiveRecord]
+
+    val chain = for {
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select.function(t => count(t.pkey)).one()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+    }
+  }
+
+  // COUNT function
   it should "retrieve the count of records from from Cassandra" in {
     val record = gen[PrimitiveRecord]
 
@@ -467,6 +495,43 @@ class SelectFunctionsTesting extends PhantomSuite {
 
     whenReady(chain) { res =>
       res shouldBe defined
+    }
+  }
+
+  it should "retrieve the result of of an average and a count(*)" in {
+    val record = gen[PrimitiveRecord]
+
+    val chain = for {
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select
+        .function(t => avg(t.long) ~ count())
+        .where(_.pkey eqs record.pkey)
+        .multiAggregate()
+    } yield res
+
+    whenReady(chain) { res =>
+      val (avg, count) = res.value
+      avg shouldBe defined
+      count shouldBe defined
+    }
+  }
+
+
+  it should "retrieve the result of of an average and a count(columnName)" in {
+    val record = gen[PrimitiveRecord]
+
+    val chain = for {
+      _ <- database.primitives.store(record).future()
+      res <- database.primitives.select
+        .function(t => avg(t.long) ~ count(t.pkey))
+        .where(_.pkey eqs record.pkey)
+        .multiAggregate()
+    } yield res
+
+    whenReady(chain) { res =>
+      val (avg, count) = res.value
+      avg shouldBe defined
+      count shouldBe defined
     }
   }
 
