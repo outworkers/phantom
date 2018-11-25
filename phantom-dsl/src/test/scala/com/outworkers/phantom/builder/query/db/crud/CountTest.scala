@@ -51,7 +51,7 @@ class CountTest extends PhantomSuite {
     val chain = for {
       _ <- database.primitivesJoda.truncate.future()
       _ <- batch.future()
-      count <- database.primitivesJoda.select.count(_.pkey).one()
+      count <- database.primitivesJoda.select.count(_.timestamp).one()
     } yield count
 
     whenReady(chain) { res =>
