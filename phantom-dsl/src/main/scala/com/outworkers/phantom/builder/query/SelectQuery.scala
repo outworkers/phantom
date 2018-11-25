@@ -210,6 +210,15 @@ private[phantom] class RootSelectBlock[
     ev.fromRow(CQLSyntax.Selection.count, r).getOrElse(0L)
   }
 
+  private[this] def namedCount(r: Row, name: String)(
+    implicit ev: Primitive[Long]
+  ): Long = {
+    ev.fromRow(
+      CQLQuery(CQLSyntax.Selection.systemCount).wrapn(name).queryString,
+      r
+    ).getOrElse(0L)
+  }
+
   def json()(
     implicit keySpace: KeySpace,
     ev: Primitive[String]
@@ -285,7 +294,7 @@ private[phantom] class RootSelectBlock[
   ): SelectQuery.Default[T, Long] = {
     new SelectQuery(
       table,
-      extractCount,
+      row => namedCount(row, fn(table).name),
       QueryBuilder.Select.count(table.tableName, keySpace.name, fn(table).name),
       Nil,
       WherePart.empty,

@@ -124,6 +124,19 @@ sealed class CountCqlFunction extends CqlFunction {
       }
     })
   }
+
+  def apply(col: AbstractColumn[_])(
+    implicit ev: Primitive[Long],
+    session: Session
+  ): TypedClause.Condition[Option[Long]] = {
+    new TypedClause.Condition(QueryBuilder.Select.aggregation(operator, col.name), row => {
+      if (row.getColumnDefinitions.contains(s"system.$operator(${col.name})")) {
+        ev.fromRow(s"system.$operator(${col.name})", row).toOption
+      } else {
+        ev.fromRow(s"$operator(${col.name})", row).toOption
+      }
+    })
+  }
 }
 
 sealed class SumCqlFunction extends AggregationFunction(CQLSyntax.Selection.sum)

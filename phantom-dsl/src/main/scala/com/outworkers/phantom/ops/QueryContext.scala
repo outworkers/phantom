@@ -39,6 +39,8 @@ abstract class QueryContext[P[_], F[_], Timeout](
 ) { outer =>
 
   type QueryNotExecuted = _root_.com.outworkers.phantom.ops.QueryNotExecuted
+  type AsciiValue = com.outworkers.phantom.builder.primitives.AsciiValue
+  val AsciiValue = com.outworkers.phantom.builder.primitives.AsciiValue
 
 
   type ListValue[T] = com.outworkers.phantom.builder.query.prepared.ListValue[T]
