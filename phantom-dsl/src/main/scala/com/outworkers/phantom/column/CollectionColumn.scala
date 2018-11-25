@@ -15,8 +15,7 @@
  */
 package com.outworkers.phantom.column
 
-import com.outworkers.phantom.Row
-import com.outworkers.phantom.CassandraTable
+import com.outworkers.phantom.{ CassandraTable, Row }
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.primitives.Primitive
 

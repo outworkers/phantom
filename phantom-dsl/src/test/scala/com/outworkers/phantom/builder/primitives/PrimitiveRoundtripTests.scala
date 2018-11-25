@@ -21,6 +21,7 @@ import java.util.Date
 import com.datastax.driver.core.ProtocolVersion
 import com.outworkers.phantom.builder.query.prepared.ListValue
 import com.outworkers.util.samplers._
+import org.joda.time.LocalDate
 import org.scalacheck.Gen._
 import org.scalacheck.util.Buildable
 import org.scalacheck.{Arbitrary, Gen}
@@ -45,13 +46,18 @@ class PrimitiveRoundtripTests
     b: Buildable[T, List[T]]
   ): Arbitrary[ListValue[T]] = Arbitrary(buildableOf[List[T], T](a) map ListValue.apply)
 
+  implicit val localDateSampler = new Sample[LocalDate] {
+    override def sample: LocalDate = LocalDate.now()
+  }
+
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration = {
     PropertyCheckConfiguration(minSuccessful = 100)
   }
 
   implicit val bigDecimalArb: Arbitrary[BigDecimal] = Sample.arbitrary[BigDecimal]
+  implicit val localDateArb: Arbitrary[LocalDate] = Sample.arbitrary[LocalDate]
 
-  implicit val asciiValue: Arbitrary[AsciiValue] = Arbitrary(Gen.containerOf[Array, Char](Gen.choose[Char](min = 0,max = 127)).map(v => AsciiValue(v.mkString)))
+  implicit val asciiValue: Arbitrary[AsciiValue] = Arbitrary(Gen.containerOf[Array, Char](Gen.choose[Char](min = 0, max = 127)).map(v => AsciiValue(v.mkString)))
 
   val protocolGen: Gen[ProtocolVersion] = Gen.alphaStr.map(_ => ProtocolVersion.V5)
 
@@ -77,6 +83,14 @@ class PrimitiveRoundtripTests
 
   it should "serialize and deserialize an Option[String] primitive" in {
     roundtrip(Gen.option(Gen.alphaNumStr))
+  }
+
+  it should "serialize and deserialize a LocalDate primitive" in {
+    roundtrip[LocalDate]
+  }
+
+  it should "serialize and deserialize an Option[LocalDate] primitive" in {
+    roundtrip[Option[LocalDate]]
   }
 
   it should "serialize and deserialize a Int primitive" in {

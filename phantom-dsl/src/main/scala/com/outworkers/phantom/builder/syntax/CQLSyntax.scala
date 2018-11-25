@@ -147,6 +147,7 @@ object CQLSyntax {
 
   object Selection {
     val count = "count"
+    val systemCount = "system.count"
     val avg = "avg"
     val min = "min"
     val max = "max"

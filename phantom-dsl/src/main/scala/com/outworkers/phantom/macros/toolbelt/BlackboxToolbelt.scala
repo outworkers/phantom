@@ -72,6 +72,13 @@ private[phantom] trait BlackboxToolbelt {
     }
   }
 
+  def evalTree(tree: => Tree): Tree = {
+    if (showTrees) {
+      c.echo(c.enclosingPosition, showCode(tree))
+    }
+    tree
+  }
+
   def info(msg: String, force: Boolean = false): Unit = {
     if (showLogs) {
       c.info(c.enclosingPosition, msg, force)

@@ -83,6 +83,6 @@ trait HListHelpers {
       }
     }
 
-    unfold(tpe, List()).reverse
+    unfold(tpe, Nil).reverse
   }
 }
