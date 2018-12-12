@@ -15,6 +15,7 @@
  */
 package com.outworkers.phantom.builder.serializers
 
+import com.datastax.driver.core.ParseUtils
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.QueryBuilder.Utils
 import com.outworkers.phantom.builder.query.engine.CQLQuery
@@ -213,9 +214,16 @@ private[builder] class CreateTableBuilder {
     * @return A CQLQuery containing the valid CQL of creating a secondary index on a Cassandra column.
     */
   def index(table: String, keySpace: String, column: String): CQLQuery = {
+
+    val indexName = if (ParseUtils.isDoubleQuoted(column)){
+      ParseUtils.doubleQuote(s"${table}_${ParseUtils.unDoubleQuote(column)}_idx")
+    } else {
+      s"${table}_${column}_idx"
+    }
+
     CQLQuery(CQLSyntax.create).forcePad.append(CQLSyntax.index)
       .forcePad.append(CQLSyntax.ifNotExists)
-      .forcePad.append(s"${table}_${column}_idx")
+      .forcePad.append(indexName)
       .forcePad.append(CQLSyntax.On)
       .forcePad.append(QueryBuilder.keyspace(keySpace, table))
       .wrapn(column)
