@@ -127,4 +127,10 @@ class SecondaryIndexTest extends PhantomSuite {
     }
   }
 
+  it should "allow creating a table with a quoted secondary index" in {
+    val f = database.quotedSecondaryIndexTable.createSchema()
+
+    f
+  }
+
 }
