@@ -50,7 +50,7 @@ class PreparedInsertQueryTest extends PhantomSuite {
       .prepare()
 
     val chain = for {
-      store <- query.bind(sample).future()
+      _ <- query.bind(sample).future()
       get <- database.recipes.select.where(_.url eqs sample.url).one()
     } yield get
 
