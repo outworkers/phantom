@@ -127,10 +127,19 @@ class SecondaryIndexTest extends PhantomSuite {
     }
   }
 
-  it should "allow creating a table with a quoted secondary index" in {
-    val f = database.quotedSecondaryIndexTable.createSchema()
+  it should "allow creating and querying a table with a quoted secondary index" in {
 
-    f
+    val sample = gen[SecondaryIndexRecord]
+
+    val chain = for {
+      create <- database.quotedSecondaryIndexTable.create.ifNotExists().future()
+      insert <- database.quotedSecondaryIndexTable.storeRecord(sample)
+      query <- database.quotedSecondaryIndexTable.select.where(_.secondary eqs sample.secondary).one()
+    } yield query
+
+    whenReady(chain) { res =>
+      res.value shouldEqual sample
+    }
   }
 
 }
