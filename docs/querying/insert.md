@@ -3,7 +3,7 @@
 
 First some basic setup, a database connection and a few tables to create examples on.
 
-```tut:silent
+```scala
 
 import com.outworkers.phantom.dsl._
 import com.outworkers.util.samplers._
@@ -52,7 +52,7 @@ A `Payload` is a `map` of properties, where the keys are always strings and the 
 on the Cassandra binary protocol, as a `java.nio.ByteBuffer`. There are several ways to construct a `Payload`, the easiest
 being using automated encodings available in phantom.
 
-```tut:silent
+```scala
 
 import java.util.UUID
 import org.joda.time.{ DateTime, DateTimeZone }
@@ -68,7 +68,7 @@ object PayloadExample {
 
 And this is how to use a payload inside a query of any kind, using the `withOptions` method.
 
-```tut:silent
+```scala
 
 import scala.concurrent.Future
 import com.outworkers.phantom.dsl._
