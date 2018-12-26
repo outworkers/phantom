@@ -87,8 +87,8 @@ scalacOptions in Global ++= scalacOptionsFn(scalaVersion.value)
 
 lazy val Versions = new {
   val logback = "1.2.3"
-  val util = "0.45.0"
-  val json4s = "3.6.1"
+  val util = "0.48.0"
+  val json4s = "3.6.2"
   val datastax = "3.6.0"
   val scalatest = "3.0.5"
   val shapeless = "2.3.3"
@@ -104,11 +104,11 @@ lazy val Versions = new {
   val scalamock = "3.6.0"
   val macrocompat = "1.1.1"
   val macroParadise = "2.1.1"
-  val circe = "0.9.3"
+  val circe = "0.11.0"
 
   val scala210 = "2.10.6"
   val scala211 = "2.11.12"
-  val scala212 = "2.12.7"
+  val scala212 = "2.12.8"
   val scalaAll = Seq(scala210, scala211, scala212)
 
   val scala = new {
