@@ -85,7 +85,7 @@ class IteratorTest extends BigTest with ScalaFutures {
     val row = gen[TimeUUIDRecord].copy(id = UUIDs.timeBased())
     val payload = Payload("test" -> 5)
 
-    Payload(
+    Payload.apply(
       "test" -> 5,
       "timestamp" -> DateTime.now()
     )
