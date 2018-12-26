@@ -17,13 +17,16 @@ package com.outworkers.phantom.builder.query
 
 import java.nio.ByteBuffer
 import java.util.{Collections, Map => JMap}
-import scala.collection.JavaConverters._
 
+import scala.collection.JavaConverters._
 import com.datastax.driver.core._
 import com.datastax.driver.core.policies.TokenAwarePolicy
 import com.outworkers.phantom.Manager
 import com.outworkers.phantom.builder.ops.TokenizerKey
 import com.outworkers.phantom.builder.primitives.Primitive
+import shapeless.{::, Generic, HList, HNil, Lazy}
+
+import scala.annotation.implicitNotFound
 
 trait Modifier extends (Statement => Statement)
 
@@ -46,6 +49,32 @@ case class Payload(underlying: JMap[String, ByteBuffer]) {
   }
 }
 
+@implicitNotFound("Payloads are a sequence of (key, value) tuples where the key is always String, and the value is a primitive.")
+trait PayloadSerializer[HL <: HList] {
+  def apply(input: HL): Seq[(String, ByteBuffer)]
+}
+
+object PayloadSerializer {
+
+  def apply[HL <: HList](implicit ev: PayloadSerializer[HL]): PayloadSerializer[HL] = ev
+
+  implicit val hNilSerializer: PayloadSerializer[HNil] = new PayloadSerializer[HNil] {
+    override def apply(input: HNil): Seq[(String, ByteBuffer)] = Seq.empty
+  }
+
+  implicit def hconsSerializer[H, HL <: HList, A, B](
+    implicit tpEv: H <:< (String, B),
+    ev: Primitive[B],
+    pv: ProtocolVersion,
+    ps: Lazy[PayloadSerializer[HL]]
+  ): PayloadSerializer[H :: HL] = new PayloadSerializer[::[H, HL]] {
+    override def apply(input: ::[H, HL]): Seq[(String, ByteBuffer)] = {
+      val (key, value): (String, B) = input.head
+      Seq(key -> ev.serialize(value, pv)) ++ ps.value(input.tail)
+    }
+  }
+}
+
 object Payload {
   def empty: Payload = new Payload(Collections.emptyMap())
 
@@ -53,9 +82,19 @@ object Payload {
 
   def apply(tp: (String, ByteBuffer)): Payload = apply(Seq(tp).toMap)
 
+  def seq(tp: (String, ByteBuffer)*): Payload = apply(tp.toMap)
+
   def apply[T](tp: (String, T))(implicit ev: Primitive[T], pv: ProtocolVersion): Payload = {
     val (key, value) = tp
     apply(Seq(key -> ev.serialize(value, pv)).toMap)
+  }
+
+  def apply[V1, HL <: HList](tp: V1)(
+    implicit gen: Generic.Aux[V1, HL],
+    pv: ProtocolVersion,
+    ps: PayloadSerializer[HL]
+  ): Payload = {
+    seq(ps(gen to tp): _*)
   }
 }
 

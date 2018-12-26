@@ -16,10 +16,10 @@
 package com.outworkers.phantom.streams.suites.iteratee
 
 import com.datastax.driver.core.utils.UUIDs
-import com.outworkers.phantom.builder.query.Payload
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.TimeUUIDRecord
 import com.outworkers.util.samplers._
+import org.joda.time.{DateTime, DateTimeZone}
 import org.scalatest.concurrent.ScalaFutures
 
 class IteratorTest extends BigTest with ScalaFutures {
@@ -83,7 +83,11 @@ class IteratorTest extends BigTest with ScalaFutures {
 
   it should "allow setting metadata using a payload" in {
     val row = gen[TimeUUIDRecord].copy(id = UUIDs.timeBased())
-    val payload = Payload("test" -> 5)
+    val payload = Payload(
+      "test" -> 5,
+      "timestamp" -> DateTime.now(DateTimeZone.UTC),
+      "values" -> List(1, 2, 3, 4, 5)
+    )
 
     val chain = for {
       queryRes <- database.timeuuidTable.store(row)
