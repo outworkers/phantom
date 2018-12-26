@@ -29,9 +29,9 @@ import scala.annotation.implicitNotFound
 import scala.collection.immutable.ListMap
 import scala.reflect.macros.whitebox
 
-@implicitNotFound(
-    """Table ${T} is most likely missing a PartitionKey column.|
-      Also check that the fields in your table match types inside ${R}.
+@implicitNotFound(msg = """
+    | Table ${T} is most likely missing a PartitionKey column.
+    | Also check that the fields in your table match types inside ${R}.
     """.stripMargin
 )
 trait TableHelper[T <: CassandraTable[T, R], R] extends Serializable {

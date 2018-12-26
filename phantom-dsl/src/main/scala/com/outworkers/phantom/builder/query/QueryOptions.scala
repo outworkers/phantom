@@ -58,16 +58,20 @@ object PayloadSerializer {
 
   def apply[HL <: HList](implicit ev: PayloadSerializer[HL]): PayloadSerializer[HL] = ev
 
-  implicit val hNilSerializer: PayloadSerializer[HNil] = (_: HNil) => Seq.empty
+  implicit val hNilSerializer: PayloadSerializer[HNil] = new PayloadSerializer[HNil] {
+    override def apply(input: HNil): Seq[(String, ByteBuffer)] = Seq.empty
+  }
 
   implicit def hconsSerializer[H, HL <: HList, A, B](
     implicit tpEv: H <:< (String, B),
     ev: Primitive[B],
     pv: ProtocolVersion,
     ps: Lazy[PayloadSerializer[HL]]
-  ): PayloadSerializer[H :: HL] = (input: H :: HL) => {
-    val (key, value): (String, B) = input.head
-    Seq(key -> ev.serialize(value, pv)) ++ ps.value(input.tail)
+  ): PayloadSerializer[H :: HL] = new PayloadSerializer[::[H, HL]] {
+    override def apply(input: ::[H, HL]): Seq[(String, ByteBuffer)] = {
+      val (key, value): (String, B) = input.head
+      Seq(key -> ev.serialize(value, pv)) ++ ps.value(input.tail)
+    }
   }
 }
 
