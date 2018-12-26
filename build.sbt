@@ -104,7 +104,7 @@ lazy val Versions = new {
   val scalamock = "3.6.0"
   val macrocompat = "1.1.1"
   val macroParadise = "2.1.1"
-  val circe = "0.11.0"
+  val circe = "0.9.2"
 
   val scala210 = "2.10.6"
   val scala211 = "2.11.12"
