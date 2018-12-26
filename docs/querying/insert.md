@@ -52,15 +52,25 @@ A `Payload` is a `map` of properties, where the keys are always strings and the 
 on the Cassandra binary protocol, as a `java.nio.ByteBuffer`. There are several ways to construct a `Payload`, the easiest
 being using automated encodings available in phantom.
 
+Using the convenience apply method requires an implicit ProtocolVersion in scope, because the way the serialization is performed
+depends on the version of the protocol, and it expects a series of tuples of the form `(String, Value)`, where the type of `Value`
+has an implicit `Primitive` already defined, which will be used for serialization.
+
 ```scala
 
 import java.util.UUID
 import org.joda.time.{ DateTime, DateTimeZone }
+import com.datastax.driver.core.ProtocolVersion
+import com.outworkers.phantom.dsl._
 
-object PayloadExample {
+trait PayloadExample extends db.Connector {
+
+  // Normally phantom would automatically define this.
+  // implicit val version: ProtocolVersion will come from inside the db.Connector.
   val customPayload = Payload(
     "timestamp" -> DateTime.now(DateTimeZone.UTC),
-    "id" -> UUID.randomUUID()
+    "id" -> UUID.randomUUID(),
+    "values" -> List(1, 2, 3, 4, 5)
   )
 }
 
