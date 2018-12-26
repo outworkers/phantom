@@ -119,8 +119,6 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
       .map(_.typeSymbol.typeSignatureIn(table).typeSymbol.name.toTermName)
       .map(name => q"$tableTerm.$name")
 
-    c.inferImplicitValue(typeOf[NamingStrategy], silent = true)
-
     val primaries = filterColumns[PrimaryKey](columns)
       .map(_.typeSymbol.typeSignatureIn(table).typeSymbol.name.toTermName)
       .map(name => q"$tableTerm.$name")
