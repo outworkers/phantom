@@ -29,10 +29,9 @@ import scala.annotation.implicitNotFound
 import scala.collection.immutable.ListMap
 import scala.reflect.macros.whitebox
 
-@implicitNotFound(
-  msg =
-    """Table ${T} is most likely missing a PartitionKey column.|
-      Also check that the fields in your table match types inside ${R}.
+@implicitNotFound(msg = """
+    | Table ${T} is most likely missing a PartitionKey column.
+    | Also check that the fields in your table match types inside ${R}.
     """.stripMargin
 )
 trait TableHelper[T <: CassandraTable[T, R], R] extends Serializable {
@@ -118,8 +117,6 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
     val partitionKeys = filterColumns[PartitionKey](columns)
       .map(_.typeSymbol.typeSignatureIn(table).typeSymbol.name.toTermName)
       .map(name => q"$tableTerm.$name")
-
-    c.inferImplicitValue(typeOf[NamingStrategy], silent = true)
 
     val primaries = filterColumns[PrimaryKey](columns)
       .map(_.typeSymbol.typeSignatureIn(table).typeSymbol.name.toTermName)
