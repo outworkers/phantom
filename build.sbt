@@ -171,7 +171,7 @@ val defaultConcurrency = 4
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   organization := "com.outworkers",
   scalaVersion := Versions.scala212,
-  credentials ++= Publishing.defaultls,
+  credentials ++= Publishing.defaultCredentials,
   updateOptions := updateOptions.value.withCachedResolution(true),
   resolvers ++= Seq(
     "Twitter Repository" at "http://maven.twttr.com",
