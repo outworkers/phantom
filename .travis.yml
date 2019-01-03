@@ -35,15 +35,22 @@ branches:
   - develop
 jdk:
 - oraclejdk8
+- oraclejdk9
+
 matrix:
   include:
   - scala: 2.12.8
     jdk: oraclejdk8
   - scala: 2.12.8
+    jdk: oraclejdk9
+  - scala: 2.12.8
     jdk: oraclejdk8
     env: CASSANDRA_VERSION=3.11.3 PUBLISH_ARTIFACT=true
   - scala: 2.12.8
     jdk: oraclejdk8
+    env: CASSANDRA_VERSION=3.0.17
+  - scala: 2.12.8
+    jdk: oraclejdk9
     env: CASSANDRA_VERSION=3.0.17
   - scala: 2.11.12
     jdk: oraclejdk8
