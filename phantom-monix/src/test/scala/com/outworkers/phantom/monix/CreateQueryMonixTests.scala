@@ -15,6 +15,8 @@
  */
 package com.outworkers.phantom.monix
 
+import com.outworkers.phantom.{PhantomSuite, TestDatabaseProvider}
+
 class CreateQueryMonixTests extends PhantomSuite with MonixScalaTest with TestDatabaseProvider {
 
   it should "execute a simple query with secondary indexes with Twitter futures" in {

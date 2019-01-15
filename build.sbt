@@ -445,6 +445,7 @@ lazy val phantomExample = (project in file("phantom-example"))
       moduleName := "phantom-monix",
       libraryDependencies ++= Seq(
         "com.outworkers" %% "util-testing" % Versions.util % Test,
+        "org.scalatest" %% "scalatest" % Versions.scalatest % Test,
         compilerPlugin("org.scalamacros" % "paradise" % Versions.macrosVersion(scalaVersion.value) cross CrossVersion.full),
         "io.monix" %% "monix" % Versions.monix
       )

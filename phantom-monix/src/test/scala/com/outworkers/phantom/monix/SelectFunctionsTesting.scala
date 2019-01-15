@@ -16,8 +16,8 @@
 package com.outworkers.phantom.monix
 
 import com.datastax.driver.core.utils.UUIDs
-import com.outworkers.phantom.dse.PhantomSuite
-import com.outworkers.phantom.monix.tables.{PrimitiveRecord, Recipe, TestDatabaseProvider, TimeUUIDRecord}
+import com.outworkers.phantom.{PhantomSuite, TestDatabaseProvider}
+import com.outworkers.phantom.tables.{PrimitiveRecord, Recipe, TimeUUIDRecord}
 import org.joda.time.DateTimeZone
 import com.outworkers.util.samplers._
 
