@@ -109,6 +109,7 @@ lazy val Versions = new {
   val scala210 = "2.10.6"
   val scala211 = "2.11.12"
   val scala212 = "2.12.8"
+  val monix = "2.3.3"
   val scalaAll = Seq(scala210, scala211, scala212)
 
   val scala = new {
@@ -434,4 +435,20 @@ lazy val phantomExample = (project in file("phantom-example"))
     phantomThrift
   ).enablePlugins(
     CrossPerProjectPlugin
+  )
+
+  lazy val phantomMonix = (project in file("phantom-monix"))
+    .settings(
+      name := "phantom-monix",
+      crossScalaVersions := Versions.scalaAll,
+      moduleName := "phantom-monix",
+      libraryDependencies ++= Seq(
+        "com.outworkers" %% "util-testing" % Versions.util % Test,
+        compilerPlugin("org.scalamacros" % "paradise" % Versions.macrosVersion(scalaVersion.value) cross CrossVersion.full),
+        "io.monix" %% "monix" % Versions.monix
+      )
+    ).settings(
+    sharedSettings: _*
+  ).dependsOn(
+    phantomDsl % "compile->compile;test->test;"
   )

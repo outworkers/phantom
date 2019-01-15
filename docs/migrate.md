@@ -50,7 +50,7 @@ Feedback and contributions are welcome, and we are happy to prioritise any cruci
 #### Tech debt
 
 - [x] Correctly implement Cassandra pagination using iterators, currently setting a `fetchSize` on a query does not correctly propagate or consume the resulting iterator, which leads to API inconsistencies and `PagingState` not being set on any `ResultSet`.
-- [ ] Add a build matrix that will test phantom against multiple versions of Cassandra in Travis for Scala 2.11, with support for all major releases of Cassandra.
+- [x] Add a build matrix that will test phantom against multiple versions of Cassandra in Travis for Scala 2.11, with support for all major releases of Cassandra.
 - [ ] Bump code coverage up to 100%
 
 #### Features
@@ -78,8 +78,8 @@ Feedback and contributions are welcome, and we are happy to prioritise any cruci
 
 - [x] Migration guide for transitioning to Phantom 2.0.0. [Guide here](https://github.com/outworkers/phantom/tree/feature/2.0.0#200-migration-guide).
 - [x] Move documentation back to the docs folder.
-- [ ] Add a documentation website on the main page.
-- [ ] Create a navigator that allows viewing the documentation at a particular point in time.
+- [x] Add a documentation website on the main page.
+- [x] Create a navigator that allows viewing the documentation at a particular point in time.
 
 
 2.0.0 Migration guide
