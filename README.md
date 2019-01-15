@@ -114,8 +114,8 @@ This is a list of resources to help you learn phantom and Cassandra:
 - [ ] Anything tagged phantom on our blog is a phantom tutorial: [phantom tutorials](http://outworkers.com/blog/tag/phantom)
 - [ ] [A series on Cassandra: Getting rid of the SQL mentality](https://medium.com/@flavian_87939/at-outworkers-cassandra-and-datastax-enterprise-are-core-technologies-in-our-area-of-competence-4a1df2eb718d)
 - [ ] [A series on Cassandra: Indexes and keys](https://medium.com/@flavian_87939/at-outworkers-cassandra-and-datastax-enterprise-are-core-technologies-in-our-area-of-competence-4a1df2eb718d)
-- [ ] [A series on Cassandra: Advanced features](http://outworkers.com/blog/post/a-series-on-cassandra-part-3-advanced-features)
-- [ ] [A series on phantom: Getting started with phantom](http://outworkers.com/blog/post/a-series-on-phantom-part-1-getting-started-with-phantom)
+- [ ] [A series on Cassandra: Advanced features](https://medium.com/@flavian_87939/a-series-on-cassandra-part-3-advanced-features-73abed9d99ab)
+- [ ] [A series on phantom: Getting started with phantom](https://medium.com/@flavian_87939/a-series-of-phantom-part1-getting-started-with-phantom-1014787bc550)
 - [ ] [The Play! Phantom Activator template](https://github.com/outworkers/phantom-activator-template)
 - [ ] [Thiago's Cassandra + Phantom demo repository](https://github.com/thiagoandrade6/cassandra-phantom)
 
