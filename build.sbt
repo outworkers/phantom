@@ -211,6 +211,7 @@ lazy val baseProjectList: Seq[ProjectReference] = Seq(
   phantomStreams,
   phantomThrift,
   phantomSbtPlugin,
+  phantomMonix,
   readme
 )
 
