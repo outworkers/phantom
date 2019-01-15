@@ -112,8 +112,8 @@ This is a list of resources to help you learn phantom and Cassandra:
 - [ ] [The main Wiki](https://github.com/outworkers/phantom/tree/develop/docs)
 - [ ] The StackOverflow [phantom-dsl](http://stackoverflow.com/questions/tagged/phantom-dsl) tag, which we always monitor!
 - [ ] Anything tagged phantom on our blog is a phantom tutorial: [phantom tutorials](http://outworkers.com/blog/tag/phantom)
-- [ ] [A series on Cassandra: Getting rid of the SQL mentality](http://outworkers.com/blog/post/a-series-on-cassandra-part-1-getting-rid-of-the-sql-mentality)
-- [ ] [A series on Cassandra: Indexes and keys](http://outworkers.com/blog/post/a-series-on-cassandra-part-2-indexes-and-keys)
+- [ ] [A series on Cassandra: Getting rid of the SQL mentality](https://medium.com/@flavian_87939/at-outworkers-cassandra-and-datastax-enterprise-are-core-technologies-in-our-area-of-competence-4a1df2eb718d)
+- [ ] [A series on Cassandra: Indexes and keys](https://medium.com/@flavian_87939/at-outworkers-cassandra-and-datastax-enterprise-are-core-technologies-in-our-area-of-competence-4a1df2eb718d)
 - [ ] [A series on Cassandra: Advanced features](http://outworkers.com/blog/post/a-series-on-cassandra-part-3-advanced-features)
 - [ ] [A series on phantom: Getting started with phantom](http://outworkers.com/blog/post/a-series-on-phantom-part-1-getting-started-with-phantom)
 - [ ] [The Play! Phantom Activator template](https://github.com/outworkers/phantom-activator-template)
