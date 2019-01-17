@@ -16,14 +16,13 @@
 package com.outworkers.phantom.monix
 
 import com.datastax.driver.core.utils.UUIDs
-import com.outworkers.phantom.{PhantomSuite, TestDatabaseProvider}
 import com.outworkers.phantom.tables.{PrimitiveRecord, Recipe, TimeUUIDRecord}
 import org.joda.time.DateTimeZone
 import com.outworkers.util.samplers._
 
 import scala.util.Try
 
-class SelectFunctionsTesting extends PhantomSuite with MonixScalaTest with TestDatabaseProvider {
+class SelectFunctionsTesting extends MonixSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
