@@ -15,6 +15,7 @@ before_cache:
 - find $HOME/.sbt -name "*.lock" -delete
 env:
   global:
+  - CASSANDRA_VERSION: 3.11.3
   - PUBLISH_ARTIFACT: false
   - env: CASSANDRA_VERSION=3.11.3
   - TARGET_SCALA_VERSION: 2.12.8
