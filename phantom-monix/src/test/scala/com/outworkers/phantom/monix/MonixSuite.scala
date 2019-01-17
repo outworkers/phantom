@@ -15,33 +15,13 @@
  */
 package com.outworkers.phantom.monix
 
-import com.datastax.driver.core.SocketOptions
-import com.outworkers.phantom.tables.TestDatabase
-import com.outworkers.phantom.{PhantomSuite, connectors}
+import com.outworkers.phantom.PhantomSuite
 import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
+
 import scala.util.{Failure, Success}
 
-object TestConnector {
-
-  val default: CassandraConnection = connectors.ContactPoint.local
-    .withClusterBuilder(_.withSocketOptions(
-      new SocketOptions()
-        .setConnectTimeoutMillis(20000)
-        .setReadTimeoutMillis(20000)
-    )
-    ).noHeartbeat().keySpace(
-    KeySpace("phantom").ifNotExists().`with`(
-      replication eqs SimpleStrategy.replication_factor(1)
-    )
-  )
-}
-
-
-object MonixDatabase extends TestDatabase(TestConnector.default)
-
 trait MonixSuite extends PhantomSuite {
-  override def db: TestDatabase = MonixDatabase
 
   implicit def taskFutureConcept[T](f: Task[T]): FutureConcept[T] = new FutureConcept[T] {
 
