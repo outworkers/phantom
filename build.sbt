@@ -281,10 +281,9 @@ lazy val phantomDsl = (project in file("phantom-dsl"))
       "org.json4s"                   %% "json4s-native"                     % Versions.json4s % Test,
       "io.circe"                     %% "circe-parser"                      % Versions.circe % Test,
       "io.circe"                     %% "circe-generic"                     % Versions.circe % Test,
-      "org.scalamock"                %% "scalamock-scalatest-support"       % Versions.scalamock % Test,
       "org.scalacheck"               %% "scalacheck"                        % Versions.scalacheck % Test,
       "com.outworkers"               %% "util-samplers"                     % Versions.util % Test,
-      "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter % Test,
+      "org.scalatest"                %% "scalatest"                         % Versions.scalatest % Test,
       "ch.qos.logback"               % "logback-classic"                    % Versions.logback % Test
     )
   ).dependsOn(
@@ -339,7 +338,7 @@ lazy val phantomFinagle = (project in file("phantom-finagle"))
       compilerPlugin("org.scalamacros" % "paradise" % Versions.macrosVersion(scalaVersion.value) cross CrossVersion.full),
       "com.twitter"                  %% "util-core"                         % Versions.twitterUtil(scalaVersion.value),
       "com.outworkers"               %% "util-testing"                      % Versions.util % Test,
-      "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter % Test
+      "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter % Test exclude ("org.mongodb", "cashbah-core")
     )
   ).dependsOn(
     phantomDsl % "compile->compile;test->test"

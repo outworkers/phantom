@@ -19,7 +19,6 @@ import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.macros.TableHelper
 import org.joda.time.DateTime
-import org.scalamock.scalatest.MockFactory
 
 case class Ev2(
   id: UUID,
@@ -46,7 +45,7 @@ abstract class ClusteredTable extends Table[ClusteredTable, ClusteredRecord] {
   object id3 extends UUIDColumn with ClusteringOrder with Ascending
 }
 
-class TableHelperTest extends PhantomSuite with MockFactory {
+class TableHelperTest extends PhantomSuite {
 
   it should "not generate a fromRow if a normal type is different" in {
 
@@ -155,9 +154,8 @@ class TableHelperTest extends PhantomSuite with MockFactory {
 
 
   it should "generate a fromRow method from a partial table definition" in {
-    val row = stub[Row]
     val ev = new Events2() with database.Connector
 
-    ev.fromRow(row)
+    ev.fromRow shouldNot equal (???)
   }
 }
