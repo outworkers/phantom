@@ -17,6 +17,7 @@ package com.outworkers.phantom.database
 
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.connectors.CassandraConnection
 
 object basicDb extends BasicDatabase
 
@@ -70,5 +71,12 @@ class DatabaseTest extends PhantomSuite {
     whenReady(chain) { res =>
       Option(res.one()) shouldBe empty
     }
+  }
+
+  it should "allow defining and compiling a database with no tables inside it" in {
+      """
+        | class MyDb(override val connector: CassandraConnection) extends Database[MyDb](connector) {
+        | }
+      """.stripMargin should compile
   }
 }
