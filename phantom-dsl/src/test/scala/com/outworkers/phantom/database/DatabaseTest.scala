@@ -74,7 +74,7 @@ class DatabaseTest extends PhantomSuite {
 
   it should "allow defining and compiling a database with no tables inside it" in {
       """
-        | class MyDb(override val connector: CassandraConnector) extends Database[MyDb](connector) {
+        | class MyDb(override val connector: CassandraConnection) extends Database[MyDb](connector) {
         | }
       """.stripMargin should compile
   }
