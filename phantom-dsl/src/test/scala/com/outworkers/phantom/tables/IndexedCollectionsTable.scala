@@ -32,6 +32,7 @@ abstract class IndexedCollectionsTable extends Table[IndexedCollectionsTable, Te
   object mapIntToText extends MapColumn[Int, String] with Index with Keys
 
   object mapIntToInt extends MapColumn[Int, Int]
+
 }
 
 

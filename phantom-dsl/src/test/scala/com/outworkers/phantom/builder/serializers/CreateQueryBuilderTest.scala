@@ -483,6 +483,12 @@ class CreateQueryBuilderTest extends FreeSpec with Matchers with SerializationTe
 
         qb shouldEqual "CREATE INDEX IF NOT EXISTS t_col_idx ON k.t(keys(col))"
       }
+
+      "specify a secondary index on a cased column" in {
+        val qb = QueryBuilder.Create.index("t", "k", "\"col\"").queryString
+
+        qb shouldEqual "CREATE INDEX IF NOT EXISTS \"t_col_idx\" ON k.t(\"col\")"
+      }
     }
   }
 

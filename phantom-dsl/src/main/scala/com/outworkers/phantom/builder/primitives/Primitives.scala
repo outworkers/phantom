@@ -243,7 +243,7 @@ object Primitives {
 
               val m = Map.newBuilder[K, V]
 
-              for (i <- 0 until n) {
+              for (_ <- 0 until n) {
                 val kbb = CodecUtils.readValue(input, version)
                 val vbb = CodecUtils.readValue(input, version)
 

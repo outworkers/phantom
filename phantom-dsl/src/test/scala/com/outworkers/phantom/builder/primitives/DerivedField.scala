@@ -49,7 +49,7 @@ object Username {
   }
 
   implicit val usernameSampler: Sample[Username[Serialized]] = {
-    Sample.derive[String, Username[Serialized]](Username.apply)
+    Sample.iso[String, Username[Serialized]](Username.apply)
   }
 
   def apply(st: String, trigger: Int = 0): Username[Serialized] = new Username[Serialized](st)

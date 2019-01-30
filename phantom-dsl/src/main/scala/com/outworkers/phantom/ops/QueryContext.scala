@@ -39,7 +39,10 @@ abstract class QueryContext[P[_], F[_], Timeout](
 ) { outer =>
 
   type QueryNotExecuted = _root_.com.outworkers.phantom.ops.QueryNotExecuted
-
+  type AsciiValue = com.outworkers.phantom.builder.primitives.AsciiValue
+  val AsciiValue = com.outworkers.phantom.builder.primitives.AsciiValue
+  type Payload = com.outworkers.phantom.builder.query.Payload
+  val Payload = com.outworkers.phantom.builder.query.Payload
 
   type ListValue[T] = com.outworkers.phantom.builder.query.prepared.ListValue[T]
   val ListValue = com.outworkers.phantom.builder.query.prepared.ListValue
@@ -349,6 +352,49 @@ abstract class QueryContext[P[_], F[_], Timeout](
       ec: ExecutionContextExecutor,
       cbf: CanBuildFrom[M[ExecutableCqlQuery], ResultSet, M[ResultSet]]
     ): F[M[ResultSet]] = executeStatements(col).sequence()
+  }
+
+
+  implicit def optionNumeric[T](implicit ev: Numeric[T]): Numeric[Option[T]] = new Numeric[Option[T]] {
+    override def plus(x: Option[T], y: Option[T]): Option[T] = {
+      for (x1 <- x; y1 <- y) yield ev.plus(x1, y1)
+    }
+
+    override def minus(x: Option[T], y: Option[T]): Option[T] = {
+      for (x1 <- x; y1 <- y) yield ev.minus(x1, y1)
+    }
+
+    override def times(x: Option[T], y: Option[T]): Option[T] = {
+      for (x1 <- x; y1 <- y) yield ev.times(x1, y1)
+    }
+
+    override def negate(x: Option[T]): Option[T] = {
+      x.map(ev.negate)
+    }
+
+    override def fromInt(x: Int): Option[T] = {
+      Option(ev.fromInt(x))
+    }
+
+    override def toInt(x: Option[T]): Int = {
+      x.fold(0)(ev.toInt)
+    }
+
+    override def toLong(x: Option[T]): Long = {
+      x.fold(0L)(ev.toLong)
+    }
+
+    override def toFloat(x: Option[T]): Float = {
+      x.fold(0F)(ev.toFloat)
+    }
+
+    override def toDouble(x: Option[T]): Double = {
+      x.fold(0D)(ev.toDouble)
+    }
+
+    override def compare(x: Option[T], y: Option[T]): Int = {
+      { for (x1 <- x; y1 <- y) yield ev.compare(x1, y1) } getOrElse 0
+    }
   }
 }
 

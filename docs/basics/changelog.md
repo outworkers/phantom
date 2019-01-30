@@ -1,6 +1,5 @@
-[![Build Status](https://travis-ci.org/outworkers/phantom.svg?branch=develop)](https://travis-ci.org/outworkers/phantom) [![Coverage Status](https://coveralls.io/repos/outworkers/phantom/badge.svg)](https://coveralls.io/r/outworkers/phantom) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.websudos/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.websudos/phantom-dsl_2.11) [![Bintray](https://api.bintray.com/packages/websudos/oss-releases/phantom/images/download.svg) ](https://bintray.com/websudos/oss-releases/phantom-dsl/_latestVersion)
-======================================================================
-
+[![Build Status](https://travis-ci.org/outworkers/phantom.svg?branch=develop)](https://travis-ci.org/outworkers/phantom?branch=develop) [![Coverage Status](https://coveralls.io/repos/github/outworkers/phantom/badge.svg?branch=develop)](https://coveralls.io/github/outworkers/phantom?branch=develop)  [![Codacy Rating](https://api.codacy.com/project/badge/grade/25bee222a7d142ff8151e6ceb39151b4)](https://www.codacy.com/app/flavian/phantom_2) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11) [![Bintray](https://api.bintray.com/packages/outworkers/oss-releases/phantom-dsl/images/download.svg) ](https://bintray.com/outworkers/oss-releases/phantom-dsl/_latestVersion) [![ScalaDoc](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11.svg?label=scaladoc)](http://javadoc-badge.appspot.com/com.outworkers/phantom-dsl_2.11) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/outworkers/phantom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+======================================
 <a id="version-history">Version history</a>
 ===========================================
 
@@ -448,7 +447,7 @@ removed `session.newSimpleStatement`.
 
 - Changed `caching` property serialization in `QueryBuilder` to adjust to protocol version changes.
 - Fixed bug in prepared statements which prevented multiple prepared SET clauses from being used.
-- Changed serialization order in an `UpdateQuery` to always provide the SET clause arguments first. This is done to 
+- Changed serialization order in an `UpdateQuery` to always provide the SET clause arguments first. This is done to
 address the internal bind serialization issue, since the bind won't attempt to do any type matching, order of the
 arguments is the only element that dictates serialization.
 
@@ -465,4 +464,3 @@ arguments is the only element that dictates serialization.
 - Removed contributor from the list.
 - Fixed changelog.
 - Fixed casing of word `KEYS` to `keys` to fit CQL variant.
-

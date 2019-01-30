@@ -18,7 +18,7 @@ package com.outworkers.phantom.tables
 import com.datastax.driver.core.SocketOptions
 import com.datastax.driver.core.policies.{RoundRobinPolicy, TokenAwarePolicy}
 import com.outworkers.phantom.builder.query.CreateQuery
-import com.outworkers.phantom.builder.query.bugs.UserSchemaTable
+import com.outworkers.phantom.builder.query.bugs.{QuotedSecondaryIndexes, UserSchemaTable}
 import com.outworkers.phantom.connectors
 import com.outworkers.phantom.connectors.CassandraConnection
 import com.outworkers.phantom.database.Database
@@ -68,6 +68,7 @@ class TestDatabase(
   }
 
   object secondaryIndexTable extends SecondaryIndexTable with Connector
+  object quotedSecondaryIndexTable extends QuotedSecondaryIndexes with Connector
   object staticTable extends StaticTableTest with Connector
   object staticCollectionTable extends StaticCollectionTable with Connector
 

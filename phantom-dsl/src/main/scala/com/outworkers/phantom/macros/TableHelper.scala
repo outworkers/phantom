@@ -29,7 +29,11 @@ import scala.annotation.implicitNotFound
 import scala.collection.immutable.ListMap
 import scala.reflect.macros.whitebox
 
-@implicitNotFound(msg = "Table ${T} is missing a PartitionKey column.")
+@implicitNotFound(msg = """
+    | Table ${T} is most likely missing a PartitionKey column.
+    | Also check that the fields in your table match types inside ${R}.
+    """.stripMargin
+)
 trait TableHelper[T <: CassandraTable[T, R], R] extends Serializable {
 
   type Repr <: HList
@@ -114,10 +118,6 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
       .map(_.typeSymbol.typeSignatureIn(table).typeSymbol.name.toTermName)
       .map(name => q"$tableTerm.$name")
 
-    if (partitionKeys.isEmpty) {
-      error(s"Table $tableName needs to have at least one partition key")
-    }
-
     val primaries = filterColumns[PrimaryKey](columns)
       .map(_.typeSymbol.typeSignatureIn(table).typeSymbol.name.toTermName)
       .map(name => q"$tableTerm.$name")
@@ -170,71 +170,9 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
     TermName(term.decodedName.toString.trim.toLowerCase)
   }
 
-  def hardMatch(
-    columnFields: ListMap[Type, Seq[TermName]],
-    unprocessed: List[Record.Field],
-    descriptor: TableDescriptor
-  ): TableDescriptor = {
-    unprocessed match {
-      case recField :: tail =>
-        columnFields.find { case (tpe, seq) => predicate(recField, tpe) } map { case (_, seq) => seq } match {
-          // It's possible that after all easy matches have been exhausted, no column fields are left to match
-          // with remaining record fields for the given type.
-          case None =>
-            val un = Unmatched(recField, s"Table doesn't contain a column of type ${printType(recField.tpe)}")
-            hardMatch(columnFields, tail, descriptor withoutMatch un)
-
-          // We once again repeat the case, because we may under some circumstances find a single remaining
-          // column term to match with after all direct and easy matches have happened for a given type.
-          case Some(Seq(h)) =>
-            hardMatch(
-              columnFields - recField.tpe,
-              tail,
-              descriptor withMatch MatchedField(recField, Column.Field(h, recField.tpe))
-            )
-
-          case Some(seq) => seq.find(recField.name ==) match {
-            // In theory this case should not re-occur because we only add elements
-            // to the unprocessed if no direct term name matches were found.
-            case Some(matchingName) =>
-              info(s"Found matching column term name for ${recField.debugString} in unprocessed queue.")
-              val m = MatchedField(recField, Column.Field(matchingName, recField.tpe))
-              hardMatch(columnFields - (recField.tpe, matchingName), tail, descriptor withMatch m)
-
-            // The real case we are attempting to handle here is when we have no clue which one
-            // of multiple record strings matches which column field.
-            case None =>
-              // we now attempt to match a few variations of the term name.
-              // and check if the column members contain some possible variations.
-              val possibilities = variations(recField.name)
-
-              seq.find(colTerm => possibilities.exists(lowercased(colTerm) ==)) match {
-                case Some(matchingName) =>
-                  val m = MatchedField(recField, Column.Field(matchingName, recField.tpe))
-                  hardMatch(columnFields - (recField.tpe, matchingName), tail, descriptor withMatch m)
-
-                  case None =>
-                    // This is still our worst case scenario, where no variation of a term name
-                    // was found and we still have multiple potential matches for a record field.
-                    // Under such circumstances we use the first available column term name
-                    // with respect to the write order.
-                    val firstName = seq.headOption.getOrElse(
-                      abort("Found empty term sequence which should never happen!!!")
-                    )
-
-                    val m = MatchedField(recField, Column.Field(firstName, recField.tpe))
-                    hardMatch(columnFields - (recField.tpe, firstName), tail, descriptor withMatch m)
-              }
-          }
-        }
-
-      case Nil => descriptor
-    }
-  }
-
   /**
     * This works by recursively parsing a list of fields extracted here as record members.
-    * The algorithm will take every fiel from the record and:
+    * The algorithm will take every field from the record and:
     * - If there are record fields to address left, we will search within the available columns
     * for a type that either matches or can be implicitly converted to the record type.
     * - If a single match is found, we declare that as a match, without comparing the field names.
@@ -268,7 +206,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
   ): TableDescriptor = {
     recordFields match { case recField :: tail =>
 
-      columnFields.find { case (tpe, seq) => predicate(recField, tpe) } map { case (_, seq) => seq } match {
+      columnFields.find { case (tpe, _) => predicate(recField, tpe) } map { case (_, seq) => seq } match {
         case None =>
           val un = Unmatched(recField, s"Table doesn't contain a column of type ${printType(recField.tpe)}")
           extractorRec(columnFields, tail, descriptor withoutMatch un, unprocessed)
@@ -287,25 +225,40 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
             val m = MatchedField(recField, Column.Field(matchingName, recField.tpe))
 
             extractorRec(
-              columnFields remove (recField.tpe, matchingName),
+              columnFields remove(recField.tpe, matchingName),
               tail,
               descriptor withMatch m,
               unprocessed
             )
 
           case None =>
-            extractorRec(
-              columnFields,
-              tail,
-              descriptor,
-              unprocessed :+ recField
-            )
-          }
+            // we now attempt to match a few variations of the term name.
+            // and check if the column members contain some possible variations.
+            val possibilities = variations(recField.name)
+
+            seq.find(colTerm => possibilities.exists(lowercased(colTerm) ==)) match {
+              case Some(matchingName) =>
+                val m = MatchedField(recField, Column.Field(matchingName, recField.tpe))
+                extractorRec(columnFields remove(recField.tpe, matchingName), tail, descriptor withMatch m)
+
+              case None =>
+                // This is still our worst case scenario, where no variation of a term name
+                // was found and we still have multiple potential matches for a record field.
+                // Under such circumstances we use the first available column term name
+                // with respect to the write order.
+                val firstName = seq.headOption.getOrElse(
+                  abort("Found empty term sequence which should never happen!!!")
+                )
+
+                val m = MatchedField(recField, Column.Field(firstName, recField.tpe))
+                extractorRec(columnFields remove(recField.tpe, firstName), tail, descriptor withMatch m)
+            }
         }
+      }
 
       // return a descriptor where the sequence of unmatched table columns
       // is the original list minus all the elements missing
-      case Nil => hardMatch(columnFields, unprocessed, descriptor)
+      case Nil => descriptor
     }
   }
 
@@ -464,7 +417,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
 
     val accessors = columns.map(_.asTerm.name).map(tm => q"table.instance.${tm.toTermName}").distinct
     // Validate that column names at compile time.
-    //columns.map(col => validateColumnName(col.asTerm.name))
+    // columns.map(col => validateColumnName(col.asTerm.name))
 
     val clsName = TypeName(c.freshName("anon$"))
     val storeTpe = descriptor.hListStoreType.getOrElse(nothingTpe)

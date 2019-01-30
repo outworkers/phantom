@@ -95,7 +95,7 @@ package object streams {
      *                      been reached yet. Useful in never-ending streams that will never been completed.
      * @param completionFn  a function that will be invoked when the stream is completed
      * @param errorFn       a function that will be invoked when an error occurs
-     * @param builder       an implicitly resolved [[RequestBuilder]] that wraps a phantom [[ExecutableStatement]].
+     * @param builder       an implicitly resolved [[RequestBuilder]] that wraps a phantom [[com.outworkers.phantom.builder.query.execution.ExecutableCqlQuery]].
      *                      Every T element that gets into the stream from the upstream is turned into a ExecutableStatement
      *                      by means of this builder.
      * @param system        the underlying [[ActorSystem]]. This [[org.reactivestreams.Subscriber]] implementation uses Akka
@@ -155,7 +155,7 @@ package object streams {
 
   /**
     * Returns the product of the arguments,
-    * throwing an exception if the result overflows a {@code long}.
+    * throwing an exception if the result overflows a [[scala.Long]].
     *
     * @param x the first value
     * @param y the second value

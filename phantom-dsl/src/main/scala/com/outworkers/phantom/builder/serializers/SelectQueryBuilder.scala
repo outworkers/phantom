@@ -122,10 +122,14 @@ private[builder] class SelectQueryBuilder {
    * @param keyspace The name of the keyspace.
    * @return
    */
-  def count(tableName: String, keyspace: String): CQLQuery = {
+  def count(
+    tableName: String,
+    keyspace: String,
+    columnName: String = CQLSyntax.Symbols.`*`
+  ): CQLQuery = {
     CQLQuery(CQLSyntax.select)
       .forcePad.append(CQLSyntax.count)
-      .wrapn(CQLSyntax.Symbols.`*`)
+      .wrapn(columnName)
       .forcePad.append(CQLSyntax.from)
       .forcePad.append(QueryBuilder.keyspace(keyspace, tableName))
   }

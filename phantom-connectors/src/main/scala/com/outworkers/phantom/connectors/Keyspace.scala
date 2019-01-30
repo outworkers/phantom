@@ -17,6 +17,8 @@ package com.outworkers.phantom.connectors
 
 import com.datastax.driver.core.{ProtocolVersion, Session}
 
+import scala.annotation.implicitNotFound
+
 trait SessionAugmenter {
 
   def session: Session
@@ -40,4 +42,5 @@ trait SessionAugmenterImplicits {
   implicit class RichSession(val session: Session) extends SessionAugmenter
 }
 
+@implicitNotFound("You haven't provided a KeySpace in scope. Use a Connector to automatically inject one.")
 case class KeySpace(name: String)

@@ -53,7 +53,10 @@ class SelectFunctionsTesting extends PhantomSuite with TwitterFutures {
 
     val chain = for {
       _ <- database.timeuuidTable.store(record).future()
-      timestamp <- database.timeuuidTable.select.function(t => dateOf(t.id)).where(_.user eqs record.user)
+      timestamp <- database.timeuuidTable
+        .select
+        .function(t => dateOf(t.id))
+        .where(_.user eqs record.user)
         .and(_.id eqs record.id).one()
     } yield timestamp
 
@@ -67,7 +70,10 @@ class SelectFunctionsTesting extends PhantomSuite with TwitterFutures {
 
     val chain = for {
       _ <- database.timeuuidTable.store(record).future()
-      timestamp <- database.timeuuidTable.select.function(t => unixTimestampOf(t.id)).where(_.user eqs record.user)
+      timestamp <- database.timeuuidTable
+        .select
+        .function(t => unixTimestampOf(t.id))
+        .where(_.user eqs record.user)
         .and(_.id eqs record.id).one()
     } yield timestamp
 
