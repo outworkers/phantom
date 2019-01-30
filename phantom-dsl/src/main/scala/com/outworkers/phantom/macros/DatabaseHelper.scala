@@ -63,6 +63,12 @@ class DatabaseHelperMacro(override val c: whitebox.Context) extends WhiteboxTool
 
     val queryList = tableList.map(tb => q"$tb.autocreate(space).executableQuery")
 
+    val creationTree = if (tableList.isEmpty) {
+      q"new $execution.QueryCollection($seqCmp.empty[$execution.ExecutableCqlQuery])"
+    } else {
+      q"new $execution.QueryCollection($seqCmp.apply(..$queryList))"
+    }
+
     val tree = q"""
        new $macroPkg.DatabaseHelper[$tpe] {
          def tables(db: $tpe): ${seqTpe(tableSymbol)} = {
@@ -72,7 +78,7 @@ class DatabaseHelperMacro(override val c: whitebox.Context) extends WhiteboxTool
          def createQueries(db: $tpe)(
            implicit space: $keyspaceType
          ): $execution.QueryCollection[_root_.scala.collection.Seq] = {
-            new $execution.QueryCollection($seqCmp.apply(..$queryList))
+            $creationTree
          }
        }
      """
