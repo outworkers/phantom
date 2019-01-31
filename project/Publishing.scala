@@ -51,11 +51,9 @@ object Publishing {
     logger.info(s"Found modified files: ${vcs(st).hasModifiedFiles}")
 
     val log = toProcessLogger(st)
-    val versionsFile = settings.get(releaseVersionFile).getCanonicalFile
-    val docsFolder = settings.get(releaseTutFolder).getCanonicalFile
+    val versionsFile = settings.get(releaseVersionFile)
+    val docsFolder = settings.get(releaseTutFolder)
 
-    logger.info(s"Docs folder path : ${docsFolder.getPath}")
-    logger.info(s"Docs folder path : ${docsFolder.getAbsolutePath}")
     val base = vcs(st).baseDir.getCanonicalFile
     val sign = settings.get(releaseVcsSign)
 
