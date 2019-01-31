@@ -61,5 +61,3 @@ addSbtPlugin("com.eed3si9n" % "sbt-doge" % "0.1.5")
 libraryDependencies += "org.slf4j" % "slf4j-nop" % "1.7.22"
 
 addSbtPlugin("com.github.gseitz" % "sbt-release" % "1.0.5")
-
-addSbtPlugin("org.foundweekends" % "sbt-bintray" % "0.5.4")
