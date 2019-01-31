@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import Publishing.{ciSkipSequence, commitTutFilesAndVersion, releaseTutFolder}
 import sbt.Keys._
 import sbt._
+import sbtrelease.ReleaseStateTransformations._
 
 lazy val ScalacOptions = Seq(
   "-deprecation", // Emit warning and location for usages of deprecated APIs.
@@ -166,6 +168,28 @@ lazy val Versions = new {
     }
   }
 }
+
+
+val releaseSettings = Seq(
+  releaseTutFolder in ThisBuild := baseDirectory.value / "docs",
+  releaseIgnoreUntrackedFiles := true,
+  releaseVersionBump := sbtrelease.Version.Bump.Minor,
+  releaseTagComment := s"Releasing ${(version in ThisBuild).value} $ciSkipSequence",
+  releaseCommitMessage := s"Setting version to ${(version in ThisBuild).value} $ciSkipSequence",
+  releaseProcess := Seq[ReleaseStep](
+    checkSnapshotDependencies,
+    inquireVersions,
+    setReleaseVersion,
+    commitReleaseVersion,
+    releaseStepTask((tut in Tut) in readme),
+    releaseStepCommandAndRemaining("such publishSigned"),
+    releaseStepCommandAndRemaining("sonatypeReleaseAll"),
+    tagRelease,
+    setNextVersion,
+    commitTutFilesAndVersion,
+    pushChanges
+  )
+)
 
 val defaultConcurrency = 4
 
