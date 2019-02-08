@@ -19,6 +19,7 @@ import com.typesafe.sbt.pgp.PgpKeys._
 import sbtrelease.ReleasePlugin.autoImport.{ReleaseStep, _}
 import sbtrelease.ReleaseStateTransformations._
 import sbtrelease.Vcs
+import tut.TutPlugin.autoImport.Tut
 
 import scala.util.Properties
 
@@ -51,11 +52,9 @@ object Publishing {
     logger.info(s"Found modified files: ${vcs(st).hasModifiedFiles}")
 
     val log = toProcessLogger(st)
-    val versionsFile = settings.get(releaseVersionFile).getCanonicalFile
-    val docsFolder = settings.get(releaseTutFolder).getCanonicalFile
+    val versionsFile = settings.get(releaseVersionFile)
+    val docsFolder = settings.get(releaseTutFolder)
 
-    logger.info(s"Docs folder path : ${docsFolder.getPath}")
-    logger.info(s"Docs folder path : ${docsFolder.getAbsolutePath}")
     val base = vcs(st).baseDir.getCanonicalFile
     val sign = settings.get(releaseVcsSign)
 
@@ -94,25 +93,6 @@ object Publishing {
     newState
   }
 
-  val releaseSettings = Seq(
-    releaseTutFolder in ThisBuild := baseDirectory.value / "docs",
-    releaseIgnoreUntrackedFiles := true,
-    releaseVersionBump := sbtrelease.Version.Bump.Minor,
-    releaseTagComment := s"Releasing ${(version in ThisBuild).value} $ciSkipSequence",
-    releaseCommitMessage := s"Setting version to ${(version in ThisBuild).value} $ciSkipSequence",
-    releaseProcess := Seq[ReleaseStep](
-      checkSnapshotDependencies,
-      inquireVersions,
-      setReleaseVersion,
-      commitReleaseVersion,
-      releaseStepCommandAndRemaining("such publishSigned"),
-      releaseStepCommandAndRemaining("sonatypeReleaseAll"),
-      tagRelease,
-      setNextVersion,
-      commitTutFilesAndVersion,
-      pushChanges
-    )
-  )
 
   lazy val defaultCredentials: Seq[Credentials] = {
     if (!Publishing.runningUnderCi) {
@@ -187,28 +167,7 @@ object Publishing {
   )
 
 
-  def effectiveSettings: Seq[Def.Setting[_]] = {
-    if (publishToMaven) {
-      mavenSettings ++ releaseSettings
-    } else {
-      // Intentional silly way to disable Bintray publishing temporarily
-      // lazy val bintraySettings: Seq[Def.Setting[_]] = {
-      //   import bintray.BintrayKeys._
-      //   Seq(
-      //     publishMavenStyle := true,
-      //     bintrayOrganization := Some("outworkers"),
-      //     bintrayRepository := { if (version.value.trim.endsWith("SNAPSHOT")) "oss-snapshots" else "oss-releases" },
-      //     bintrayReleaseOnPublish in ThisBuild := true,
-      //     publishArtifact in Test := false,
-      //     pomIncludeRepository := { _ => true},
-      //     licenses += ("Apache-2.0", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt"))
-      //   )
-      // }
-      //
-      // bintraySettings ++
-      releaseSettings
-    }
-  }
+  def effectiveSettings: Seq[Def.Setting[_]] = mavenSettings
 
   def runningUnderCi: Boolean = sys.env.get("CI").isDefined || sys.env.get("TRAVIS").isDefined
   def travisScala211: Boolean = sys.env.get("TRAVIS_SCALA_VERSION").exists(_.contains("2.11"))
