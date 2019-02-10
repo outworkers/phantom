@@ -45,6 +45,7 @@ object Publishing {
   }
 
   val releaseTutFolder = settingKey[File]("The file to write the version to")
+  val releaseTutCommit = taskKey[String]("Commit message for the tut commit")
 
   def commitTutFilesAndVersion: ReleaseStep = ReleaseStep { st: State =>
     val settings = Project.extract(st)
@@ -52,18 +53,12 @@ object Publishing {
     logger.info(s"Found modified files: ${vcs(st).hasModifiedFiles}")
 
     val log = toProcessLogger(st)
-    val versionsFile = settings.get(releaseVersionFile)
     val docsFolder = settings.get(releaseTutFolder)
 
     val base = vcs(st).baseDir.getCanonicalFile
     val sign = settings.get(releaseVcsSign)
 
-    val relativePath = IO.relativize(
-      base,
-      versionsFile
-    ).getOrElse("Version file [%s] is outside of this VCS repository with base directory [%s]!" format(versionsFile, base))
-
-    val commitablePaths = Seq(relativePath) ++ {
+    val commitablePaths = {
       if (docsFolder.exists) {
         logger.info(s"Docs folder exists under $docsFolder")
         val relativeDocsPath = IO.relativize(
@@ -81,7 +76,7 @@ object Publishing {
     val status = (vcs(st).status !!) trim
 
     val newState = if (status.nonEmpty) {
-      val (state, msg) = settings.runTask(releaseCommitMessage, st)
+      val (state, msg) = settings.runTask(releaseTutCommit, st)
       vcs(state).commit(msg, sign) !! log
       state
     } else {
