@@ -181,12 +181,12 @@ val releaseSettings = Seq(
     inquireVersions,
     setReleaseVersion,
     commitReleaseVersion,
+    commitTutFilesAndVersion,
     releaseStepTask((tut in Tut) in readme),
     releaseStepCommandAndRemaining("such publishSigned"),
     releaseStepCommandAndRemaining("sonatypeReleaseAll"),
     tagRelease,
     setNextVersion,
-    commitTutFilesAndVersion,
     pushChanges
   )
 )
