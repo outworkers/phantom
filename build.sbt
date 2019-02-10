@@ -187,6 +187,7 @@ val releaseSettings = Seq(
     releaseStepCommandAndRemaining("sonatypeReleaseAll"),
     tagRelease,
     setNextVersion,
+    commitNextVersion,
     pushChanges
   )
 )
