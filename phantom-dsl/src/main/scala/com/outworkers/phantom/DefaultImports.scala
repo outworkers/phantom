@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2017 Outworkers Ltd.
+ * Copyright 2013 - 2019 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -285,7 +285,7 @@ trait DefaultImports extends ImplicitMechanism
     }
   }
 
-  implicit class SetLikeModifyColumn[
+  implicit final class SetLikeModifyColumn[
     Owner <: CassandraTable[Owner, Record],
     Record,
     RR
@@ -303,8 +303,16 @@ trait DefaultImports extends ImplicitMechanism
       new UpdateClause.Condition(QueryBuilder.Collections.remove(col.name, Set(col.valueAsCql(value))))
     }
 
+    def remove(value: PrepareMark): UpdateClause.Prepared[RR] = {
+      new UpdateClause.Condition(QueryBuilder.Collections.removePrepared(col.name, value))
+    }
+
     def removeAll(values: Set[RR]): UpdateClause.Default = {
       new UpdateClause.Condition(QueryBuilder.Collections.remove(col.name, values.map(col.valueAsCql)))
+    }
+
+    def removeAll(values: PrepareMark): UpdateClause.Prepared[Set[RR]] = {
+      new UpdateClause.Condition(QueryBuilder.Collections.removePrepared(col.name, values))
     }
   }
 

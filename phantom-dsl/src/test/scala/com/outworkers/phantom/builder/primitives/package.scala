@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2017 Outworkers Ltd.
+ * Copyright 2013 - 2019 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,12 +42,12 @@ package object primitives {
   implicit val strArb: Arbitrary[String] = Sample.arbitrary[String]
 
   implicit val dateTimeGen: Gen[DateTime] = for {
-    offset <- Gen.choose(genLower, genHigher)
+    offset <- Gen.chooseNum[Int](genLower, genHigher)
     time = new DateTime(DateTimeZone.UTC)
   } yield time.plusMillis(offset)
 
   implicit val timestampGen: Gen[Timestamp] = for {
-    offset <- Gen.choose(genLower, genHigher)
+    offset <- Gen.chooseNum[Int](genLower, genHigher)
     time = Timestamp.from(Instant.now().plusMillis(offset))
   } yield time
 

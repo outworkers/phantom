@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2017 Outworkers Ltd.
+ * Copyright 2013 - 2019 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,9 +52,9 @@ class PreparedDeleteQueryTest extends PhantomSuite {
 
     val chain = for {
       query <- database.recipes.delete.where(_.url eqs ?).prepareAsync()
-      store <- database.recipes.store(recipe).future()
+      _ <- database.recipes.store(recipe).future()
       get <- database.recipes.select.where(_.url eqs recipe.url).one()
-      delete <- query.bind(recipe.url).future()
+      _ <- query.bind(recipe.url).future()
       get2 <- database.recipes.select.where(_.url eqs recipe.url).one()
     } yield (get, get2)
 
@@ -74,9 +74,9 @@ class PreparedDeleteQueryTest extends PhantomSuite {
       .prepare()
 
     val chain = for {
-      store <- database.articlesByAuthor.store(author, cat, article).future()
+      _ <- database.articlesByAuthor.store(author, cat, article).future()
       get <- database.articlesByAuthor.select.where(_.category eqs cat).and(_.author_id eqs author).one()
-      delete <- query.bind(cat, author).future()
+      _ <- query.bind(cat, author).future()
       get2 <- database.articlesByAuthor.select.where(_.category eqs cat).and(_.author_id eqs author).one()
     } yield (get, get2)
 

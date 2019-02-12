@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2017 Outworkers Ltd.
+ * Copyright 2013 - 2019 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ trait PhantomBaseSuite extends Suite with Matchers
 
   implicit val formats: Formats = org.json4s.DefaultFormats + new DateTimeSerializer + new UUIDSerializer
 
-  protected[this] val defaultScalaTimeoutSeconds = 25
+  protected[this] val defaultScalaTimeoutSeconds = 25L
 
   private[this] val defaultScalaInterval = 50L
 

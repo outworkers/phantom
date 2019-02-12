@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2017 Outworkers Ltd.
+ * Copyright 2013 - 2019 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -209,6 +209,18 @@ sealed case class AssignmentsQuery[
     ttl(duration.toSeconds)
   }
 
+  /**
+    * Prepares a statement synchronously.
+    * @param session The session in which to execute the statement.
+    * @param keySpace The key space in which to execute this statement.
+    * @param rev Reverses the HList of prepared types provided in the WHERE .. AND chain.
+    * @param rev2
+    * @param prepend
+    * @tparam RevSet
+    * @tparam RevModified
+    * @tparam Out
+    * @return
+    */
   def prepare[
     RevSet <: HList,
     RevModified <: HList,
@@ -216,7 +228,7 @@ sealed case class AssignmentsQuery[
   ]()(
     implicit session: Session,
     keySpace: KeySpace,
-    ev: PS =:!= HNil,
+    //ev: PS =:!= HNil,
     rev: Reverse.Aux[PS, RevSet],
     rev2: Reverse.Aux[ModifyPrepared, RevModified],
     prepend: Prepend.Aux[RevModified, RevSet, Out]
@@ -235,7 +247,7 @@ sealed case class AssignmentsQuery[
     implicit session: Session,
     executor: ExecutionContextExecutor,
     keySpace: KeySpace,
-    ev: PS =:!= HNil,
+    //ev: PS =:!= HNil,
     rev: Reverse.Aux[PS, RevWhere],
     rev2: Reverse.Aux[ModifyPrepared, RevSet],
     prepend: Prepend.Aux[RevSet, RevWhere, Out],
