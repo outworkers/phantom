@@ -172,11 +172,11 @@ case class DeleteQuery[
 
 
 trait DeleteImplicits {
-  implicit def columnUpdateClauseToDeleteCondition(clause: MapKeyUpdateClause[_, _]): DeleteClause.Condition = {
+  implicit def columnUpdateClauseToDeleteCondition(clause: MapKeyUpdateClause[_, _]): DeleteClause.Default = {
     new DeleteClause.Condition(QueryBuilder.Collections.mapColumnType(clause.column, clause.keyName))
   }
 
-  implicit def columnClauseToDeleteCondition(col: AbstractColumn[_]): DeleteClause.Condition = {
+  implicit def columnClauseToDeleteCondition(col: AbstractColumn[_]): DeleteClause.Default = {
     new DeleteClause.Condition(CQLQuery(col.name))
   }
 }
@@ -184,13 +184,35 @@ trait DeleteImplicits {
 object DeleteQuery {
 
   type Default[T <: CassandraTable[T, _], R] = DeleteQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, HNil]
+  type Prepared[T <: CassandraTable[T, _], R, PS <: HList] = DeleteQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, PS]
 
   def apply[T <: CassandraTable[T, _], R](table: T)(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = {
     new DeleteQuery(table, QueryBuilder.Delete.delete(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString))
   }
 
   def apply[T <: CassandraTable[T, _], R](table: T, conds: CQLQuery*)(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = {
-    new DeleteQuery(table, QueryBuilder.Delete.delete(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString, conds))
+    new DeleteQuery(
+      table,
+      QueryBuilder.Delete.delete(
+        QueryBuilder.keyspace(keySpace.name, table.tableName).queryString,
+        conds
+      )
+    )
+  }
+
+
+  def prepared[
+    T <: CassandraTable[T, _],
+    R,
+    PS <: HList
+  ](table: T, conds: CQLQuery)(implicit keySpace: KeySpace): DeleteQuery.Prepared[T, R, PS] = {
+    new DeleteQuery(
+      table,
+      QueryBuilder.Delete.delete(
+        QueryBuilder.keyspace(keySpace.name, table.tableName).queryString,
+        conds
+      )
+    )
   }
 }
 

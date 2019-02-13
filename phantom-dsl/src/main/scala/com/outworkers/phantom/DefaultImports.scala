@@ -295,17 +295,18 @@ trait DefaultImports extends ImplicitMechanism
       new UpdateClause.Condition(QueryBuilder.Collections.add(col.name, Set(col.valueAsCql(value))))
     }
 
-    def addAll(values: Set[RR]): UpdateClause.Default = {
-      new UpdateClause.Condition(QueryBuilder.Collections.add(col.name, values.map(col.valueAsCql)))
-    }
-
     def remove(value: RR): UpdateClause.Default = {
       new UpdateClause.Condition(QueryBuilder.Collections.remove(col.name, Set(col.valueAsCql(value))))
     }
 
-    def remove(value: PrepareMark): UpdateClause.Prepared[RR] = {
-      new UpdateClause.Condition(QueryBuilder.Collections.removePrepared(col.name, value))
+    def addAll(values: Set[RR]): UpdateClause.Default = {
+      new UpdateClause.Condition(QueryBuilder.Collections.add(col.name, values.map(col.valueAsCql)))
     }
+
+    def addAll(prepareMark: PrepareMark): UpdateClause.Prepared[Set[RR]] = {
+      new UpdateClause.Condition(QueryBuilder.Collections.add(col.name, prepareMark))
+    }
+
 
     def removeAll(values: Set[RR]): UpdateClause.Default = {
       new UpdateClause.Condition(QueryBuilder.Collections.remove(col.name, values.map(col.valueAsCql)))

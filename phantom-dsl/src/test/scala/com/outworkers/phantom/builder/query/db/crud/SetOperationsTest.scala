@@ -57,6 +57,24 @@ class SetOperationsTest extends PhantomSuite {
     }
   }
 
+  it should "append several items to a set column using prepared queries" in {
+    val item = gen[TestRow]
+    val someItems = Set("test5", "test6")
+    val query = database.testTable.update.where(_.key eqs ?).modify(_.setText addAll ?)
+
+    val chain = for {
+      _ <- database.testTable.store(item).future()
+      bindable <- query.prepareAsync()
+      _ <- bindable.bind(someItems, item.key).future()
+      db <- database.testTable.select(_.setText).where(_.key eqs item.key).one()
+    } yield db
+
+    whenReady(chain) { items =>
+      items.value shouldBe item.setText ++ someItems
+    }
+  }
+
+
   it should "remove an item from a set column" in {
     val someItems = Set("test3", "test4", "test5", "test6")
     val item = gen[TestRow].copy(setText = someItems)
@@ -73,26 +91,24 @@ class SetOperationsTest extends PhantomSuite {
     }
   }
 
-  it should "remove an item from a set column using prepared queries" in {
+  it should "remove an item from a set column using prepared queries and delete syntax" in {
     val someItems = Set("test3", "test4", "test5", "test6")
     val item = gen[TestRow].copy(setText = someItems)
     val removal = "test6"
 
-    val query = database.testTable.update.where(_.key eqs ?).modify(_.setText remove ?)
-    Console.println(database.recipes.delete.where(_.url eqs ?).queryString)
+    val query = database.testTable.deleteP(_.setText(?)).where(_.key eqs ?)
 
     val chain = for {
       _ <- database.testTable.store(item).future()
-      updatePrep <- database.testTable.update.where(_.key eqs ?).modify(_.setText remove ?).prepareAsync()
-      _ <- updatePrep.bind(item.key -> removal).future()
+      updatePrep <- query.prepareAsync()
+      _ <- updatePrep.bind(removal, item.key).future()
       db <- database.testTable.select(_.setText).where(_.key eqs item.key).one()
     } yield db
 
     whenReady(chain) { items =>
-      items.value shouldBe someItems.diff(Set(removal))
+      items.value shouldBe (someItems - removal)
     }
   }
-
 
   it should "remove several items from a set column" in {
     val someItems = Set("test3", "test4", "test5", "test6")
@@ -102,6 +118,25 @@ class SetOperationsTest extends PhantomSuite {
     val chain = for {
       _ <- database.testTable.store(item).future()
       _ <- database.testTable.update.where(_.key eqs item.key).modify(_.setText removeAll removal).future()
+      db <- database.testTable.select(_.setText).where(_.key eqs item.key).one()
+    } yield db
+
+    whenReady(chain) { items =>
+      items.value shouldBe someItems.diff(removal)
+    }
+  }
+
+  it should "remove several items from a set column using prepared queries" in {
+    val someItems = Set("test3", "test4", "test5", "test6")
+    val item = gen[TestRow].copy(setText = someItems)
+    val removal = Set("test5", "test6")
+
+    val query = database.testTable.update.where(_.key eqs ?).modify(_.setText removeAll ?)
+
+    val chain = for {
+      _ <- database.testTable.store(item).future()
+      bindable <- query.prepareAsync()
+      _ <- bindable.bind(removal, item.key).future()
       db <- database.testTable.select(_.setText).where(_.key eqs item.key).one()
     } yield db
 

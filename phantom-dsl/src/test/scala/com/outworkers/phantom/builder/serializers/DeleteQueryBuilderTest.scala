@@ -17,19 +17,25 @@ package com.outworkers.phantom.builder.serializers
 
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.query.QueryBuilderTest
+import com.outworkers.phantom.dsl.?
 
 class DeleteQueryBuilderTest extends QueryBuilderTest {
 
   "The DELETE query builder" - {
 
-    "should allow specifying column delete queries" - {
+    "should allow specifying column delete queries" in {
       val qb = QueryBuilder.Delete.deleteColumn("table", "col").queryString
       qb shouldEqual "DELETE col FROM table"
     }
 
-    "should allow specifying full delete queries" - {
+    "should allow specifying full delete queries" in {
       val qb = QueryBuilder.Delete.delete("table").queryString
       qb shouldEqual "DELETE FROM table"
+    }
+
+    "should create prepared delete query conditions" in {
+      val qb = QueryBuilder.Delete.deletePrepared("table", "column", ?).queryString
+      qb shouldEqual "column[?] FROM table"
     }
 
   }

@@ -17,6 +17,7 @@ package com.outworkers.phantom.builder.clauses
 
 import com.outworkers.phantom.Row
 import com.outworkers.phantom.builder.QueryBuilder
+import com.outworkers.phantom.builder.clauses.UpdateClause.Condition
 import com.outworkers.phantom.builder.ops.TokenizerKey
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.prepared.PrepareMark
@@ -153,7 +154,15 @@ object TypedClause extends Clause {
 }
 
 object DeleteClause extends Clause {
-  class Condition(override val qb: CQLQuery) extends QueryCondition[HNil](qb, Nil)
+
+
+  class Condition[HL <: HList](
+    override val qb: CQLQuery
+  ) extends QueryCondition[HL](qb, Nil)
+
+  type Default = Condition[HNil]
+
+  type Prepared[RR] = Condition[RR :: HNil]
 }
 
 private[phantom] class OrderingColumn[RR](col: AbstractColumn[RR]) {

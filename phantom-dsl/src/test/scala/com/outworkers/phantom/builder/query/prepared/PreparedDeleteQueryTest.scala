@@ -65,6 +65,23 @@ class PreparedDeleteQueryTest extends PhantomSuite {
     }
   }
 
+  it should "execute an asynchronous prepared delete query on a map column" in {
+    val recipe = gen[Recipe]
+    val keyToRemove = recipe.props.keys.headOption.value
+
+    val chain = for {
+      query <- database.recipes.deleteP(_.props(?)).where(_.url eqs ?).prepareAsync()
+      _ <- database.recipes.store(recipe).future()
+      _ <- query.bind(keyToRemove, recipe.url).future()
+      res <- database.recipes.select.where(_.url eqs recipe.url).one()
+    } yield res
+
+    whenReady(chain) { result =>
+      result shouldBe defined
+      result.value.props shouldEqual (recipe.props - keyToRemove)
+    }
+  }
+
   it should "correctly execute a prepared delete query with 2 bound values" in {
     val (author, cat, article) = gen[(UUID, UUID, Article)]
 

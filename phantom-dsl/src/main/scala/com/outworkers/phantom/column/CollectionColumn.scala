@@ -15,9 +15,13 @@
  */
 package com.outworkers.phantom.column
 
-import com.outworkers.phantom.{ CassandraTable, Row }
+import com.outworkers.phantom.{CassandraTable, Row}
 import com.outworkers.phantom.builder.QueryBuilder
+import com.outworkers.phantom.builder.clauses.DeleteClause
 import com.outworkers.phantom.builder.primitives.Primitive
+import com.outworkers.phantom.builder.query.prepared.PrepareMark
+import com.outworkers.phantom.connectors.KeySpace
+import shapeless.{::, HNil}
 
 import scala.collection.generic.CanBuildFrom
 import scala.util.Try
@@ -58,4 +62,10 @@ class CollectionColumn[
   override def parse(r: Row): Try[M[RR]] = ev.fromRow(name, r)
 
   override def valueAsCql(v: RR): String = vp.asCql(v)
+
+  final def apply(mark: PrepareMark)(implicit space: KeySpace): DeleteClause.Prepared[RR] = {
+    new DeleteClause.Condition[RR :: HNil](
+      QueryBuilder.Delete.deletePrepared(table.tableName, this.name, mark)
+    )
+  }
 }

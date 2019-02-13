@@ -15,11 +15,15 @@
  */
 package com.outworkers.phantom.column
 
-import com.outworkers.phantom.{ CassandraTable, Row }
+import com.outworkers.phantom.{CassandraTable, Row}
 import com.outworkers.phantom.builder.QueryBuilder
+import com.outworkers.phantom.builder.clauses.DeleteClause
 import com.outworkers.phantom.builder.ops.MapKeyUpdateClause
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.engine.CQLQuery
+import com.outworkers.phantom.builder.query.prepared.PrepareMark
+import com.outworkers.phantom.connectors.KeySpace
+import shapeless.{::, HNil}
 
 import scala.annotation.implicitNotFound
 import scala.util.{Failure, Success, Try}
@@ -89,4 +93,10 @@ class MapColumn[
   }
 
   def apply(k: K): MapKeyUpdateClause[K, V] = new MapKeyUpdateClause[K, V](name, k)
+
+  final def apply(mark: PrepareMark)(implicit space: KeySpace): DeleteClause.Prepared[K] = {
+    new DeleteClause.Condition[K :: HNil](
+      QueryBuilder.Delete.deletePrepared(table.tableName, this.name, mark)
+    )
+  }
 }

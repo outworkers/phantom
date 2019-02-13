@@ -115,6 +115,16 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
     )
   }
 
+  def add(column: String, mark: PrepareMark): CQLQuery = {
+    CQLQuery(column).forcePad.append(CQLSyntax.Symbols.eqs).forcePad.append(
+      collectionModifier(
+        column,
+        CQLSyntax.Symbols.plus,
+        mark.qb
+      )
+    )
+  }
+
   /**
     * Creates a set removal query, to remove the given values from the name set column.
     * Assumes values are already serialised to their CQL form and escaped.

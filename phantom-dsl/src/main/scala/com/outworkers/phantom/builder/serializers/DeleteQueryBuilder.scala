@@ -16,6 +16,7 @@
 package com.outworkers.phantom.builder.serializers
 
 import com.outworkers.phantom.builder.query.engine.CQLQuery
+import com.outworkers.phantom.builder.query.prepared.PrepareMark
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 
 private[builder] class DeleteQueryBuilder {
@@ -23,6 +24,10 @@ private[builder] class DeleteQueryBuilder {
     CQLQuery(CQLSyntax.delete)
       .forcePad.append(CQLSyntax.from)
       .forcePad.append(table)
+  }
+
+  def deletePrepared(table: String, column: String, mark: PrepareMark): CQLQuery = {
+    CQLQuery(column).append(CQLSyntax.Symbols.`[`).append(mark.qb).append(CQLSyntax.Symbols.`]`)
   }
 
   def delete(table: String, cond: CQLQuery): CQLQuery = {
