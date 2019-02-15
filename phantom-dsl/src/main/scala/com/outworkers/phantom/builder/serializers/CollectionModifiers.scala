@@ -183,6 +183,16 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
       .forcePad.append(value)
   }
 
+  def put(column: String, mark: PrepareMark): CQLQuery = {
+    CQLQuery(column).forcePad.append(CQLSyntax.Symbols.eqs).forcePad.append(
+      collectionModifier(
+        column,
+        CQLSyntax.Symbols.plus,
+        mark.qb.queryString
+      )
+    )
+  }
+
   def put(column: String, pairs: (String, String)*): CQLQuery = {
     CQLQuery(column).forcePad.append(CQLSyntax.Symbols.eqs).forcePad.append(
       collectionModifier(

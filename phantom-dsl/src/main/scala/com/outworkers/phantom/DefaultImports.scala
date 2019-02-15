@@ -34,6 +34,7 @@ import com.outworkers.phantom.column._
 import com.outworkers.phantom.connectors.DefaultVersions
 import com.outworkers.phantom.keys.Indexed
 import org.joda.time.DateTimeZone
+import shapeless.{ HNil, :: }
 
 import scala.concurrent.ExecutionContextExecutor
 
@@ -325,7 +326,7 @@ trait DefaultImports extends ImplicitMechanism
   ](val col: AbstractMapColumn[Owner, Record, A, B]) {
 
     def set(key: A, value: B): UpdateClause.Default = {
-      new UpdateClause.Condition(
+      new UpdateClause.Default(
         QueryBuilder.Collections.mapSet(
           col.name,
           col.keyAsCql(key).toString,
@@ -334,10 +335,22 @@ trait DefaultImports extends ImplicitMechanism
       )
     }
 
+
+    def set(key: PrepareMark, value: PrepareMark): UpdateClause.Condition[A :: B :: HNil] = {
+      new UpdateClause.Condition(
+        QueryBuilder.Collections.mapSet(
+          col.name,
+          key.qb.queryString,
+          key.qb.queryString
+        )
+      )
+    }
+
+
     def put(value: (A, B)): UpdateClause.Default = {
       val (k, v) = value
 
-      new UpdateClause.Condition(QueryBuilder.Collections.put(
+      new UpdateClause.Default(QueryBuilder.Collections.put(
         col.name,
         col.keyAsCql(k).toString -> col.valueAsCql(v)
       )
@@ -345,13 +358,19 @@ trait DefaultImports extends ImplicitMechanism
     }
 
     def putAll[L](values: L)(implicit ev1: L => Traversable[(A, B)]): UpdateClause.Default = {
-      new UpdateClause.Condition(
+      new UpdateClause.Default(
         QueryBuilder.Collections.put(col.name, values.map { case (key, value) =>
           col.keyAsCql(key) -> col.valueAsCql(value)
         }.toSeq : _*)
       )
     }
+
+  def putAll(mark: PrepareMark): UpdateClause.Prepared[Map[A, B]] = {
+    new UpdateClause.Prepared[Map[A, B]](
+      QueryBuilder.Collections.put(col.name, mark)
+    )
   }
+}
 
   implicit class SetConditionals[
     T <: CassandraTable[T, R],
