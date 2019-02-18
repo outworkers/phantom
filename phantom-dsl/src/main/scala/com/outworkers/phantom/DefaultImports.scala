@@ -336,7 +336,7 @@ trait DefaultImports extends ImplicitMechanism
     }
 
 
-    final def set(mark: PrepareMark): UpdateClause.Condition[(A, B) :: HNil] = {
+    final def set(mark: PrepareMark): UpdateClause.Condition[B :: A :: HNil] = {
       new UpdateClause.Condition(
         QueryBuilder.Collections.mapSet(
           col.name,

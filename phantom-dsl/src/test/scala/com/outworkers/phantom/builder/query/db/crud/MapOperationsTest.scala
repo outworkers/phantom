@@ -48,7 +48,7 @@ class MapOperationsTest extends PhantomSuite {
   }
 
 
-  ignore should "support a single item map set operation using prepared statements" in {
+  it should "support a single item map set operation using prepared statements" in {
     val recipe = gen[Recipe]
     val (key , value) = gen[(String, String)]
 
@@ -56,7 +56,7 @@ class MapOperationsTest extends PhantomSuite {
 
     val operation = for {
       insertDone <- database.recipes.store(recipe).future()
-      update <- query.flatMap(_.bind(key -> value, recipe.url).future())
+      update <- query.flatMap(_.bind(key, value, recipe.url).future())
       select <- database.recipes.select(_.props).where(_.url eqs recipe.url).one
     } yield select
 
