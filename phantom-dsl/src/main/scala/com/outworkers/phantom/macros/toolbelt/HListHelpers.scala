@@ -19,6 +19,7 @@ import shapeless.{HList, HNil}
 
 import scala.annotation.tailrec
 import scala.reflect.macros.whitebox
+import scala.util.control.NonFatal
 
 @macrocompat.bundle
 trait HListHelpers {
@@ -63,7 +64,11 @@ trait HListHelpers {
   }
 
   def showHList(tpe: Type): String = {
-    s"HList(${showCollection(unpackHListTpe(tpe))})"
+    try {
+      s"HList(${showCollection(unpackHListTpe(tpe))})"
+    } catch {
+      case NonFatal(err) => s"Type ${printType(tpe)} is not an HList. ${err.getMessage}"
+    }
   }
 
   def unpackHListTpe(tpe: Type): List[Type] = {

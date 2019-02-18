@@ -28,9 +28,4 @@ abstract class ClientKeys extends Table[ClientKeys, ClientKey] {
   def findById(id: UUID): Future[Option[ClientKey]] = {
     select.where(_.sessionId eqs id).one()
   }
-
-  def insert(c: ClientKey): Future[ResultSet] = {
-    insert().future()
-  }
-
 }

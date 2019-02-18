@@ -336,12 +336,12 @@ trait DefaultImports extends ImplicitMechanism
     }
 
 
-    def set(key: PrepareMark, value: PrepareMark): UpdateClause.Condition[A :: B :: HNil] = {
+    final def set(mark: PrepareMark): UpdateClause.Condition[(A, B) :: HNil] = {
       new UpdateClause.Condition(
         QueryBuilder.Collections.mapSet(
           col.name,
-          key.qb.queryString,
-          key.qb.queryString
+          mark.qb.queryString,
+          mark.qb.queryString
         )
       )
     }
@@ -365,11 +365,11 @@ trait DefaultImports extends ImplicitMechanism
       )
     }
 
-  def putAll(mark: PrepareMark): UpdateClause.Prepared[Map[A, B]] = {
-    new UpdateClause.Prepared[Map[A, B]](
-      QueryBuilder.Collections.put(col.name, mark)
-    )
-  }
+    final def putAll(mark: PrepareMark): UpdateClause.Prepared[Map[A, B]] = {
+      new UpdateClause.Prepared[Map[A, B]](
+        QueryBuilder.Collections.put(col.name, mark)
+      )
+    }
 }
 
   implicit class SetConditionals[

@@ -15,6 +15,8 @@
  */
 package com.outworkers.phantom.jdk8
 
+import java.time.{OffsetDateTime, ZonedDateTime}
+
 import com.datastax.driver.core.utils.UUIDs
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
