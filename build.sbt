@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import Publishing.{ciSkipSequence, commitTutFilesAndVersion, releaseTutFolder}
+import Publishing.{ciSkipSequence, commitTutFiles, releaseTutFolder}
 import sbt.Keys._
 import sbt._
 import sbtrelease.ReleaseStateTransformations._
@@ -182,7 +182,7 @@ val releaseSettings = Seq(
     setReleaseVersion,
     commitReleaseVersion,
     releaseStepTask((tut in Tut) in readme),
-    commitTutFilesAndVersion,
+    commitTutFiles,
     releaseStepCommandAndRemaining("such publishSigned"),
     releaseStepCommandAndRemaining("sonatypeReleaseAll"),
     tagRelease,
