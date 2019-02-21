@@ -47,7 +47,7 @@ object Publishing {
   val releaseTutFolder = settingKey[File]("The file to write the version to")
   val releaseTutCommit = taskKey[String]("Commit message for the tut commit")
 
-  def commitTutFilesAndVersion: ReleaseStep = ReleaseStep { st: State =>
+  def commitTutFiles: ReleaseStep = ReleaseStep { st: State =>
     val settings = Project.extract(st)
     val logger = st.log
     logger.info(s"Found modified files: ${vcs(st).hasModifiedFiles}")
