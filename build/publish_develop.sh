@@ -107,6 +107,12 @@ then
         setup_git_credentials
         prepare_maven_release
 
+        #sbt "project readme" tut
+        #git add docs
+        #git commit -m "Added compiled tut documentation [ci skip]"
+
+        # git status
+
         sbt "release with-defaults"
 
     else
