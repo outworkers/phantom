@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2017 Outworkers Ltd.
+ * Copyright 2013 - 2019 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,7 +96,7 @@ class SingleGenericMacro(val c: whitebox.Context) extends HListHelpers with Whit
             def from(hl: $generic)(implicit gen: $genTpe): $tpe = (gen from hl.asInstanceOf[gen.Repr])
           }
       """
-    } else if (res =:= store) {
+    } else if (store =:= res) {
       info(s"Single generic implementation using coalesced HLists for ${printType(tpe)}")
 
       q"""
@@ -118,12 +118,15 @@ class SingleGenericMacro(val c: whitebox.Context) extends HListHelpers with Whit
   }
 
   def materialize[T : c.WeakTypeTag, Store : c.WeakTypeTag, HL : c.WeakTypeTag]: Tree = {
-    val tpe = weakTypeOf[T]
+    val tableType = weakTypeOf[T]
     val store = weakTypeOf[Store]
     val generic = weakTypeOf[HL]
 
+
     memoize[(Type, Type, Type), Tree](
       WhiteboxToolbelt.singeGenericCache
-    )(Tuple3(tpe, store, generic), { case (t, s, g) => mkGeneric(t, s, g)})
+    )(Tuple3(tableType, store, generic), { case (t, s, g) =>
+      mkGeneric(t, s, g)
+    })
   }
 }

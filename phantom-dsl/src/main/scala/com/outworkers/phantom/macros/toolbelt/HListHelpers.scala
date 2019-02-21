@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2017 Outworkers Ltd.
+ * Copyright 2013 - 2019 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import shapeless.{HList, HNil}
 
 import scala.annotation.tailrec
 import scala.reflect.macros.whitebox
+import scala.util.control.NonFatal
 
 @macrocompat.bundle
 trait HListHelpers {
@@ -63,7 +64,11 @@ trait HListHelpers {
   }
 
   def showHList(tpe: Type): String = {
-    s"HList(${showCollection(unpackHListTpe(tpe))})"
+    try {
+      s"HList(${showCollection(unpackHListTpe(tpe))})"
+    } catch {
+      case NonFatal(err) => s"Type ${printType(tpe)} is not an HList. ${err.getMessage}"
+    }
   }
 
   def unpackHListTpe(tpe: Type): List[Type] = {

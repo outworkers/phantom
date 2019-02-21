@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2017 Outworkers Ltd.
+ * Copyright 2013 - 2019 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,9 +28,4 @@ abstract class ClientKeys extends Table[ClientKeys, ClientKey] {
   def findById(id: UUID): Future[Option[ClientKey]] = {
     select.where(_.sessionId eqs id).one()
   }
-
-  def insert(c: ClientKey): Future[ResultSet] = {
-    insert().future()
-  }
-
 }

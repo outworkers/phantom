@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2017 Outworkers Ltd.
+ * Copyright 2013 - 2019 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,11 +30,11 @@ import scala.concurrent.duration._
 
 class BatchSubscriberIntegrationTest extends FlatSpec with StreamTest with ScalaFutures with Retries {
 
-  implicit val defaultPatience = PatienceConfig(timeout = 10.seconds, interval = 50.millis)
+  implicit val defaultPatience: PatienceConfig = PatienceConfig(timeout = 10.seconds, interval = 50.millis)
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Await.result(StreamDatabase.autotruncate().future(), 5.seconds)
+    val _= Await.result(StreamDatabase.autotruncate().future(), 5.seconds)
   }
 
   it should "persist all data" taggedAs Retryable in {
@@ -50,7 +50,7 @@ class BatchSubscriberIntegrationTest extends FlatSpec with StreamTest with Scala
 
     OperaPublisher.subscribe(subscriber)
 
-    completionLatch.await(5, TimeUnit.SECONDS)
+    completionLatch.await(defaultPatience.timeout.millisPart, TimeUnit.MILLISECONDS)
 
     val chain = for {
       count <- StreamDatabase.operaTable.select.count().one()

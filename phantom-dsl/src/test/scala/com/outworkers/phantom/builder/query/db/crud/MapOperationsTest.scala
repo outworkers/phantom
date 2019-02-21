@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2017 Outworkers Ltd.
+ * Copyright 2013 - 2019 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,26 @@ class MapOperationsTest extends PhantomSuite {
   }
 
 
+  it should "support a single item map set operation using prepared statements" in {
+    val recipe = gen[Recipe]
+    val (key , value) = gen[(String, String)]
+
+    val query = database.recipes.update.where(_.url eqs ?).modify(_.props set ?).prepareAsync()
+
+    val operation = for {
+      insertDone <- database.recipes.store(recipe).future()
+      update <- query.flatMap(_.bind(key, value, recipe.url).future())
+      select <- database.recipes.select(_.props).where(_.url eqs recipe.url).one
+    } yield select
+
+    whenReady(operation) { items =>
+      items.value.get(key) shouldBe defined
+      items.value.get(key).value shouldEqual value
+    }
+  }
+
+
+
   it should "support a single item map put operation" in {
     val recipe = gen[Recipe]
     val item = gen[(String, String)]
@@ -71,6 +91,24 @@ class MapOperationsTest extends PhantomSuite {
     val operation = for {
       insertDone <- database.recipes.store(recipe).future()
       update <- database.recipes.update.where(_.url eqs recipe.url).modify(_.props putAll mapItems).future()
+      select <- database.recipes.select(_.props).where(_.url eqs recipe.url).one
+    } yield select
+
+    whenReady(operation) { items =>
+      items.value shouldEqual recipe.props ++ mapItems
+    }
+  }
+
+  it should "support a multiple item map put operation with prepared statements" in {
+    val recipe = gen[Recipe]
+    val mapSize = 5
+    val mapItems = genMap[String, String](mapSize)
+
+    val updateQuery = database.recipes.update.where(_.url eqs ?).modify(_.props putAll ?).prepareAsync()
+
+    val operation = for {
+      insertDone <- database.recipes.store(recipe).future()
+      update <- updateQuery.flatMap(_.bind(mapItems, recipe.url).future())
       select <- database.recipes.select(_.props).where(_.url eqs recipe.url).one
     } yield select
 

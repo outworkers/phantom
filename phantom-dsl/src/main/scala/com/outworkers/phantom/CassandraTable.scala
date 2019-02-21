@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2017 Outworkers Ltd.
+ * Copyright 2013 - 2019 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -128,9 +128,15 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
   final def delete()(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = DeleteQuery[T, R](instance)
 
   final def delete(
-    conditions: (T => DeleteClause.Condition)*
+    conditions: (T => DeleteClause.Default)*
   )(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = {
     DeleteQuery[T, R](instance, conditions.map(_(instance).qb): _*)
+  }
+
+  final def deleteP[HL <: HList](
+    condition: T => DeleteClause.Condition[HL]
+  )(implicit keySpace: KeySpace): DeleteQuery.Prepared[T, R, HL] = {
+    DeleteQuery.prepared[T, R, HL](instance, condition(instance).qb)
   }
 
   final def truncate()(
