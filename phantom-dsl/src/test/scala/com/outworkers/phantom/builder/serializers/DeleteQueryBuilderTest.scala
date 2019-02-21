@@ -35,7 +35,7 @@ class DeleteQueryBuilderTest extends QueryBuilderTest {
 
     "should create prepared delete query conditions" in {
       val qb = QueryBuilder.Delete.deletePrepared("table", "column", ?).queryString
-      qb shouldEqual "column[?] FROM table"
+      qb shouldEqual "column[?]"
     }
 
   }
