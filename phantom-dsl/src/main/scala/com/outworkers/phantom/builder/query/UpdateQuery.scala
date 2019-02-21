@@ -247,7 +247,7 @@ sealed case class AssignmentsQuery[
     implicit session: Session,
     executor: ExecutionContextExecutor,
     keySpace: KeySpace,
-    //ev: PS =:!= HNil,
+    ev: PS =:!= HNil,
     rev: Reverse.Aux[PS, RevWhere],
     rev2: Reverse.Aux[ModifyPrepared, RevSet],
     prepend: Prepend.Aux[RevSet, RevWhere, Out],
