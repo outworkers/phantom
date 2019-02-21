@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2017 Outworkers Ltd.
+ * Copyright 2013 - 2019 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.builder.primitives.Primitive
+import com.outworkers.phantom.builder.query.prepared.PrepareMark
 
 private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) extends BaseModifiers {
 
@@ -114,24 +115,56 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
     )
   }
 
+  def add(column: String, mark: PrepareMark): CQLQuery = {
+    CQLQuery(column).forcePad.append(CQLSyntax.Symbols.eqs).forcePad.append(
+      collectionModifier(
+        column,
+        CQLSyntax.Symbols.plus,
+        mark.qb
+      )
+    )
+  }
+
   /**
-   * Creates a set removal query, to remove the given values from the name set column.
-   * Assumes values are already serialised to their CQL form and escaped.
-   *
-   * {{{
-   *  setColumn = setColumn - {`test`, `test2`}
-   * }}}
-   *
-   * @param column The name of the set column.
-   * @param values The set of values, pre-serialized and escaped.
-   * @return A CQLQuery set remove query as described above.
-   */
+    * Creates a set removal query, to remove the given values from the name set column.
+    * Assumes values are already serialised to their CQL form and escaped.
+    *
+    * {{{
+    *  setColumn = setColumn - {`test`, `test2`}
+    * }}}
+    *
+    * @param column The name of the set column.
+    * @param values The set of values, pre-serialized and escaped.
+    * @return A CQLQuery set remove query as described above.
+    */
   def remove(column: String, values: Set[String]): CQLQuery = {
     CQLQuery(column).forcePad.append(CQLSyntax.Symbols.eqs).forcePad.append(
       collectionModifier(
         column,
         CQLSyntax.Symbols.-,
         queryBuilder.Utils.set(values)
+      )
+    )
+  }
+
+  /**
+    * Creates a set removal query, to remove the given values from the name set column.
+    * Assumes values are already serialised to their CQL form and escaped.
+    *
+    * {{{
+    *  setColumn = setColumn - {`test`, `test2`}
+    * }}}
+    *
+    * @param column The name of the set column.
+    * @param value The set of values, pre-serialized and escaped.
+    * @return A CQLQuery set remove query as described above.
+    */
+  def removePrepared(column: String, value: PrepareMark): CQLQuery = {
+    CQLQuery(column).forcePad.append(CQLSyntax.Symbols.eqs).forcePad.append(
+      collectionModifier(
+        column,
+        CQLSyntax.Symbols.-,
+        value.qb
       )
     )
   }
@@ -148,6 +181,16 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
       .append(index).append(CQLSyntax.Symbols.`]`)
       .forcePad.append(CQLSyntax.eqs)
       .forcePad.append(value)
+  }
+
+  def put(column: String, mark: PrepareMark): CQLQuery = {
+    CQLQuery(column).forcePad.append(CQLSyntax.Symbols.eqs).forcePad.append(
+      collectionModifier(
+        column,
+        CQLSyntax.Symbols.plus,
+        mark.qb.queryString
+      )
+    )
   }
 
   def put(column: String, pairs: (String, String)*): CQLQuery = {

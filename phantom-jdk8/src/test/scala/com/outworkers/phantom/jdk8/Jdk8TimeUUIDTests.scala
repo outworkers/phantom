@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2017 Outworkers Ltd.
+ * Copyright 2013 - 2019 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -190,7 +190,7 @@ class Jdk8TimeUUIDTests extends PhantomSuite {
           Gen.choose(
             -intervalOffset,
             intervalOffset
-          ).sample.get
+          ).sample.value
         ).timeuuid)
       )
 

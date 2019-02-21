@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2017 Outworkers Ltd.
+ * Copyright 2013 - 2019 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,9 +41,9 @@ class PreparedUpdateQueryTest extends PhantomSuite {
     val recipe = gen[Recipe]
 
     val chain = for {
-      store <- database.recipes.store(recipe).future()
+      _ <- database.recipes.store(recipe).future()
       get <- database.recipes.select.where(_.url eqs recipe.url).one()
-      update <- query.bind(updated, recipe.url).future()
+      _ <- query.bind(updated, recipe.url).future()
       get2 <- database.recipes.select.where(_.url eqs recipe.url).one()
     } yield (get, get2)
 
@@ -70,9 +70,9 @@ class PreparedUpdateQueryTest extends PhantomSuite {
 
     val chain = for {
       query <- database.recipes.update.where(_.url eqs ?).modify(_.description setTo ?).prepareAsync()
-      store <- database.recipes.store(recipe).future()
+      _ <- database.recipes.store(recipe).future()
       get <- database.recipes.select.where(_.url eqs recipe.url).one()
-      update <- query.bind(updated, recipe.url).future()
+      _ <- query.bind(updated, recipe.url).future()
       get2 <- database.recipes.select.where(_.url eqs recipe.url).one()
     } yield (get, get2)
 
@@ -106,9 +106,9 @@ class PreparedUpdateQueryTest extends PhantomSuite {
     val recipe = gen[Recipe]
 
     val chain = for {
-      store <- database.recipes.store(recipe).future()
+      _ <- database.recipes.store(recipe).future()
       get <- database.recipes.select.where(_.url eqs recipe.url).one()
-      update <- query.bind(updated, updatedUid, recipe.url).future()
+      _ <- query.bind(updated, updatedUid, recipe.url).future()
       get2 <- database.recipes.select.where(_.url eqs recipe.url).one()
     } yield (get, get2)
 
@@ -142,9 +142,9 @@ class PreparedUpdateQueryTest extends PhantomSuite {
         .and(_.uid setTo ?)
         .prepareAsync()
 
-      store <- database.recipes.store(recipe).future()
+      _ <- database.recipes.store(recipe).future()
       get <- database.recipes.select.where(_.url eqs recipe.url).one()
-      update <- query.bind(updated, updatedUid, recipe.url).future()
+      _ <- query.bind(updated, updatedUid, recipe.url).future()
       get2 <- database.recipes.select.where(_.url eqs recipe.url).one()
     } yield (get, get2)
 
@@ -175,8 +175,8 @@ class PreparedUpdateQueryTest extends PhantomSuite {
       .prepare()
 
     val chain = for {
-      insert <- db.verizonSchema.storeRecord(sample)
-      insert2 <- db.verizonSchema.storeRecord(sample2)
+      _ <- db.verizonSchema.storeRecord(sample)
+      _ <- db.verizonSchema.storeRecord(sample2)
       updated <- bindable.bind(false, sample.uid).future()
       res <- db.verizonSchema.select.where(_.uid eqs sample.uid).one()
     } yield (updated, res)
@@ -192,9 +192,9 @@ class PreparedUpdateQueryTest extends PhantomSuite {
     val sample2 = gen[VerizonRecord].copy(isDeleted = true)
 
     val chain = for {
-      insert <- db.verizonSchema.storeRecord(sample)
-      insert2 <- db.verizonSchema.storeRecord(sample2)
-      updated <- db.verizonSchema.updateDeleteStatus.flatMap(_.bind(false, sample.uid).future())
+      _ <- db.verizonSchema.storeRecord(sample)
+      _ <- db.verizonSchema.storeRecord(sample2)
+      _ <- db.verizonSchema.updateDeleteStatus.flatMap(_.bind(false, sample.uid).future())
       res <- db.verizonSchema.select.where(_.uid eqs sample.uid).one()
     } yield res
 

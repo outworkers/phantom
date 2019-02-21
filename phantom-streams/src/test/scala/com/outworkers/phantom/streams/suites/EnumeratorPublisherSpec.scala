@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2017 Outworkers Ltd.
+ * Copyright 2013 - 2019 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ class EnumeratorPublisherSpec extends FlatSpec with Matchers {
   class TestEnv[T] extends EventRecorder() {
 
     object Subscriber extends Subscriber[T] {
-      val subscription = Promise[Subscription]()
+      val subscription: Promise[Subscription] = Promise[Subscription]()
       override def onSubscribe(s: Subscription): Unit = {
         record(OnSubscribe)
         subscription.success(s)
@@ -159,7 +159,7 @@ class EnumeratorPublisherSpec extends FlatSpec with Matchers {
       channel.push(0)
       Await.result(enumDone.future, 10.seconds) shouldBe true
     } recover {
-      case NonFatal(t) =>
+      case NonFatal(_) =>
         // If it didn't work the first time, try again, since cancel only guarantees that the publisher will
         // eventually finish
         channel.push(0)

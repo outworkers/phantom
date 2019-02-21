@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2017 Outworkers Ltd.
+ * Copyright 2013 - 2019 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -144,6 +144,20 @@ class DeleteQuerySerialisationTest extends QueryBuilderTest {
           .queryString
 
         qb shouldEqual s"DELETE FROM phantom.recipes USING TIMESTAMP ${value.getMillis * 1000} WHERE url = '$url' IF lastcheckedat = ${value.getMillis};"
+      }
+    }
+
+    "should generate prepared delete queries for collections" - {
+      "should allow creating prepared delete queries for map keys" in {
+        val query = TestDatabase.recipes.deleteP(_.props(?)).where(_.url eqs ?).queryString
+
+        query shouldEqual s"DELETE props[?] FROM $keySpace.${TestDatabase.recipes.tableName} WHERE url = ?;"
+      }
+
+      "should allow creating prepared delete queries for set columns" in {
+        val query = TestDatabase.testTable.deleteP(_.setText(?)).where(_.key eqs ?).queryString
+
+        query shouldEqual s"DELETE setText[?] FROM $keySpace.${TestDatabase.testTable.tableName} WHERE key = ?;"
       }
     }
   }
