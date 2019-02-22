@@ -332,7 +332,7 @@ trait DefaultImports extends ImplicitMechanism
 
     /**
       * Added to keep the API consistent. It is not possible to add single elements to a set
-      * in Cassandra, the only CQL level support for for collections, even if they are collections
+      * in Cassandra, the only CQL level support is for collections, even if they are collections
       * of a single element. This is a nicety added by the phantom API, and we do a prepared variant
       * to match with the above.
       *
@@ -364,8 +364,8 @@ trait DefaultImports extends ImplicitMechanism
     }
 
     /**
-      * Added to keep the API consistent. It is not possible to remove single elements to a set
-      * in Cassandra, the only CQL level support for for collections, even if they are collections
+      * Added to keep the API consistent. It is not possible to remove single elements from a set
+      * in Cassandra, the only CQL level support is for collections, even if they are collections
       * of a single element. This is a nicety added by the phantom API, and we do a prepared variant
       * to match with the above.
       *
