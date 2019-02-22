@@ -31,8 +31,8 @@ class ListOperatorsTest extends PhantomSuite {
     val recipe = gen[Recipe]
 
     val operation = for {
-      truncate <- database.recipes.truncate.future
-      insertDone <- database.recipes.store(recipe).future()
+      _ <- database.recipes.truncate.future
+      _ <- database.recipes.store(recipe).future()
       select <- database.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
     } yield select
 
@@ -45,7 +45,7 @@ class ListOperatorsTest extends PhantomSuite {
     val recipe = gen[Recipe]
 
     val operation = for {
-      insertDone <- database.recipes.store(recipe).future()
+      _ <- database.recipes.store(recipe).future()
       select <- database.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
     } yield select
 
@@ -60,8 +60,8 @@ class ListOperatorsTest extends PhantomSuite {
     val appendable = gen[ShortString].value
 
     val operation = for {
-      insertDone <- database.recipes.store(recipe).future()
-      update <- database.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients append appendable).future()
+      _ <- database.recipes.store(recipe).future()
+      _ <- database.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients append appendable).future()
       select <- database.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
     } yield select
 
@@ -80,8 +80,8 @@ class ListOperatorsTest extends PhantomSuite {
       .prepareAsync()
 
     val operation = for {
-      insertDone <- database.recipes.store(recipe).future()
-      update <- query.flatMap(_.bind(List(appendable), recipe.url).future())
+      _ <- database.recipes.store(recipe).future()
+      _ <- query.flatMap(_.bind(List(appendable), recipe.url).future())
       select <- database.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
     } yield select
 
@@ -96,8 +96,8 @@ class ListOperatorsTest extends PhantomSuite {
     val appendable = genList[String]()
 
     val operation = for {
-      insertDone <- database.recipes.store(recipe).future()
-      update <- database.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients append appendable).future()
+      _ <- database.recipes.store(recipe).future()
+      _ <- database.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients append appendable).future()
       select <- database.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
     } yield select
 
@@ -117,8 +117,8 @@ class ListOperatorsTest extends PhantomSuite {
       .prepareAsync()
 
     val operation = for {
-      insertDone <- database.recipes.store(recipe).future()
-      update <- query.flatMap(_.bind(appendable, recipe.url)).future()
+      _ <- database.recipes.store(recipe).future()
+      _ <- query.flatMap(_.bind(appendable, recipe.url).future())
       select <- database.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
     } yield select
 
@@ -153,7 +153,7 @@ class ListOperatorsTest extends PhantomSuite {
 
     val operation = for {
       _ <- database.recipes.store(recipe).future()
-      _ <- query.flatMap(_.bind(List(value), recipe.url))
+      _ <- query.flatMap(_.bind(List(value), recipe.url).future())
       select <- database.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
     } yield select
 
@@ -187,7 +187,9 @@ class ListOperatorsTest extends PhantomSuite {
 
     val operation = for {
       _ <- database.recipes.store(recipe).future()
-      _ <- database.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients discard droppable).future()
+      _ <- database.recipes.update.where(_.url eqs recipe.url)
+        .modify(_.ingredients discard droppable)
+        .future()
       select <- database.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
     } yield select
 
@@ -203,6 +205,27 @@ class ListOperatorsTest extends PhantomSuite {
     val operation = for {
       _ <- database.recipes.store(recipe).future()
       _ <- database.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients discard list.tail).future()
+      select <- database.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
+    } yield select
+
+    whenReady(operation) { items =>
+      items.value shouldEqual List(list.head)
+    }
+  }
+
+
+  it should "remove multiple items from a list using prepared statements" in {
+    val list = genList[String]()
+    val recipe = gen[Recipe].copy(ingredients = list)
+
+    val query = database.recipes.update
+      .where(_.url eqs ?)
+      .modify(_.ingredients discard ?)
+      .prepareAsync()
+
+    val operation = for {
+      _ <- database.recipes.store(recipe).future()
+      _ <- query.flatMap(_.bind(list.tail, recipe.url).future())
       select <- database.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
     } yield select
 
@@ -227,14 +250,58 @@ class ListOperatorsTest extends PhantomSuite {
     }
   }
 
+  it should "set a 0 index inside a List using prepared statements" in {
+    val list = genList[String]()
+    val recipe = gen[Recipe].copy(ingredients = list)
+    val updatedValue = gen[ShortString].value
+
+    val query = database.recipes.update
+      .where(_.url eqs ?)
+      .modify(_.ingredients setIdx (0, ?))
+      .prepareAsync()
+
+    val operation = for {
+      _ <- database.recipes.store(recipe).future()
+      _ <- query.flatMap(_.bind(updatedValue, recipe.url).future())
+      select <- database.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
+    } yield select
+
+    whenReady(operation) { items =>
+      items.value.headOption.value shouldEqual updatedValue
+    }
+  }
+
+  it should "set a prepared index inside a List using prepared statements" in {
+    val list = genList[String]()
+    val recipe = gen[Recipe].copy(ingredients = list)
+    val updatedValue = gen[ShortString].value
+
+    val query = database.recipes.update
+      .where(_.url eqs ?)
+      .modify(_.ingredients setIdx (?, ?))
+      .prepareAsync()
+
+    val operation = for {
+      _ <- database.recipes.store(recipe).future()
+      _ <- query.flatMap(_.bind(0, updatedValue, recipe.url).future())
+      select <- database.recipes.select(_.ingredients).where(_.url eqs recipe.url).one
+    } yield select
+
+    whenReady(operation) { items =>
+      items.value.headOption.value shouldEqual updatedValue
+    }
+  }
+
+
   it should "set the third index inside a List" in {
     val recipe = gen[Recipe]
 
     val updatedValue = gen[ShortString].value
 
     val operation = for {
-      insertDone <- database.recipes.store(recipe).future()
-      update <- database.recipes.update.where(_.url eqs recipe.url).modify(_.ingredients setIdx (3, updatedValue)).future()
+      _ <- database.recipes.store(recipe).future()
+      _ <- database.recipes.update.where(_.url eqs recipe.url)
+        .modify(_.ingredients setIdx (3, updatedValue)).future()
       select <- database.recipes.select(_.ingredients).where(_.url eqs recipe.url).one()
     } yield select
 

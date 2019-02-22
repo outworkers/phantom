@@ -277,7 +277,7 @@ trait DefaultImports extends ImplicitMechanism
       new UpdateClause.Condition(QueryBuilder.Collections.append(col.name, col.asCql(values)))
     }
 
-    def append(mark: PrepareMark): UpdateClause.Default = {
+    def append(mark: PrepareMark): UpdateClause.Prepared[List[RR]] = {
       new UpdateClause.Condition(QueryBuilder.Collections.append(col.name, mark))
     }
 
@@ -289,7 +289,7 @@ trait DefaultImports extends ImplicitMechanism
       new UpdateClause.Condition(QueryBuilder.Collections.discard(col.name, col.asCql(values)))
     }
 
-    def discard(mark: PrepareMark): UpdateClause.Default = {
+    def discard(mark: PrepareMark): UpdateClause.Prepared[List[RR]] = {
       new UpdateClause.Condition(QueryBuilder.Collections.discard(col.name, mark.qb.queryString))
     }
 
@@ -297,8 +297,18 @@ trait DefaultImports extends ImplicitMechanism
       new UpdateClause.Condition(QueryBuilder.Collections.setIdX(col.name, i.toString, col.valueAsCql(value)))
     }
 
-    def setIdx(i: Int, mark: PrepareMark): UpdateClause.Default = {
+    def setIdx(i: Int, mark: PrepareMark): UpdateClause.Prepared[RR] = {
       new UpdateClause.Condition(QueryBuilder.Collections.setIdX(col.name, i.toString, mark.qb.queryString))
+    }
+
+    def setIdx(index: PrepareMark, mark: PrepareMark): UpdateClause.Condition[RR :: Int :: HNil] = {
+      new UpdateClause.Condition(
+        QueryBuilder.Collections.setIdX(
+          col.name,
+          index.qb.queryString,
+          mark.qb.queryString
+        )
+      )
     }
   }
 
