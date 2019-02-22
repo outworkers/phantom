@@ -251,7 +251,7 @@ trait DefaultImports extends ImplicitMechanism
     def datetime: DateTime = new DateTime(UUIDs.unixTimestamp(uid), DateTimeZone.UTC)
   }
 
-  implicit class ListLikeModifyColumn[
+  implicit final class ListLikeModifyColumn[
     Owner <: CassandraTable[Owner, Record],
     Record,
     RR
@@ -265,12 +265,20 @@ trait DefaultImports extends ImplicitMechanism
       new UpdateClause.Condition(QueryBuilder.Collections.prepend(col.name, col.asCql(values)))
     }
 
+    def prepend(mark: PrepareMark): UpdateClause.Prepared[List[RR]] = {
+      new UpdateClause.Condition(QueryBuilder.Collections.prepend(col.name, mark))
+    }
+
     def append(value: RR): UpdateClause.Default = {
       new UpdateClause.Condition(QueryBuilder.Collections.append(col.name, col.asCql(value :: Nil)))
     }
 
     def append(values: List[RR]): UpdateClause.Default = {
       new UpdateClause.Condition(QueryBuilder.Collections.append(col.name, col.asCql(values)))
+    }
+
+    def append(mark: PrepareMark): UpdateClause.Default = {
+      new UpdateClause.Condition(QueryBuilder.Collections.append(col.name, mark))
     }
 
     def discard(value: RR): UpdateClause.Default = {
@@ -281,8 +289,16 @@ trait DefaultImports extends ImplicitMechanism
       new UpdateClause.Condition(QueryBuilder.Collections.discard(col.name, col.asCql(values)))
     }
 
+    def discard(mark: PrepareMark): UpdateClause.Default = {
+      new UpdateClause.Condition(QueryBuilder.Collections.discard(col.name, mark.qb.queryString))
+    }
+
     def setIdx(i: Int, value: RR): UpdateClause.Default = {
       new UpdateClause.Condition(QueryBuilder.Collections.setIdX(col.name, i.toString, col.valueAsCql(value)))
+    }
+
+    def setIdx(i: Int, mark: PrepareMark): UpdateClause.Default = {
+      new UpdateClause.Condition(QueryBuilder.Collections.setIdX(col.name, i.toString, mark.qb.queryString))
     }
   }
 
@@ -292,13 +308,70 @@ trait DefaultImports extends ImplicitMechanism
     RR
   ](val col: AbstractColColumn[Owner, Record, Set, RR]) {
 
+    /**
+      * Adds a single element to a Set collection.
+      * Note, this is a Phantom API nice to have, but it is not a feature directly supported
+      * by Cassandra, as Cassandra only supports adding sets to set collections.
+      * Here we simply add a set of one element.
+      * @param value The value to add to the set
+      * @return An non-prepared update query.
+      */
     def add(value: RR): UpdateClause.Default = {
       new UpdateClause.Condition(QueryBuilder.Collections.add(col.name, Set(col.valueAsCql(value))))
     }
 
+    /**
+      * Added to keep the API consistent. It is not possible to add single elements to a set
+      * in Cassandra, the only CQL level support for for collections, even if they are collections
+      * of a single element. This is a nicety added by the phantom API, and we do a prepared variant
+      * to match with the above.
+      *
+      * However, there's a known and important limitation, where the [[com.outworkers.phantom.macros.BindHelper]]
+      * macro is going to rely on the [[Primitive]] for the bound value to perform serialization. For this reason,
+      * we need to make sure the primitive used to serialize the bound value is a collection primitive, otherwise
+      * Cassandra will process an invalid update, where instead of treating the payload we send as a collection of a single
+      * element, it gets confused and actually irreversibly damages the contents of the buffer where the collection is stored.
+      *
+      * This is because the binary payloads sent to Cassandra when a prepared statement is executed don't appear
+      * to be validated against any kind of schema and are instead processed blindly.
+      *
+      * @param prepareMark The prepared statement mark.
+      * @return A prepared update statement expecting a set of elements to be bound. !! Important !!
+      */
+    def add(prepareMark: PrepareMark): UpdateClause.Prepared[Set[RR]] = addAll(prepareMark)
+
+
+    /**
+      * Removes a single element from a Set collection.
+      * Note, this is a Phantom API nice to have, but it is not a feature directly supported
+      * by Cassandra, as Cassandra only supports removing entire sets from set collections.
+      * Here we simply remove a set of one element.
+      * @param value The value to add to the set
+      * @return An non-prepared update query.
+      */
     def remove(value: RR): UpdateClause.Default = {
       new UpdateClause.Condition(QueryBuilder.Collections.remove(col.name, Set(col.valueAsCql(value))))
     }
+
+    /**
+      * Added to keep the API consistent. It is not possible to remove single elements to a set
+      * in Cassandra, the only CQL level support for for collections, even if they are collections
+      * of a single element. This is a nicety added by the phantom API, and we do a prepared variant
+      * to match with the above.
+      *
+      * However, there's a known and important limitation, where the [[com.outworkers.phantom.macros.BindHelper]]
+      * macro is going to rely on the [[Primitive]] for the bound value to perform serialization. For this reason,
+      * we need to make sure the primitive used to serialize the bound value is a collection primitive, otherwise
+      * Cassandra will process an invalid update, where instead of treating the payload we send as a collection of a single
+      * element, it gets confused and actually irreversibly damages the contents of the buffer where the collection is stored.
+      *
+      * This is because the binary payloads sent to Cassandra when a prepared statement is executed don't appear
+      * to be validated against any kind of schema and are instead processed blindly.
+      *
+      * @param mark The prepared statement mark.
+      * @return A prepared update statement expecting a set of elements to be bound. !! Important !!
+      */
+    def remove(mark: PrepareMark): UpdateClause.Prepared[Set[RR]] = removeAll(mark)
 
     def addAll(values: Set[RR]): UpdateClause.Default = {
       new UpdateClause.Condition(QueryBuilder.Collections.add(col.name, values.map(col.valueAsCql)))
@@ -307,7 +380,6 @@ trait DefaultImports extends ImplicitMechanism
     def addAll(prepareMark: PrepareMark): UpdateClause.Prepared[Set[RR]] = {
       new UpdateClause.Condition(QueryBuilder.Collections.add(col.name, prepareMark))
     }
-
 
     def removeAll(values: Set[RR]): UpdateClause.Default = {
       new UpdateClause.Condition(QueryBuilder.Collections.remove(col.name, values.map(col.valueAsCql)))

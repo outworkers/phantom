@@ -21,41 +21,44 @@ import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.prepared.PrepareMark
 
-private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) extends BaseModifiers {
+/**
+  * Query builder generators specific to List[E] columns, or list<type> in Cassandra.
+  */
+trait ListModifiers extends BaseModifiers {
 
-  def tupled(tuples: String*): CQLQuery = {
-    queryBuilder.Utils.join(tuples)
+  def queryBuilder: QueryBuilder
+
+  def setIdX(column: String, index: String, value: String): CQLQuery = {
+    CQLQuery(column).append(CQLSyntax.Symbols.`[`)
+      .append(index).append(CQLSyntax.Symbols.`]`)
+      .forcePad.append(CQLSyntax.eqs)
+      .forcePad.append(value)
   }
 
-  def tuple(name: String, tuples: String*): CQLQuery = {
-    CQLQuery(name).forcePad.append(CQLSyntax.Collections.tuple)
-      .wrap(queryBuilder.Utils.join(tuples))
-      .append(CQLSyntax.Symbols.`>`)
+  def discard(column: String, values: String*): CQLQuery = {
+    CQLQuery(column).forcePad.append(CQLSyntax.Symbols.eqs).forcePad.append(
+      collectionModifier(
+        column,
+        CQLSyntax.Symbols.-,
+        queryBuilder.Collections.serialize(values).queryString
+      )
+    )
   }
 
-  def frozen(column: String, definition: String): CQLQuery = {
-    frozen(column, CQLQuery(definition))
+  def discard(column: String, valueDef: String): CQLQuery = {
+    CQLQuery(column).forcePad.append(CQLSyntax.Symbols.eqs).forcePad.append(
+      collectionModifier(column, CQLSyntax.Symbols.-, valueDef)
+    )
   }
 
-  /**
-   * This will pre-fix and post-fix the given value with the "<>" diamond syntax.
-   * It is used to define the collection type of a column.
-   *
-   * Sample outputs would be:
-   * {{{
-   *   dimond("list", "int") = list<int>
-   *   dimond("set", "varchar") = set<varchar>
-   * }}}
-   *
-   * @param collection The name of the collection in use.
-   * @param value The value, usually the type of the CQL collection.
-   * @return A CQL query serialising the CQL collection column definition syntax.
-   */
-  def diamond(collection: String, value: String): CQLQuery = {
-    CQLQuery(collection)
-      .append(CQLSyntax.Symbols.`<`)
-      .append(value).
-      append(CQLSyntax.Symbols.`>`)
+  final def prepend(column: String, mark: PrepareMark): CQLQuery = {
+    CQLQuery(column).forcePad.append(CQLSyntax.Symbols.eqs).forcePad.append(
+      collectionModifier(
+        mark.qb.queryString,
+        CQLSyntax.Symbols.plus,
+        column
+      )
+    )
   }
 
   def prepend(column: String, values: String*): CQLQuery = {
@@ -83,27 +86,21 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
     )
   }
 
+  final def append(column: String, mark: PrepareMark): CQLQuery = {
+    CQLQuery(column).forcePad.append(CQLSyntax.Symbols.eqs).forcePad.append(
+      collectionModifier(column, CQLSyntax.Symbols.plus, mark.qb.queryString)
+    )
+  }
+
   def append(column: String, valueDef: String): CQLQuery = {
     CQLQuery(column).forcePad.append(CQLSyntax.Symbols.eqs).forcePad.append(
       collectionModifier(column, CQLSyntax.Symbols.plus, valueDef)
     )
   }
+}
 
-  def discard(column: String, values: String*): CQLQuery = {
-    CQLQuery(column).forcePad.append(CQLSyntax.Symbols.eqs).forcePad.append(
-      collectionModifier(
-        column,
-        CQLSyntax.Symbols.-,
-        queryBuilder.Collections.serialize(values).queryString
-      )
-    )
-  }
-
-  def discard(column: String, valueDef: String): CQLQuery = {
-    CQLQuery(column).forcePad.append(CQLSyntax.Symbols.eqs).forcePad.append(
-      collectionModifier(column, CQLSyntax.Symbols.-, valueDef)
-    )
-  }
+trait SetModifiers extends BaseModifiers {
+  def queryBuilder: QueryBuilder
 
   def add(column: String, values: Set[String]): CQLQuery = {
     CQLQuery(column).forcePad.append(CQLSyntax.Symbols.eqs).forcePad.append(
@@ -115,7 +112,7 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
     )
   }
 
-  def add(column: String, mark: PrepareMark): CQLQuery = {
+  final def add(column: String, mark: PrepareMark): CQLQuery = {
     CQLQuery(column).forcePad.append(CQLSyntax.Symbols.eqs).forcePad.append(
       collectionModifier(
         column,
@@ -159,7 +156,7 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
     * @param value The set of values, pre-serialized and escaped.
     * @return A CQLQuery set remove query as described above.
     */
-  def removePrepared(column: String, value: PrepareMark): CQLQuery = {
+  final def removePrepared(column: String, value: PrepareMark): CQLQuery = {
     CQLQuery(column).forcePad.append(CQLSyntax.Symbols.eqs).forcePad.append(
       collectionModifier(
         column,
@@ -169,16 +166,70 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
     )
   }
 
+  /**
+    * Used to generate a query that allows removing one or more keys from a map.
+    * Example: {{{
+    *   UPDATE db.table WHERE a = b SET mapColumn -= {"a", "b", "c"}
+    * }}}
+    * @param column The name of the map column to remove from.
+    * @param keys The keys to remove from the map column.
+    * @return
+    */
+  def removeAll(column: String, keys: Seq[String]): CQLQuery = {
+    CQLQuery(column).forcePad.append(CQLSyntax.Symbols.eqs).forcePad.append(
+      collectionModifier(
+        column,
+        CQLSyntax.Symbols.-,
+        queryBuilder.Utils.set(keys.toSet[String])
+      )
+    )
+  }
+
+}
+
+private[builder] abstract class CollectionModifiers(
+  val queryBuilder: QueryBuilder
+) extends BaseModifiers with ListModifiers with SetModifiers {
+
+  def tupled(tuples: String*): CQLQuery = {
+    queryBuilder.Utils.join(tuples)
+  }
+
+  def tuple(name: String, tuples: String*): CQLQuery = {
+    CQLQuery(name).forcePad.append(CQLSyntax.Collections.tuple)
+      .wrap(queryBuilder.Utils.join(tuples))
+      .append(CQLSyntax.Symbols.`>`)
+  }
+
+  def frozen(column: String, definition: String): CQLQuery = {
+    frozen(column, CQLQuery(definition))
+  }
+
+  /**
+   * This will pre-fix and post-fix the given value with the "<>" diamond syntax.
+   * It is used to define the collection type of a column.
+   *
+   * Sample outputs would be:
+   * {{{
+   *   dimond("list", "int") = list<int>
+   *   dimond("set", "varchar") = set<varchar>
+   * }}}
+   *
+   * @param collection The name of the collection in use.
+   * @param value The value, usually the type of the CQL collection.
+   * @return A CQL query serialising the CQL collection column definition syntax.
+   */
+  def diamond(collection: String, value: String): CQLQuery = {
+    CQLQuery(collection)
+      .append(CQLSyntax.Symbols.`<`)
+      .append(value).
+      append(CQLSyntax.Symbols.`>`)
+  }
+
+
   def mapSet(column: String, key: String, value: String): CQLQuery = {
     CQLQuery(column).append(CQLSyntax.Symbols.`[`)
       .append(key).append(CQLSyntax.Symbols.`]`)
-      .forcePad.append(CQLSyntax.eqs)
-      .forcePad.append(value)
-  }
-
-  def setIdX(column: String, index: String, value: String): CQLQuery = {
-    CQLQuery(column).append(CQLSyntax.Symbols.`[`)
-      .append(index).append(CQLSyntax.Symbols.`]`)
       .forcePad.append(CQLSyntax.eqs)
       .forcePad.append(value)
   }
@@ -199,25 +250,6 @@ private[builder] abstract class CollectionModifiers(queryBuilder: QueryBuilder) 
         column,
         CQLSyntax.Symbols.plus,
         queryBuilder.Utils.map(pairs)
-      )
-    )
-  }
-
-  /**
-    * Used to generate a query that allows removing one or more keys from a map.
-    * Example: {{{
-    *   UPDATE db.table WHERE a = b SET mapColumn -= {"a", "b", "c"}
-    * }}}
-    * @param column The name of the map column to remove from.
-    * @param keys The keys to remove from the map column.
-    * @return
-    */
-  def removeAll(column: String, keys: Seq[String]): CQLQuery = {
-    CQLQuery(column).forcePad.append(CQLSyntax.Symbols.eqs).forcePad.append(
-      collectionModifier(
-        column,
-        CQLSyntax.Symbols.-,
-        queryBuilder.Utils.set(keys.toSet[String])
       )
     )
   }
