@@ -42,6 +42,28 @@ class SetOperationsTest extends PhantomSuite {
     }
   }
 
+
+  it should "append an item to a set column using prepared statements" in {
+    val item = gen[TestRow]
+    val someItem = "test5"
+
+    val query = database.testTable.update
+      .where(_.key eqs ?)
+      .modify(_.setText add ?)
+      .prepareAsync()
+
+    val chain = for {
+      _ <- database.testTable.store(item).future()
+      _ <- query.flatMap(_.bind(Set(someItem), item.key).future())
+      db <- database.testTable.select(_.setText).where(_.key eqs item.key).one()
+    } yield db
+
+    whenReady(chain) { items =>
+      items.value shouldBe item.setText + someItem
+    }
+  }
+
+
   it should "append several items to a set column" in {
     val item = gen[TestRow]
     val someItems = Set("test5", "test6")
@@ -83,6 +105,27 @@ class SetOperationsTest extends PhantomSuite {
     val chain = for {
       _ <- database.testTable.store(item).future()
       _ <- database.testTable.update.where(_.key eqs item.key).modify(_.setText remove removal).future()
+      db <- database.testTable.select(_.setText).where(_.key eqs item.key).one()
+    } yield db
+
+    whenReady(chain) { items =>
+      items.value shouldBe someItems.diff(Set(removal))
+    }
+  }
+
+  it should "remove an item from a set column using prepared statements" in {
+    val someItems = Set("test3", "test4", "test5", "test6")
+    val item = gen[TestRow].copy(setText = someItems)
+    val removal = "test6"
+
+    val query = database.testTable.update
+      .where(_.key eqs ?)
+      .modify(_.setText remove ?)
+      .prepareAsync()
+
+    val chain = for {
+      _ <- database.testTable.store(item).future()
+      _ <- query.flatMap(_.bind(Set(removal), item.key).future())
       db <- database.testTable.select(_.setText).where(_.key eqs item.key).one()
     } yield db
 
