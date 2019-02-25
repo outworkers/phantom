@@ -13,15 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import bintray.BintrayKeys.{bintrayOrganization, bintrayReleaseOnPublish, bintrayRepository}
 import sbt.Keys._
 import sbt._
 import com.typesafe.sbt.pgp.PgpKeys._
 import sbtrelease.ReleasePlugin.autoImport.{ReleaseStep, _}
-import sbtrelease.ReleaseStateTransformations._
 import sbtrelease.Vcs
-import tut.TutPlugin.autoImport.Tut
-
 import scala.util.Properties
 
 object Publishing {
@@ -169,28 +165,7 @@ object Publishing {
         </developers>
   )
 
-
-  lazy val bintraySettings: Seq[Def.Setting[_]] = Seq(
-    publishMavenStyle := true,
-    bintrayOrganization := Some("outworkers"),
-    bintrayRepository := {
-      if (scalaVersion.value.trim.endsWith("SNAPSHOT")) {
-        "oss-snapshots"
-      } else {
-        "oss-releases"
-      }
-    },
-    bintrayReleaseOnPublish in ThisBuild := true,
-    publishArtifact in Test := false,
-    publishArtifact in (Compile, packageSrc) := false,
-    publishArtifact in (Test, packageSrc) := false,
-    pomIncludeRepository := { _ => true},
-    publishArtifact in Test := false,
-    licenses += ("Apache-2.0", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt"))
-  )
-
-
-  def effectiveSettings: Seq[Def.Setting[_]] = bintraySettings
+  def effectiveSettings: Seq[Def.Setting[_]] = mavenSettings
 
   def runningUnderCi: Boolean = sys.env.get("CI").isDefined || sys.env.get("TRAVIS").isDefined
   def travisScala211: Boolean = sys.env.get("TRAVIS_SCALA_VERSION").exists(_.contains("2.11"))
