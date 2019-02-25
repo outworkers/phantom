@@ -169,9 +169,8 @@ lazy val Versions = new {
   }
 }
 
-
 val releaseSettings = Seq(
-  releaseTutFolder in ThisBuild := baseDirectory.value / "docs",
+  releaseTutFolder := baseDirectory.value / "docs",
   releaseIgnoreUntrackedFiles := true,
   releaseVersionBump := sbtrelease.Version.Bump.Minor,
   releaseTagComment := s"Releasing ${(version in ThisBuild).value} $ciSkipSequence",
@@ -179,10 +178,9 @@ val releaseSettings = Seq(
   releaseProcess := Seq[ReleaseStep](
     checkSnapshotDependencies,
     inquireVersions,
-    setReleaseVersion,
-    commitReleaseVersion,
     releaseStepTask((tut in Tut) in readme),
-    commitTutFiles,
+    setReleaseVersion,
+    commitTutFilesAndVersion,
     releaseStepCommandAndRemaining("such publishSigned"),
     releaseStepCommandAndRemaining("sonatypeReleaseAll"),
     tagRelease,
@@ -226,7 +224,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   ),
   envVars := Map("SCALACTIC_FILL_FILE_PATHNAMES" -> "yes"),
   parallelExecution in ThisBuild := false
-) ++ Publishing.effectiveSettings
+) ++ Publishing.effectiveSettings ++ releaseSettings
 
 lazy val baseProjectList: Seq[ProjectReference] = Seq(
   phantomDsl,
@@ -255,7 +253,8 @@ lazy val phantom = (project in file("."))
       "coverageAggregate" ::
       "coveralls" ::
       state
-    }
+    },
+    commands += testCommitsForDocs
   ).aggregate(
     fullProjectList: _*
   )
