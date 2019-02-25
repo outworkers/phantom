@@ -245,16 +245,7 @@ lazy val phantom = (project in file("."))
     sharedSettings ++ Publishing.noPublishSettings
   ).settings(
     name := "phantom",
-    moduleName := "phantom",
-    commands += Command.command("testsWithCoverage") { state =>
-      "coverage" ::
-      "test" ::
-      "coverageReport" ::
-      "coverageAggregate" ::
-      "coveralls" ::
-      state
-    },
-    commands += testCommitsForDocs
+    moduleName := "phantom"
   ).aggregate(
     fullProjectList: _*
   )
