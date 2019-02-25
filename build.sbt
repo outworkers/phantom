@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import Publishing.{ciSkipSequence, commitTutFiles, releaseTutFolder}
+import Publishing.{ciSkipSequence, releaseTutFolder}
 import sbt.Keys._
 import sbt._
 import sbtrelease.ReleaseStateTransformations._
