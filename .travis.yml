@@ -7,9 +7,9 @@ scala:
 python: 2.7.13
 cache:
   directories:
-  - $HOME/.m2
-  - $HOME/.ivy2
-  - $HOME/.sbt/boot/scala-$TRAVIS_SCALA_VERSION
+  - "$HOME/.m2"
+  - "$HOME/.ivy2"
+  - "$HOME/.sbt/boot/scala-$TRAVIS_SCALA_VERSION"
 before_cache:
 - find $HOME/.ivy2 -name "ivydata-*.properties" -delete
 - find $HOME/.sbt -name "*.lock" -delete
@@ -25,6 +25,7 @@ env:
   - secure: eIdEffh2BCHd+5sCRgvI0cjl0CPcv7LmYelpCwtQeeBFZTv20hEWmR4Esjf4jeIluyRO9xhYzfzvIiEWQJaYsjbSscxfWcSTa/MHmV4/bsO/37G4X/50F3zCEycuBKb+VvqRfoCQ4g+fH02XeuUTCPLr6aGpIOMUNW91IdCzNsk=
   - secure: VrW5L0gYSZlfNNdcRW/2qGbTc9U9x1JMh8E7FMvxTV83ILyCSKt90QFSaz5Ro+wOTiV6DfASqM9gnR+kG4jIau/mmkJVtV8hmMFzQJgIjnL1gHBjbA/Si++DdwmwIg4Od1gQ0RdYD8jM9pfsv/Oy0KiFcDRiM7p5/pGdJ71CbMo=
   - secure: URVJCP3xq/qVwQ9FkB0DPyrw32pocJ3HF2C8FtgBALzdpJwLcocsgMSlk0khmu9qRrYBFvRnMSbnHqZhGB77OnwQpyCfs7PEIhK/1MHY9F1KzmboEkj4cvxQwsbllJOXz5XPoGjGbHomLqpFTj8clduOjLrq3fSJ413rrvW//xw=
+  - secure: mkrQ+2F5/cRLWGzikjWG9WqXpCHVqFjSTBh4LUIEl8HGysiKQyjjMDJskFftA/o23O3JnlwUQoN2F8E/ApVt8LKOh3jvTEHowjsqG+C6VmqMeLZi9NhYhf2Bx+i75TjW1eWspeyRQlD7A+alicnXIm5gztAmGkyqheep9Tk8x5Q=
 notifications:
   slack:
   - websudos:P9QNXx1ZGFnDHp3v3jUqtB8k
@@ -50,17 +51,15 @@ matrix:
   - scala: 2.11.12
     jdk: oraclejdk8
     env: CASSANDRA_VERSION=2.2.9
-
 before_install: unset SBT_OPTS JVM_OPTS
-
 install:
-- ./build/install_cassandra.sh
+- "./build/install_cassandra.sh"
 before_script:
 - mkdir -p $HOME/.sbt/launchers/0.13.16/
 - curl -L -o $HOME/.sbt/launchers/0.13.16/sbt-launch.jar https://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/sbt-launch/0.13.16/sbt-launch.jar
 - travis_retry sbt "++$TRAVIS_SCALA_VERSION update"
 script:
-- ./build/run_tests.sh
-- ./build/publish_develop.sh
+- "./build/run_tests.sh"
+- "./build/publish_develop.sh"
 dd:
   secure: fJUFS5+k4/0IC2SNZNU06A8Qn7G8Mum8DCi3yFpQsan58YBrvnE99Joa8XRgSbSNNHenpUmNaSyZ4p1YunOIEheRX2e+wp7dEx0A+qlgoE0EVXIPCd7FC4i6iJhIviq0fei9TAxMSf3Tw3QPRFqYhqh6iPw4kxcbokULkI7iXIU=
