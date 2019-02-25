@@ -97,48 +97,6 @@ object Publishing {
     newState
   }
 
-  def commitTutFiles: ReleaseStep = ReleaseStep { st: State =>
-    val settings = Project.extract(st)
-    val logger = st.log
-    logger.info(s"Found modified files: ${vcs(st).hasModifiedFiles}")
-
-    val log = toProcessLogger(st)
-    val docsFolder = settings.get(releaseTutFolder)
-
-    val base = vcs(st).baseDir.getCanonicalFile
-    val sign = settings.get(releaseVcsSign)
-
-    val commitablePaths = {
-      if (docsFolder.exists) {
-        logger.info(s"Docs folder exists under $docsFolder")
-        val relativeDocsPath = IO.relativize(
-          base,
-          docsFolder
-        ).getOrElse("Docs folder [%s] is outside of this VCS repository with base directory [%s]!" format(docsFolder, base))
-        Seq(relativeDocsPath)
-      } else {
-        logger.info(s"Docs folder doesn't exist under, $base and $docsFolder")
-        Seq.empty
-      }
-    }
-
-    vcs(st).add(commitablePaths: _*) !! log
-    val status = (vcs(st).status !!) trim
-
-    val newState = if (status.nonEmpty) {
-      val (state, msg) = settings.runTask(releaseTutCommit, st)
-      vcs(state).commit(msg, sign) !! log
-      state
-    } else {
-      // nothing to commit. this happens if the version.sbt file hasn't changed or no docs have been added.
-      st
-    }
-    vcs(newState).status !! log
-
-    newState
-  }
-
-
   lazy val defaultCredentials: Seq[Credentials] = {
     if (!Publishing.runningUnderCi) {
       Seq(
