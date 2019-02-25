@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import bintray.BintrayKeys.{bintrayOrganization, bintrayReleaseOnPublish, bintrayRepository}
 import sbt.Keys._
 import sbt._
 import com.typesafe.sbt.pgp.PgpKeys._
@@ -47,18 +48,25 @@ object Publishing {
   val releaseTutFolder = settingKey[File]("The file to write the version to")
   val releaseTutCommit = taskKey[String]("Commit message for the tut commit")
 
-  def commitTutFiles: ReleaseStep = ReleaseStep { st: State =>
+  def commitTutFilesAndVersion: ReleaseStep = ReleaseStep { st: State =>
     val settings = Project.extract(st)
     val logger = st.log
     logger.info(s"Found modified files: ${vcs(st).hasModifiedFiles}")
 
     val log = toProcessLogger(st)
-    val docsFolder = settings.get(releaseTutFolder)
+    val versionsFile = settings.get(releaseVersionFile).getCanonicalFile
+    val docsFolder = settings.get(releaseTutFolder).getCanonicalFile
 
+    logger.info(s"Docs folder path: Path: ${docsFolder.getPath}; Absolute path: ${docsFolder.getAbsolutePath}")
     val base = vcs(st).baseDir.getCanonicalFile
     val sign = settings.get(releaseVcsSign)
 
-    val commitablePaths = {
+    val versionPath = IO.relativize(
+      base,
+      versionsFile
+    ).getOrElse("Version file [%s] is outside of this VCS repository with base directory [%s]!" format(versionsFile, base))
+
+    val commitablePaths = Seq(versionPath) ++ {
       if (docsFolder.exists) {
         logger.info(s"Docs folder exists under $docsFolder")
         val relativeDocsPath = IO.relativize(
@@ -76,8 +84,9 @@ object Publishing {
     val status = (vcs(st).status !!) trim
 
     val newState = if (status.nonEmpty) {
-      val (state, msg) = settings.runTask(releaseTutCommit, st)
-      vcs(state).commit(msg, sign) !! log
+      val (state, msg) = settings.runTask(releaseCommitMessage, st)
+      val x = vcs(state).commit(msg, sign)
+
       state
     } else {
       // nothing to commit. this happens if the version.sbt file hasn't changed or no docs have been added.
@@ -87,7 +96,6 @@ object Publishing {
 
     newState
   }
-
 
   lazy val defaultCredentials: Seq[Credentials] = {
     if (!Publishing.runningUnderCi) {
@@ -162,7 +170,27 @@ object Publishing {
   )
 
 
-  def effectiveSettings: Seq[Def.Setting[_]] = mavenSettings
+  lazy val bintraySettings: Seq[Def.Setting[_]] = Seq(
+    publishMavenStyle := true,
+    bintrayOrganization := Some("outworkers"),
+    bintrayRepository := {
+      if (scalaVersion.value.trim.endsWith("SNAPSHOT")) {
+        "oss-snapshots"
+      } else {
+        "oss-releases"
+      }
+    },
+    bintrayReleaseOnPublish in ThisBuild := true,
+    publishArtifact in Test := false,
+    publishArtifact in (Compile, packageSrc) := false,
+    publishArtifact in (Test, packageSrc) := false,
+    pomIncludeRepository := { _ => true},
+    publishArtifact in Test := false,
+    licenses += ("Apache-2.0", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt"))
+  )
+
+
+  def effectiveSettings: Seq[Def.Setting[_]] = bintraySettings
 
   def runningUnderCi: Boolean = sys.env.get("CI").isDefined || sys.env.get("TRAVIS").isDefined
   def travisScala211: Boolean = sys.env.get("TRAVIS_SCALA_VERSION").exists(_.contains("2.11"))
