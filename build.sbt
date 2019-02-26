@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import Publishing.{ciSkipSequence, releaseTutFolder}
+import Publishing.{ciSkipSequence, pgpPass, releaseTutFolder, runningUnderCi}
+import com.typesafe.sbt.pgp.PgpKeys.pgpPassphrase
 import sbt.Keys._
 import sbt._
 import sbtrelease.ReleaseStateTransformations._
@@ -171,6 +172,13 @@ lazy val Versions = new {
 
 val releaseSettings = Seq(
   releaseTutFolder := baseDirectory.value / "docs",
+  pgpPassphrase := {
+    val logger = ConsoleLogger()
+    logger.info(s"Running under CI: $runningUnderCi")
+    logger.info(s"pgpPass defined in local environment: ${pgpPass.isDefined}")
+    logger.info(s"Password longer than five characters: ${pgpPass.exists(_.length > 5)}")
+    pgpPass
+  },
   releaseIgnoreUntrackedFiles := true,
   releaseVersionBump := sbtrelease.Version.Bump.Minor,
   releaseTagComment := s"Releasing ${(version in ThisBuild).value} $ciSkipSequence",
