@@ -170,13 +170,15 @@ lazy val Versions = new {
   }
 }
 
-pgpPassphrase in ThisBuild := {
+pgpPassphrase in Scope.GlobalScope := {
   val logger = ConsoleLogger()
   logger.info(s"Running under CI: $runningUnderCi")
   logger.info(s"pgpPass defined in local environment: ${pgpPass.isDefined}")
   logger.info(s"Password longer than five characters: ${pgpPass.exists(_.length > 5)}")
   pgpPass
 }
+
+useGpg := false
 
 val releaseSettings = Seq(
   releaseTutFolder := baseDirectory.value / "docs",

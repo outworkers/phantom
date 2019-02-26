@@ -41,8 +41,8 @@ package object monix extends MonixQueryContext with DefaultImports {
   /**
     * Method that allows executing a simple query straight from text, by-passing the entire mapping layer
     * but leveraging the execution layer.
-    * @param str The input [[CQLQuery]] to execute.
-    * @param options The [[QueryOptions]] to pass alongside the query.
+    * @param str The input [[com.outworkers.phantom.builder.query.engine.CQLQuery]] to execute.
+    * @param options The [[com.outworkers.phantom.builder.query.QueryOptions]] to pass alongside the query.
     * @return A future wrapping a database result set.
     */
   def cql(
@@ -55,8 +55,8 @@ package object monix extends MonixQueryContext with DefaultImports {
   /**
     * Method that allows executing a simple query straight from text, by-passing the entire mapping layer
     * but leveraging the execution layer.
-    * @param str The input [[CQLQuery]] to execute.
-    * @param options The [[QueryOptions]] to pass alongside the query.
+    * @param str The input [[com.outworkers.phantom.builder.query.engine.CQLQuery]] to execute.
+    * @param options The [[com.outworkers.phantom.builder.query.QueryOptions]] to pass alongside the query.
     * @return A future wrapping a database result set.
     */
   def cql(
