@@ -132,13 +132,6 @@ object Publishing {
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     publishMavenStyle := true,
     licenses += ("Apache-2.0", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt")),
-    pgpPassphrase in ThisBuild := {
-      val logger = ConsoleLogger()
-      logger.info(s"Running under CI: $runningUnderCi")
-      logger.info(s"pgpPass defined in local environment: ${pgpPass.isDefined}")
-      logger.info(s"Password longer than five characters: ${pgpPass.exists(_.length > 5)}")
-      pgpPass
-    },
     publishTo := {
       val nexus = "https://oss.sonatype.org/"
       if (version.value.trim.endsWith("SNAPSHOT")) {
