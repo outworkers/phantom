@@ -15,14 +15,10 @@
  */
 package com.outworkers.phantom.builder.query
 
+import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder._
-import com.outworkers.phantom.builder.clauses.QueryCondition
-import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.execution.ExecutableCqlQuery
 import com.outworkers.phantom.connectors.SessionAugmenterImplicits
-import com.outworkers.phantom.{CassandraTable, Row}
-import shapeless.HList
-import shapeless.ops.hlist.Prepend
 
 abstract class RootQuery[
   Table <: CassandraTable[Table, _],

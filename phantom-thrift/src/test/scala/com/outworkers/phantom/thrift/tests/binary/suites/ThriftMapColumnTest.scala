@@ -29,8 +29,8 @@ class ThriftMapColumnTest extends BinarySuite {
     val expected = sample.thriftMap + toAdd
 
     val operation = for {
-      insertDone <- thriftDb.thriftColumnTable.store(sample).future()
-      update <- thriftDb.thriftColumnTable.update
+      _ <- thriftDb.thriftColumnTable.store(sample).future()
+      _ <- thriftDb.thriftColumnTable.update
         .where(_.id eqs sample.id)
         .modify(_.thriftMap put toAdd)
         .future()
@@ -48,8 +48,8 @@ class ThriftMapColumnTest extends BinarySuite {
     val toAdd = gen[(String, ThriftTest)]
 
     val operation = for {
-      insertDone <- thriftDb.thriftColumnTable.store(sample).future
-      update <- thriftDb.thriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftMap put toAdd).future()
+      _ <- thriftDb.thriftColumnTable.store(sample).future
+      _ <- thriftDb.thriftColumnTable.update.where(_.id eqs sample.id).modify(_.thriftMap put toAdd).future()
       select <- thriftDb.thriftColumnTable.select(_.thriftMap).where(_.id eqs sample.id).one()
     } yield select
 

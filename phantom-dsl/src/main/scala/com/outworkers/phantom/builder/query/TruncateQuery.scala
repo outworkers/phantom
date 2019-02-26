@@ -20,7 +20,7 @@ import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.execution.ExecutableCqlQuery
 import com.outworkers.phantom.builder.{ConsistencyBound, QueryBuilder, Specified, Unspecified}
-import com.outworkers.phantom.connectors.{KeySpace, SessionAugmenterImplicits}
+import com.outworkers.phantom.connectors.KeySpace
 
 class TruncateQuery[
   Table <: CassandraTable[Table, _],

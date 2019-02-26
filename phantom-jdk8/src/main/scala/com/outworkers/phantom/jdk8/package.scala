@@ -148,7 +148,7 @@ package object jdk8 extends Shared {
   implicit class TimeUUIDAugmenter(val uuid: UUID) extends AnyVal {
 
     /**
-      * Converts this [[UUID]] to a [[ZonedDateTime]] given a zone argument.
+      * Converts this [[java.util.UUID]] to a [[ZonedDateTime]] given a zone argument.
       * @param zone A [[String]] that is meant to contain a valid [[ZoneId]]. This method will not
       *             check if the string provided is a valid [[ZoneId]], it will just pass this through
       *             to [[ZoneId.of]].
@@ -157,7 +157,7 @@ package object jdk8 extends Shared {
     def zonedDateTime(zone: String): ZonedDateTime = zonedDateTime(ZoneId.of(zone))
 
     /**
-      * Converts this [[UUID]] to a [[ZonedDateTime]] given a zone argument.
+      * Converts this [[java.util.UUID]] to a [[ZonedDateTime]] given a zone argument.
       * @param zone A [[ZoneId]] representing a temporal zone from Java 8 API.
       * @return A [[ZonedDateTime]], which contains a time instant and information about a [[ZoneId]].
       */
@@ -166,7 +166,7 @@ package object jdk8 extends Shared {
     }
 
     /**
-      * Converts this [[UUID]] to an [[OffsetDateTime]] given a zone argument.
+      * Converts this [[java.util.UUID]] to an [[OffsetDateTime]] given a zone argument.
       * @param zone A [[String]] that is meant to contain a valid [[ZoneId]]. This method will not
       *             check if the string provided is a valid [[ZoneId]], it will just pass this through
       *             to [[ZoneId.of]].
@@ -175,7 +175,7 @@ package object jdk8 extends Shared {
     def offsetDateTime(zone: String): OffsetDateTime = offsetDateTime(ZoneId.of(zone))
 
     /**
-      * Converts this [[UUID]] to a [[ZonedDateTime]] given a zone argument.
+      * Converts this [[java.util.UUID]] to a [[ZonedDateTime]] given a zone argument.
       * @param zone A [[ZoneId]] representing a temporal zone from Java 8 API.
       * @return A [[ZonedDateTime]], which contains a time instant and information about a [[ZoneId]].
       */
