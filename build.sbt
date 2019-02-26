@@ -170,15 +170,16 @@ lazy val Versions = new {
   }
 }
 
+pgpPassphrase in ThisBuild := {
+  val logger = ConsoleLogger()
+  logger.info(s"Running under CI: $runningUnderCi")
+  logger.info(s"pgpPass defined in local environment: ${pgpPass.isDefined}")
+  logger.info(s"Password longer than five characters: ${pgpPass.exists(_.length > 5)}")
+  pgpPass
+}
+
 val releaseSettings = Seq(
   releaseTutFolder := baseDirectory.value / "docs",
-  pgpPassphrase := {
-    val logger = ConsoleLogger()
-    logger.info(s"Running under CI: $runningUnderCi")
-    logger.info(s"pgpPass defined in local environment: ${pgpPass.isDefined}")
-    logger.info(s"Password longer than five characters: ${pgpPass.exists(_.length > 5)}")
-    pgpPass
-  },
   releaseIgnoreUntrackedFiles := true,
   releaseVersionBump := sbtrelease.Version.Bump.Minor,
   releaseTagComment := s"Releasing ${(version in ThisBuild).value} $ciSkipSequence",
