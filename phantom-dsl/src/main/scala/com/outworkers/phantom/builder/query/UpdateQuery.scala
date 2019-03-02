@@ -197,7 +197,9 @@ sealed case class AssignmentsQuery[
     copy(usingPart = usingPart append QueryBuilder.timestamp((value.getMillis * 1000).micros))
   }
 
-  final def ttl(mark: PrepareMark): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, Long :: PS, ModifyPrepared] = {
+  final def ttl(
+    mark: PrepareMark
+  ): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, Long :: PS, ModifyPrepared] = {
     copy(usingPart = usingPart append QueryBuilder.ttl(mark.qb.queryString))
   }
 

@@ -203,4 +203,28 @@ class PreparedUpdateQueryTest extends PhantomSuite {
       res.value.isDeleted shouldBe false
     }
   }
+
+  it should "allow using TTL in prepared update statements" in {
+    val sample = gen[VerizonRecord].copy(isDeleted = true)
+    val sample2 = gen[VerizonRecord].copy(isDeleted = true)
+
+    lazy val updateWithTTL = db.verizonSchema.update
+      .where(_.uid eqs ?)
+      .modify(_.isdeleted setTo ?)
+      .ttl(?)
+      .consistencyLevel_=(ConsistencyLevel.LOCAL_QUORUM)
+      .prepareAsync()
+
+    val chain = for {
+      _ <- db.verizonSchema.storeRecord(sample)
+      _ <- db.verizonSchema.storeRecord(sample2)
+      _ <- updateWithTTL.flatMap(_.bind(false, sample.uid, 5L).future())
+      res <- db.verizonSchema.select.where(_.uid eqs sample.uid).one()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+      res.value.isDeleted shouldBe false
+    }
+  }
 }
