@@ -32,17 +32,17 @@ class BatchablePreparedInsertQueryTest extends PhantomSuite {
     val sample2 = gen[Recipe]
 
     val query = database.recipes.insert
-      .p_value(_.uid, ?)
       .p_value(_.url, ?)
-      .p_value(_.servings, ?)
-      .p_value(_.ingredients, ?)
       .p_value(_.description, ?)
+      .p_value(_.ingredients, ?)
+      .p_value(_.servings, ?)
       .p_value(_.lastcheckedat, ?)
       .p_value(_.props, ?)
+      .p_value(_.uid, ?)
       .prepare()
 
     val exec1 = query.bind(sample1)
-    val exec2 = query.bind(BatchablePreparedInsertQueryTest.scalasample2)
+    val exec2 = query.bind(sample2)
 
     val chain = for {
       _ <- Batch.unlogged.add(exec1, exec2).future()
