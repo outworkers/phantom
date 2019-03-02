@@ -212,7 +212,6 @@ class PreparedUpdateQueryTest extends PhantomSuite {
       .where(_.uid eqs ?)
       .modify(_.isdeleted setTo ?)
       .ttl(?)
-      .consistencyLevel_=(ConsistencyLevel.LOCAL_QUORUM)
       .prepareAsync()
 
     val chain = for {

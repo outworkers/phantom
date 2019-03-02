@@ -71,6 +71,7 @@ val Scala212Options = Seq(
 ) ++ XLintOptions
 
 val YWarnOptions = Seq(
+  "-Ywarn-unused",
   "-Ywarn-dead-code", // Warn when dead code is identified.
   "-Ywarn-inaccessible", // Warn about inaccessible types in method signatures.
   "-Ywarn-nullary-override", // Warn when non-nullary `def f()' overrides nullary `def f'.
@@ -216,7 +217,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   ),
 
   logLevel in Compile := { if (Publishing.runningUnderCi) Level.Error else Level.Info },
-  logLevel in Test := Level.Info,
+  logLevel in Test := { if (Publishing.runningUnderCi) Level.Error else Level.Info },
   libraryDependencies ++= Seq(
     "ch.qos.logback" % "logback-classic" % Versions.logback % Test,
     "org.slf4j" % "log4j-over-slf4j" % Versions.slf4j

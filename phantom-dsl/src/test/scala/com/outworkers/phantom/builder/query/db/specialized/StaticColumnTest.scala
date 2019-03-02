@@ -36,8 +36,8 @@ class StaticColumnTest extends PhantomSuite {
     val id2 = UUIDs.timeBased()
     val chain = for {
       // The first record holds the static value.
-      insert <- database.staticTable.insert.value(_.id, id).value(_.clusteringId, id).value(_.staticTest, static).future()
-      insert2 <- database.staticTable.insert.value(_.id, id).value(_.clusteringId, id2).future()
+      _ <- database.staticTable.insert.value(_.id, id).value(_.clusteringId, id).value(_.staticTest, static).future()
+      _ <- database.staticTable.insert.value(_.id, id).value(_.clusteringId, id2).future()
       select <- database.staticTable.select.where(_.id eqs id).and(_.clusteringId eqs id2).one()
     } yield select
 
@@ -55,10 +55,19 @@ class StaticColumnTest extends PhantomSuite {
     val chain = for {
 
       // The first insert holds the first static value.
-      insert <- database.staticTable.insert.value(_.id, id).value(_.clusteringId, id).value(_.staticTest, static).future()
+      _ <- database.staticTable
+        .insert.value(_.id, id)
+        .value(_.clusteringId, id)
+        .value(_.staticTest, static)
+        .future()
 
       // The second insert updates the static value
-      insert2 <- database.staticTable.insert.value(_.id, id).value(_.clusteringId, id2).value(_.staticTest, static2).future()
+      _ <- database.staticTable
+        .insert
+        .value(_.id, id)
+        .value(_.clusteringId, id2)
+        .value(_.staticTest, static2)
+        .future()
 
       // We query for the first record inserted.
       select <- database.staticTable.select.where(_.id eqs id).and(_.clusteringId eqs id).one()
@@ -77,9 +86,9 @@ class StaticColumnTest extends PhantomSuite {
     val sample2 = gen[StaticCollectionRecord].copy(id = id, list = sample.list)
 
     val chain = for {
-      store1 <- db.staticCollectionTable.store(sample).future()
-      store2 <- db.staticCollectionTable.store(sample2).future()
-      update <- db.staticCollectionTable.update.where(_.id eqs id)
+      _ <- db.staticCollectionTable.store(sample).future()
+      _ <- db.staticCollectionTable.store(sample2).future()
+      _ <- db.staticCollectionTable.update.where(_.id eqs id)
         .modify(_.staticList append "test")
         .future()
 
