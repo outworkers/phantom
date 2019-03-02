@@ -97,7 +97,7 @@ case class UpdateQuery[
     Out <: HList
   ](clause: Table => UpdateClause.Condition[HL])(
     implicit prepend: Prepend.Aux[HL, HNil, Out]
-  ): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, Out] = {
+  ): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, Out, HNil] = {
     AssignmentsQuery(
       table = table,
       init = init,
@@ -162,7 +162,8 @@ sealed case class AssignmentsQuery[
   Status <: ConsistencyBound,
   Chain <: WhereBound,
   PS <: HList,
-  ModifyPrepared <: HList
+  ModifyPrepared <: HList,
+  TTL <: HList
 ](table: Table,
   init: CQLQuery,
   tokens: List[TokenizerKey],
@@ -180,7 +181,7 @@ sealed case class AssignmentsQuery[
     Out <: HList
   ](clause: Table => UpdateClause.Condition[HL])(
     implicit prepend: Prepend.Aux[HL, ModifyPrepared, Out]
-  ): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, Out] = {
+  ): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, Out, TTL] = {
     copy(setPart = setPart appendConditionally (clause(table).qb, !clause(table).skipped))
   }
 
@@ -189,25 +190,29 @@ sealed case class AssignmentsQuery[
     * @param value The microsecond UTC timestamp of the time to use for the update query.
     * @return An assignments query with a timestamp value manually set.
     */
-  final def timestamp(value: Long): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
+  final def timestamp(
+    value: Long
+  ): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared, TTL] = {
     copy(usingPart = usingPart append QueryBuilder.timestamp(value.micros))
   }
 
-  final def timestamp(value: DateTime): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
+  final def timestamp(
+    value: DateTime
+  ): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared, TTL] = {
     copy(usingPart = usingPart append QueryBuilder.timestamp((value.getMillis * 1000).micros))
   }
 
   final def ttl(
     mark: PrepareMark
-  ): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, Long :: PS, ModifyPrepared] = {
+  ): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared, Int :: HNil] = {
     copy(usingPart = usingPart append QueryBuilder.ttl(mark.qb.queryString))
   }
 
-  final def ttl(seconds: Long): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
+  final def ttl(seconds: Long): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared, TTL] = {
     copy(usingPart = usingPart append QueryBuilder.ttl(seconds.toString))
   }
 
-  final def ttl(duration: ScalaDuration): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared] = {
+  final def ttl(duration: ScalaDuration): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, ModifyPrepared, TTL] = {
     ttl(duration.toSeconds)
   }
 
@@ -226,17 +231,19 @@ sealed case class AssignmentsQuery[
   def prepare[
     RevSet <: HList,
     RevModified <: HList,
-    Out <: HList
+    Out <: HList,
+    TTLAdded <: HList
   ]()(
     implicit session: Session,
     keySpace: KeySpace,
-    //ev: PS =:!= HNil,
+    ev: PS =:!= HNil,
     rev: Reverse.Aux[PS, RevSet],
     rev2: Reverse.Aux[ModifyPrepared, RevModified],
-    prepend: Prepend.Aux[RevModified, RevSet, Out]
-  ): PreparedBlock[Out] = {
+    prepend: Prepend.Aux[RevModified, RevSet, Out],
+    prependTTL: Prepend.Aux[TTL, Out, TTLAdded],
+  ): PreparedBlock[TTLAdded] = {
     val flatten = new PreparedFlattener(qb)
-    new PreparedBlock[Out](flatten.query, flatten.protocolVersion, options)
+    new PreparedBlock[TTLAdded](flatten.query, flatten.protocolVersion, options)
   }
 
   def prepareAsync[
@@ -244,7 +251,8 @@ sealed case class AssignmentsQuery[
     F[_],
     RevWhere <: HList,
     RevSet <: HList,
-    Out <: HList
+    Out <: HList,
+    TTLAdded <: HList
   ]()(
     implicit session: Session,
     executor: ExecutionContextExecutor,
@@ -253,14 +261,15 @@ sealed case class AssignmentsQuery[
     rev: Reverse.Aux[PS, RevWhere],
     rev2: Reverse.Aux[ModifyPrepared, RevSet],
     prepend: Prepend.Aux[RevSet, RevWhere, Out],
+    prependTTL: Prepend.Aux[TTL, Out, TTLAdded],
     fMonad: FutureMonad[F],
     adapter: GuavaAdapter[F],
     interface: PromiseInterface[P, F]
-  ): F[PreparedBlock[Out]] = {
+  ): F[PreparedBlock[TTLAdded]] = {
     val flatten = new PreparedFlattener(qb)
 
     flatten.async map { ps =>
-      new PreparedBlock[Out](ps, flatten.protocolVersion, options)
+      new PreparedBlock[TTLAdded](ps, flatten.protocolVersion, options)
     }
   }
 
@@ -302,7 +311,7 @@ sealed case class AssignmentsQuery[
   def consistencyLevel_=(level: ConsistencyLevel)(
     implicit ev: Status =:= Unspecified,
     session: Session
-  ): AssignmentsQuery[Table, Record, Limit, Order, Specified, Chain, PS, ModifyPrepared] = {
+  ): AssignmentsQuery[Table, Record, Limit, Order, Specified, Chain, PS, ModifyPrepared, TTL] = {
     if (session.protocolConsistency) {
       copy(options = options.consistencyLevel_=(level))
     } else {
