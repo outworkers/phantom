@@ -21,11 +21,11 @@ import com.outworkers.phantom.thrift.util.ThriftTestSuite
 import org.scalatest.FlatSpec
 
 trait BinarySuite extends FlatSpec with ThriftTestSuite {
-  val thriftDb = binary.ThriftDatabase
+  protected[this] val thriftDb = binary.ThriftDatabase
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    thriftDb.create()
+    val _ = thriftDb.create()
   }
 }
 

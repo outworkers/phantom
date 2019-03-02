@@ -71,7 +71,6 @@ val Scala212Options = Seq(
 ) ++ XLintOptions
 
 val YWarnOptions = Seq(
-  "-Ywarn-unused",
   "-Ywarn-dead-code", // Warn when dead code is identified.
   "-Ywarn-inaccessible", // Warn about inaccessible types in method signatures.
   "-Ywarn-nullary-override", // Warn when non-nullary `def f()' overrides nullary `def f'.
@@ -82,6 +81,7 @@ val YWarnOptions = Seq(
 
 val scalacOptionsFn: String => Seq[String] = { s =>
   CrossVersion.partialVersion(s) match {
+    case _ if Publishing.runningUnderCi => ScalacOptions
     case Some((_, minor)) if minor >= 12 => ScalacOptions ++ YWarnOptions ++ Scala212Options
     case _ => ScalacOptions ++ YWarnOptions
   }

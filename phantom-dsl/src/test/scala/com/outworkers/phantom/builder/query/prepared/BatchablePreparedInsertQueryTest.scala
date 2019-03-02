@@ -17,7 +17,7 @@ package com.outworkers.phantom.builder.query.prepared
 
 import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.tables.{Recipe, TestDatabase}
+import com.outworkers.phantom.tables.Recipe
 import com.outworkers.util.samplers._
 
 class BatchablePreparedInsertQueryTest extends PhantomSuite {
@@ -41,28 +41,16 @@ class BatchablePreparedInsertQueryTest extends PhantomSuite {
       .p_value(_.props, ?)
       .prepare()
 
-    def storePrepared(recipe: Recipe): ExecutablePreparedQuery = query.bind(
-      recipe.uid,
-      recipe.url,
-      recipe.servings,
-      recipe.ingredients,
-      recipe.description,
-      recipe.lastCheckedAt,
-      recipe.props
-    )
-
-    val exec1 = storePrepared(sample1)
-    val exec2 = storePrepared(sample2)
-
+    val exec1 = query.bind(sample1)
+    val exec2 = query.bind(BatchablePreparedInsertQueryTest.scalasample2)
 
     val chain = for {
-      truncate <- database.recipes.truncate.future()
-      store <- Batch.unlogged.add(exec1, exec2).future()
-      get <- database.recipes.select.fetch()
+      _ <- Batch.unlogged.add(exec1, exec2).future()
+      get <- database.recipes.select.where(_.url in List(sample1.url, sample2.url)).fetch()
     } yield get
 
     whenReady(chain) { res =>
-      res should contain theSameElementsAs Seq(sample1, sample2)
+      res should contain theSameElementsAs List(sample1, sample2)
     }
   }
 }

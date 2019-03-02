@@ -169,10 +169,13 @@ package object streams {
     val ay: Long = Math.abs(y)
     if (((ax | ay) >> 31) != 0) {
       if (((y != 0) && (r / y != x)) || (x == Long.MinValue && y == -1)) {
-        return Long.MaxValue
+        Long.MaxValue
+      } else {
+        r
       }
+    } else {
+      r
     }
-    r
   }
 
   final val Iteratee = PhantomIteratee

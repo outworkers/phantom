@@ -240,7 +240,7 @@ sealed case class AssignmentsQuery[
     rev: Reverse.Aux[PS, RevSet],
     rev2: Reverse.Aux[ModifyPrepared, RevModified],
     prepend: Prepend.Aux[RevModified, RevSet, Out],
-    prependTTL: Prepend.Aux[TTL, Out, TTLAdded],
+    prependTTL: Prepend.Aux[TTL, Out, TTLAdded]
   ): PreparedBlock[TTLAdded] = {
     val flatten = new PreparedFlattener(qb)
     new PreparedBlock[TTLAdded](flatten.query, flatten.protocolVersion, options)

@@ -168,7 +168,7 @@ package object finagle extends TwitterQueryContext with DefaultImports {
   ](val query: UpdateQuery[T, Record, Limit, Order, Status, Chain, PS]) extends AnyVal {
 
     def ttl(duration: com.twitter.util.Duration): UpdateQuery[T, Record, Limit, Order, Status, Chain, PS] = {
-      query.ttl(duration.inSeconds)
+      query.ttl(duration.inSeconds.toLong)
     }
   }
 
@@ -180,11 +180,12 @@ package object finagle extends TwitterQueryContext with DefaultImports {
     Status <: ConsistencyBound,
     Chain <: WhereBound,
     PS <: HList,
-    ModifiedPrepared <: HList
-  ](val query: AssignmentsQuery[T, Record, Limit, Order, Status, Chain, PS, ModifiedPrepared]) extends AnyVal {
+    ModifiedPrepared <: HList,
+    TTL <: HList
+  ](val query: AssignmentsQuery[T, Record, Limit, Order, Status, Chain, PS, ModifiedPrepared, TTL]) extends AnyVal {
 
-    def ttl(duration: TwitterDuration): AssignmentsQuery[T, Record, Limit, Order, Status, Chain, PS, ModifiedPrepared] = {
-      query.ttl(duration.inSeconds)
+    def ttl(duration: TwitterDuration): AssignmentsQuery[T, Record, Limit, Order, Status, Chain, PS, ModifiedPrepared, TTL] = {
+      query.ttl(duration.inSeconds.toLong)
     }
   }
 
@@ -200,7 +201,7 @@ package object finagle extends TwitterQueryContext with DefaultImports {
   ](val query: ConditionalQuery[T, Record, Limit, Order, Status, Chain, PS, ModifiedPrepared]) extends AnyVal {
 
     def ttl(duration: TwitterDuration): ConditionalQuery[T, Record, Limit, Order, Status, Chain, PS, ModifiedPrepared] = {
-      query.ttl(duration.inSeconds)
+      query.ttl(duration.inSeconds.toLong)
     }
   }
 
