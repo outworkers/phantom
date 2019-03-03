@@ -39,9 +39,9 @@ class PreparedUpdateQueryTest extends PhantomSuite with TwitterFutures {
     val recipe = gen[Recipe]
 
     val chain = for {
-      store <- database.recipes.store(recipe).future()
+      _ <- database.recipes.store(recipe).future()
       get <- database.recipes.select.where(_.url eqs recipe.url).one()
-      update <- query.bind(updated, recipe.url).future()
+      _ <- query.bind(updated, recipe.url).future()
       get2 <- database.recipes.select.where(_.url eqs recipe.url).one()
     } yield (get, get2)
 
@@ -68,9 +68,9 @@ class PreparedUpdateQueryTest extends PhantomSuite with TwitterFutures {
 
     val chain = for {
       query <- database.recipes.update.where(_.url eqs ?).modify(_.description setTo ?).prepareAsync()
-      store <- database.recipes.store(recipe).future()
+      _ <- database.recipes.store(recipe).future()
       get <- database.recipes.select.where(_.url eqs recipe.url).one()
-      update <- query.bind(updated, recipe.url).future()
+      _ <- query.bind(updated, recipe.url).future()
       get2 <- database.recipes.select.where(_.url eqs recipe.url).one()
     } yield (get, get2)
 
@@ -104,9 +104,9 @@ class PreparedUpdateQueryTest extends PhantomSuite with TwitterFutures {
     val recipe = gen[Recipe]
 
     val chain = for {
-      store <- database.recipes.store(recipe).future()
+      _ <- database.recipes.store(recipe).future()
       get <- database.recipes.select.where(_.url eqs recipe.url).one()
-      update <- query.bind(updated, updatedUid, recipe.url).future()
+      _ <- query.bind(updated, updatedUid, recipe.url).future()
       get2 <- database.recipes.select.where(_.url eqs recipe.url).one()
     } yield (get, get2)
 
@@ -141,9 +141,9 @@ class PreparedUpdateQueryTest extends PhantomSuite with TwitterFutures {
         .modify(_.description setTo ?)
         .and(_.uid setTo ?)
         .prepareAsync()
-      store <- database.recipes.store(recipe).future()
+      _ <- database.recipes.store(recipe).future()
       get <- database.recipes.select.where(_.url eqs recipe.url).one()
-      update <- query.bind(updated, updatedUid, recipe.url).future()
+      _ <- query.bind(updated, updatedUid, recipe.url).future()
       get2 <- database.recipes.select.where(_.url eqs recipe.url).one()
     } yield (get, get2)
 
