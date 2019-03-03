@@ -37,8 +37,8 @@ class ThriftSetOperationsTest extends CompactSuite {
       .future()
 
     val operation = for {
-      insertDone <- insert
-      update <- thriftDb.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftSet add sample2).future()
+      _ <- insert
+      _ <- thriftDb.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftSet add sample2).future()
       select <- thriftDb.thriftColumnTable.select(_.thriftSet).where(_.id eqs id).one
     } yield select
 
@@ -63,8 +63,8 @@ class ThriftSetOperationsTest extends CompactSuite {
       .future()
 
     val operation = for {
-      insertDone <- insert
-      update <- thriftDb.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftSet addAll Set(sample2, sample3)).future()
+      _ <- insert
+      _ <- thriftDb.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftSet addAll Set(sample2, sample3)).future()
       select <- thriftDb.thriftColumnTable.select(_.thriftSet).where(_.id eqs id).one
     } yield select
 
@@ -89,8 +89,8 @@ class ThriftSetOperationsTest extends CompactSuite {
       .future()
 
     val operation = for {
-      insertDone <- insert
-      update <- thriftDb.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftSet remove sample3).future()
+      _ <- insert
+      _ <- thriftDb.thriftColumnTable.update.where(_.id eqs id).modify(_.thriftSet remove sample3).future()
       select <- thriftDb.thriftColumnTable.select(_.thriftSet).where(_.id eqs id).one
     } yield select
 
@@ -113,8 +113,8 @@ class ThriftSetOperationsTest extends CompactSuite {
       .value(_.thriftSet, Set(sample, sample2, sample3))
 
     val operation = for {
-      insertDone <- insert.future()
-      update <- thriftDb
+      _ <- insert.future()
+      _ <- thriftDb
         .thriftColumnTable.update.where(_.id eqs id)
         .modify(_.thriftSet removeAll Set(sample2, sample3))
         .future()

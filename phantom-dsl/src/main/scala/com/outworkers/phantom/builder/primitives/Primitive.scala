@@ -17,7 +17,7 @@ package com.outworkers.phantom.builder.primitives
 
 import java.math.BigInteger
 import java.net.{InetAddress, UnknownHostException}
-import java.nio.ByteBuffer
+import java.nio.{BufferUnderflowException, ByteBuffer}
 import java.nio.charset.{Charset, CharsetDecoder, CharsetEncoder}
 import java.sql.{Timestamp => JTimestamp}
 import java.util.regex.Pattern
@@ -28,6 +28,7 @@ import com.datastax.driver.core.exceptions.InvalidTypeException
 import com.datastax.driver.core.utils.Bytes
 import com.outworkers.phantom.Row
 import com.outworkers.phantom.builder.QueryBuilder
+import com.outworkers.phantom.builder.primitives.Primitives.emptyCollection
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import org.joda.time.{DateTime, DateTimeZone, LocalDate => JodaLocalDate}
@@ -542,6 +543,56 @@ object Primitive {
     .manuallyDerive[Date, Long](_.getTime, new Date(_))(LongPrimitive)(CQLSyntax.Types.Timestamp)
 
 
+  implicit def map[K, V](implicit kp: Primitive[K], vp: Primitive[V]): Primitive[Map[K, V]] = {
+    new Primitive[Map[K, V]] {
+      override def frozen: Boolean = true
+      override def shouldFreeze: Boolean = true
+
+      override def dataType: String = QueryBuilder.Collections.mapType(kp, vp).queryString
+
+      override def asCql(sourceMap: Map[K, V]): String = QueryBuilder.Utils.map(sourceMap.map {
+        case (key, value) => kp.asCql(key) -> vp.asCql(value)
+      }).queryString
+
+      override def serialize(source: Map[K, V], version: ProtocolVersion): ByteBuffer = {
+        source match {
+          case Primitive.nullValue => emptyCollection
+          case s if s.isEmpty => Utils.pack(new Array[ByteBuffer](2 * source.size), source.size, version)
+          case _ =>
+            val bbs = source.foldLeft(Seq.empty[ByteBuffer]) { case (acc, (key, value)) =>
+              notNull(key, "Map keys cannot be null")
+              acc :+ kp.serialize(key, version) :+ vp.serialize(value, version)
+            }
+            Utils.pack(bbs, source.size, ProtocolVersion.V4)
+        }
+      }
+
+      override def deserialize(bytes: ByteBuffer, version: ProtocolVersion): Map[K, V] = {
+        bytes match {
+          case Primitive.nullValue => Map.empty[K, V]
+          case b if b.remaining() == 0 => Map.empty[K, V]
+          case _ =>
+            try {
+              val input = bytes.duplicate()
+              val n = CodecUtils.readSize(input, version)
+
+              val m = Map.newBuilder[K, V]
+
+              for (_ <- 0 until n) {
+                val kbb = CodecUtils.readValue(input, version)
+                val vbb = CodecUtils.readValue(input, version)
+
+                m += (kp.deserialize(kbb, version) -> vp.deserialize(vbb, version))
+              }
+              m result()
+            } catch {
+              case e: BufferUnderflowException =>
+                throw new InvalidTypeException("Not enough bytes to deserialize a map", e)
+            }
+        }
+      }
+    }
+  }
 
   def enumByIndex[En <: Enumeration](enum: En)(
     implicit ev: Primitive[Int]
