@@ -190,11 +190,35 @@ object OptionPart {
 sealed class AlterPart(
   override val queries: Seq[CQLQuery] = Seq.empty
 ) extends CQLQueryPart[AlterPart](queries) {
-  override def qb: CQLQuery = QueryBuilder.Alter.addAll(queries)
+  override def qb: CQLQuery = {
+    if (queries.nonEmpty) {
+      QueryBuilder.Alter.addAll(queries)
+    } else {
+      CQLQuery.empty
+    }
+  }
 
   override def instance(list: Seq[CQLQuery]): AlterPart = new AlterPart(list)
 }
 
 object AlterPart {
   def empty: AlterPart = new AlterPart(Nil)
+}
+
+sealed class DropPart(
+  override val queries: Seq[CQLQuery] = Seq.empty
+) extends CQLQueryPart[DropPart](queries) {
+  override def qb: CQLQuery = {
+    if (queries.nonEmpty) {
+      QueryBuilder.Alter.addAll(queries)
+    } else {
+      CQLQuery.empty
+    }
+  }
+
+  override def instance(list: Seq[CQLQuery]): DropPart = new DropPart(list)
+}
+
+object DropPart {
+  def empty: DropPart = new DropPart(Nil)
 }

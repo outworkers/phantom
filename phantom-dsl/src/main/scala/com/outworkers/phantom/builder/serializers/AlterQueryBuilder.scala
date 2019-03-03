@@ -23,7 +23,12 @@ import com.outworkers.phantom.builder.syntax.CQLSyntax
 private[phantom] trait AlterQueryBuilder {
 
   def addAll(definitions: Seq[CQLQuery]): CQLQuery = {
-    CQLQuery.empty.wrapn(Utils.join(definitions: _*))
+    if (definitions.size > 1) {
+      val query = Utils.join(definitions: _*)
+      CQLQuery(CQLSyntax.Alter.Add).forcePad.wrapn(query)
+    } else {
+      CQLQuery(CQLSyntax.Alter.Add).forcePad.append(definitions.head)
+    }
   }
 
   /**
@@ -73,9 +78,8 @@ private[phantom] trait AlterQueryBuilder {
    * @param columnType The type of the new column.
    * @return A CQLQuery enclosing the ALTER part of an alter query.
    */
-  def alter(qb: CQLQuery, column: String, columnType: String): CQLQuery = {
-    qb.pad.append(CQLSyntax.Alter.Alter)
-      .forcePad.append(column)
+  def alterType(column: String, columnType: String): CQLQuery = {
+      CQLQuery(column)
       .forcePad.append(CQLSyntax.Type)
       .forcePad.append(columnType)
   }
@@ -92,26 +96,23 @@ private[phantom] trait AlterQueryBuilder {
    * - Compression strategies
    * - etc..
    *
-   * @param qb The init query clause.
    * @param clause The clause or option to append to the root query.
    * @return A new CQL query, where the underlying query contains an option clause.
    */
-  def option(qb: CQLQuery, clause: CQLQuery): CQLQuery = {
-    qb.pad.append(CQLSyntax.With).pad.append(clause)
+  def option(clause: CQLQuery): CQLQuery = {
+    CQLQuery(CQLSyntax.With).pad.append(clause)
   }
 
-  def rename(qb: CQLQuery, column: String, newColumn: String): CQLQuery = {
-    qb.pad.append(CQLSyntax.Alter.Rename)
+  def rename(column: String, newColumn: String): CQLQuery = {
+    CQLQuery(CQLSyntax.Alter.Rename)
       .forcePad.append(column)
       .forcePad.append(CQLSyntax.To)
       .forcePad.append(newColumn)
   }
 
-  def drop(qb: CQLQuery, column: String): CQLQuery = {
-    qb.pad.append(CQLSyntax.Alter.Drop)
-      .forcePad.append(column)
+  def drop(column: String): CQLQuery = {
+    CQLQuery(CQLSyntax.Alter.Drop).forcePad.append(column)
   }
-
 
   def dropTable(table: String, keyspace: String): CQLQuery = {
     CQLQuery(CQLSyntax.Alter.Drop)

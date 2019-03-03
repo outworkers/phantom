@@ -34,10 +34,12 @@ case class AlterQuery[
   table: Table,
   init: CQLQuery,
   options: QueryOptions = QueryOptions.empty,
-  alterPart: AlterPart = AlterPart.empty
+  alterPart: AlterPart = AlterPart.empty,
+  dropPart: DropPart = DropPart.empty,
+  withPart: WithPart = WithPart.empty
 ) extends RootQuery[Table, Record, Status] {
 
-  val qb: CQLQuery = alterPart build init
+  val qb: CQLQuery = (alterPart merge dropPart merge withPart) build init
 
   final def add(column: String, columnType: String, static: Boolean = false): AlterQuery[Table, Record, Status, Chain] = {
     val query = if (static) {
@@ -46,23 +48,23 @@ case class AlterQuery[
       QueryBuilder.Alter.add(column, columnType)
     }
 
-    copy(
-      alterPart = alterPart append query
-    )
+    copy(alterPart = alterPart append query)
   }
 
   final def add(definition: CQLQuery): AlterQuery[Table, Record, Status, Chain] = {
-    copy (
-      alterPart = alterPart append definition
-    )
+    copy (alterPart = alterPart append definition)
   }
 
   final def alter[RR](columnSelect: Table => AbstractColumn[RR], newType: String): AlterQuery[Table, Record, Status, Chain] = {
-    new AlterQuery(table, QueryBuilder.Alter.alter(qb, columnSelect(table).name, newType), options)
+    copy(
+      alterPart = alterPart append QueryBuilder.Alter.alterType(columnSelect(table).name, newType)
+    )
   }
 
   final def rename[RR](select: Table => AbstractColumn[RR], newName: String) : AlterQuery[Table, Record, Status, Chain] = {
-    new AlterQuery(table, QueryBuilder.Alter.rename(qb, select(table).name, newName), options)
+    copy(
+      alterPart = alterPart append QueryBuilder.Alter.rename(select(table).name, newName)
+    )
   }
 
   /**
@@ -112,24 +114,23 @@ case class AlterQuery[
    * @return A new alter query with the underlying builder containing a DROP clause.
    */
   final def drop(column: String): AlterQuery[Table, Record, Status, Chain] = {
-    new AlterQuery(table, QueryBuilder.Alter.drop(qb, column), options)
+    copy(dropPart = dropPart append QueryBuilder.Alter.drop(column))
   }
 
   @deprecated("Use option instead", "2.0.0")
   final def `with`(clause: TablePropertyClause)(
     implicit ev: Chain =:= WithUnchainned
-  ): AlterQuery[Table, Record, Status, WithChainned] = {
-    new AlterQuery(table, QueryBuilder.Alter.option(qb, clause.qb), options)
-  }
+  ): AlterQuery[Table, Record, Status, WithChainned] = option(clause)
 
   final def option(clause: TablePropertyClause)(
     implicit ev: Chain =:= WithUnchainned
   ): AlterQuery[Table, Record, Status, WithChainned] = {
-    new AlterQuery(table, QueryBuilder.Alter.option(qb, clause.qb), options)
+
+    new AlterQuery(table, CQLQuery.empty, options, AlterPart.empty, DropPart.empty, WithPart.empty append clause.qb)
   }
 
   final def and(clause: TablePropertyClause)(implicit ev: Chain =:= WithChainned): AlterQuery[Table, Record, Status, WithChainned] = {
-    new AlterQuery(table, QueryBuilder.Where.and(qb, clause.qb), options)
+    new AlterQuery(table, CQLQuery.empty, options, AlterPart.empty, DropPart.empty, WithPart.empty append clause.qb)
   }
 
   override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options, Nil)
@@ -183,8 +184,9 @@ object AlterQuery {
 
     new AlterQuery(
       table,
-      QueryBuilder.Alter.alter(qb, select(table).name, newType.dataType),
-      QueryOptions.empty
+      CQLQuery.empty,
+      QueryOptions.empty,
+      AlterPart.empty append QueryBuilder.Alter.alterType(select(table).name, newType.dataType)
     )
   }
 
@@ -195,11 +197,15 @@ object AlterQuery {
     implicit keySpace: KeySpace
   ): AlterQuery.Default[T, R] = {
 
-    val qb = QueryBuilder.Alter.alter(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString)
+    val qb = QueryBuilder.Alter.alter(
+      QueryBuilder.keyspace(keySpace.name, table.tableName).queryString
+    )
+
     new AlterQuery(
       table,
-      QueryBuilder.Alter.rename(qb, select(table).name, newName),
-      QueryOptions.empty
+      qb,
+      QueryOptions.empty,
+      AlterPart.empty append QueryBuilder.Alter.rename(select(table).name, newName)
     )
   }
 }
