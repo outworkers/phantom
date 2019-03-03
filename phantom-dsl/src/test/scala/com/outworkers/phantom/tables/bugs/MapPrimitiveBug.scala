@@ -61,3 +61,13 @@ abstract class MapTableBug extends Table[MapTableBug, MyEntity] with CustomPrimi
   object timestamp extends DateTimeColumn
   object durationByState extends MapColumn[Availability, Duration]
 }
+
+
+import CustomPrimitives._
+
+abstract class MapTableBug2 extends Table[MapTableBug, MyEntity] {
+
+  object key extends StringColumn with PartitionKey
+  object timestamp extends DateTimeColumn
+  object durationByState extends MapColumn[Availability, Duration]
+}
