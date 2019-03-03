@@ -84,6 +84,24 @@ private[phantom] trait AlterQueryBuilder {
       .forcePad.append(columnType)
   }
 
+  /**
+    * Adds an option to an ALTER query from the list of CREATE query options.
+    * Inside an ALTER query, the `with` definition is a chainned query, not a multi-part query.
+    * That means every single option call will alter the init part of a query with no
+    * preservation of state or immutable state.
+    *
+    * This specific type of option refers to things like:
+    * - Compaction strategies
+    * - Compression strategies
+    * - etc..
+    *
+    * @param clause The clause or option to append to the root query.
+    * @return A new CQL query, where the underlying query contains an option clause.
+    */
+  def option(qb: CQLQuery, clause: CQLQuery): CQLQuery = {
+    qb.pad.append(CQLSyntax.With).pad.append(clause)
+  }
+
 
   /**
    * Adds an option to an ALTER query from the list of CREATE query options.
