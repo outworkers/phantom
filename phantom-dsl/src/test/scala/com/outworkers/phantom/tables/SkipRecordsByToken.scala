@@ -21,7 +21,7 @@ import com.outworkers.util.samplers._
 
 class SkipRecordsByToken extends PhantomSuite {
 
-  val Articles = database.articles
+  private[this] val Articles = database.articles
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -80,8 +80,8 @@ class SkipRecordsByToken extends PhantomSuite {
     val articles = genList[Article]()
 
     val result = for {
-      truncate <- Articles.truncate.future()
-      store <- Articles.storeRecords(articles)
+      _ <- Articles.truncate.future()
+      _ <- Articles.storeRecords(articles)
       next <- Articles.select.where(_.id eqsToken articles.headOption.value.id).fetch
     } yield next
 
@@ -95,8 +95,8 @@ class SkipRecordsByToken extends PhantomSuite {
     val articles = genList[Article]()
 
     val result = for {
-      truncate <- Articles.truncate.future()
-      store <- Articles.storeRecords(articles)
+      _ <- Articles.truncate.future()
+      _ <- Articles.storeRecords(articles)
       list <- Articles.select.fetch
       next <- Articles.select.where(_.id gteToken list.headOption.value.id).fetch
     } yield next

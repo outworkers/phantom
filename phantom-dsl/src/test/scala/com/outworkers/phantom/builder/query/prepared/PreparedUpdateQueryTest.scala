@@ -20,6 +20,7 @@ import com.outworkers.phantom.tables.Recipe
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables.bugs.VerizonRecord
 import com.outworkers.util.samplers._
+import scala.concurrent.duration._
 
 class PreparedUpdateQueryTest extends PhantomSuite {
 
@@ -195,6 +196,71 @@ class PreparedUpdateQueryTest extends PhantomSuite {
       _ <- db.verizonSchema.storeRecord(sample)
       _ <- db.verizonSchema.storeRecord(sample2)
       _ <- db.verizonSchema.updateDeleteStatus.flatMap(_.bind(false, sample.uid).future())
+      res <- db.verizonSchema.select.where(_.uid eqs sample.uid).one()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+      res.value.isDeleted shouldBe false
+    }
+  }
+
+  it should "allow using TTL in update statements using a long value" in {
+    val sample = gen[VerizonRecord].copy(isDeleted = true)
+    val sample2 = gen[VerizonRecord].copy(isDeleted = true)
+
+    val chain = for {
+      _ <- db.verizonSchema.storeRecord(sample)
+      _ <- db.verizonSchema.storeRecord(sample2)
+      _ <- db.verizonSchema.update
+        .where(_.uid eqs sample.uid)
+        .modify(_.isdeleted setTo false)
+        .ttl(seconds = 5L)
+        .future()
+      res <- db.verizonSchema.select.where(_.uid eqs sample.uid).one()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+      res.value.isDeleted shouldBe false
+    }
+  }
+
+  it should "allow using TTL in update statements using a Duration value" in {
+    val sample = gen[VerizonRecord].copy(isDeleted = true)
+    val sample2 = gen[VerizonRecord].copy(isDeleted = true)
+
+    val chain = for {
+      _ <- db.verizonSchema.storeRecord(sample)
+      _ <- db.verizonSchema.storeRecord(sample2)
+      _ <- db.verizonSchema.update
+        .where(_.uid eqs sample.uid)
+        .modify(_.isdeleted setTo false)
+        .ttl(5.seconds)
+        .future()
+      res <- db.verizonSchema.select.where(_.uid eqs sample.uid).one()
+    } yield res
+
+    whenReady(chain) { res =>
+      res shouldBe defined
+      res.value.isDeleted shouldBe false
+    }
+  }
+
+  it should "allow using TTL in prepared update statements" in {
+    val sample = gen[VerizonRecord].copy(isDeleted = true)
+    val sample2 = gen[VerizonRecord].copy(isDeleted = true)
+
+    lazy val updateWithTTL = db.verizonSchema.update
+      .where(_.uid eqs ?)
+      .modify(_.isdeleted setTo ?)
+      .ttl(?)
+      .prepareAsync()
+
+    val chain = for {
+      _ <- db.verizonSchema.storeRecord(sample)
+      _ <- db.verizonSchema.storeRecord(sample2)
+      _ <- updateWithTTL.flatMap(_.bind(5, false, sample.uid).future())
       res <- db.verizonSchema.select.where(_.uid eqs sample.uid).one()
     } yield res
 

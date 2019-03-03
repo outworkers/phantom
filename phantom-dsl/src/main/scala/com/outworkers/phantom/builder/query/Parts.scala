@@ -27,10 +27,12 @@ sealed abstract class CQLQueryPart[Part <: CQLQueryPart[Part]](
 }
 
 sealed class UsingPart(override val queries: Seq[CQLQuery] = Seq.empty) extends CQLQueryPart[UsingPart](queries) {
-
-  override def qb: CQLQuery = queries match {
-    case head :: tail => QueryBuilder.Update.usingPart(queries)
-    case Nil => CQLQuery.empty
+  override def qb: CQLQuery = {
+    if (queries.nonEmpty) {
+      QueryBuilder.Update.usingPart(queries)
+    } else {
+      CQLQuery.empty
+    }
   }
 
   override def instance(l: Seq[CQLQuery]): UsingPart = new UsingPart(l)
