@@ -65,7 +65,7 @@ class BatchSubscriber[CT <: CassandraTable[CT, T], T] private[streams] (
           )
         ))
       )
-      s.request(multiplyExact(batchSize, concurrentRequests))
+      s.request(multiplyExact(batchSize.toLong, concurrentRequests.toLong))
     } else {
       // rule 2.5, must cancel subscription as onSubscribe has been invoked twice
       // https://github.com/reactive-streams/reactive-streams-jvm#2.5
@@ -149,7 +149,7 @@ class BatchActor[CT <: CassandraTable[CT, T], T](
       if (completed) {
         shutdown()
       } else {
-        subscription.request(batchSize)
+        subscription.request(batchSize.toLong)
       }
 
     case t: T =>

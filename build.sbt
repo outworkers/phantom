@@ -81,6 +81,7 @@ val YWarnOptions = Seq(
 
 val scalacOptionsFn: String => Seq[String] = { s =>
   CrossVersion.partialVersion(s) match {
+    case _ if Publishing.runningUnderCi => ScalacOptions
     case Some((_, minor)) if minor >= 12 => ScalacOptions ++ YWarnOptions ++ Scala212Options
     case _ => ScalacOptions ++ YWarnOptions
   }
@@ -216,7 +217,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   ),
 
   logLevel in Compile := { if (Publishing.runningUnderCi) Level.Error else Level.Info },
-  logLevel in Test := Level.Info,
+  logLevel in Test := { if (Publishing.runningUnderCi) Level.Error else Level.Info },
   libraryDependencies ++= Seq(
     "ch.qos.logback" % "logback-classic" % Versions.logback % Test,
     "org.slf4j" % "log4j-over-slf4j" % Versions.slf4j

@@ -67,8 +67,7 @@ class SASIQueriesTest extends PhantomSuite {
   }
 
   it should "not allow like queries in Mode.Sparse" in {
-    val pre = 55
-    "db.multiSasiTable.select.where(_.customers like(prefix(pre)) pre).fetch()" shouldNot compile
+    "db.multiSasiTable.select.where(_.customers like(prefix(pre)) 55).fetch()" shouldNot compile
   }
 
   it should "not allow using a suffix clause on a Mode.Sparse Text column" in {

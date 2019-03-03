@@ -37,7 +37,8 @@ class TimeSeriesTest extends PhantomSuite {
       val record = gen[TimeSeriesRecord]
       record.copy(
         id = ref,
-        timestamp = record.timestamp.withDurationAdded(durationOffset, i))
+        timestamp = record.timestamp.withDurationAdded(durationOffset, i)
+      )
     }
   }
 
@@ -48,8 +49,8 @@ class TimeSeriesTest extends PhantomSuite {
     val records = genSequentialRecords(number)
 
     val chain = for {
-      truncate <- database.timeSeriesTable.truncate.future()
-      insert <- database.timeSeriesTable.storeRecords(records)
+      _ <- database.timeSeriesTable.truncate.future()
+      _ <- database.timeSeriesTable.storeRecords(records)
       chunks <- database.timeSeriesTable.select.limit(limit).fetch()
     } yield chunks
 
@@ -69,8 +70,8 @@ class TimeSeriesTest extends PhantomSuite {
       .prepare()
 
     val chain = for {
-      truncate <- database.timeSeriesTable.truncate.future()
-      insert <- database.timeSeriesTable.storeRecords(records)
+      _ <- database.timeSeriesTable.truncate.future()
+      _ <- database.timeSeriesTable.storeRecords(records)
       chunks <- query.bind(ref).fetch()
     } yield chunks
 
@@ -85,8 +86,8 @@ class TimeSeriesTest extends PhantomSuite {
     val records = genSequentialRecords(number, ref)
 
     val chain = for {
-      truncate <- database.timeSeriesTable.truncate.future()
-      insert <- database.timeSeriesTable.storeRecords(records)
+      _ <- database.timeSeriesTable.truncate.future()
+      _ <- database.timeSeriesTable.storeRecords(records)
       chunks <- database.timeSeriesTable.select
         .where(_.id eqs ref)
         .orderBy(_.timestamp.asc)
@@ -111,8 +112,8 @@ class TimeSeriesTest extends PhantomSuite {
       .prepare()
 
     val chain = for {
-      truncate <- database.timeSeriesTable.truncate.future()
-      insert <- database.timeSeriesTable.storeRecords(records)
+      _ <- database.timeSeriesTable.truncate.future()
+      _ <- database.timeSeriesTable.storeRecords(records)
       chunks <- query.bind(ref).fetch()
     } yield chunks
 
@@ -127,8 +128,8 @@ class TimeSeriesTest extends PhantomSuite {
     val records = genSequentialRecords(number, ref)
 
     val chain = for {
-      truncate <- database.timeSeriesTable.truncate.future()
-      insert <- database.timeSeriesTable.storeRecords(records)
+      _ <- database.timeSeriesTable.truncate.future()
+      _ <- database.timeSeriesTable.storeRecords(records)
       chunks <- database.timeSeriesTable.select
         .where(_.id eqs ref)
         .orderBy(_.timestamp.descending)
