@@ -16,10 +16,15 @@
 package com.outworkers.phantom.builder.serializers
 
 import com.outworkers.phantom.builder.QueryBuilder
+import com.outworkers.phantom.builder.QueryBuilder.Utils
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 
 private[phantom] trait AlterQueryBuilder {
+
+  def addAll(definitions: Seq[CQLQuery]): CQLQuery = {
+    CQLQuery.empty.wrapn(Utils.join(definitions: _*))
+  }
 
   /**
    * Creates the ADD part of an alter query for a column name and a type.
@@ -30,15 +35,12 @@ private[phantom] trait AlterQueryBuilder {
    *  ADD $column $columnType.
    * }}}
    *
-   * @param qb The existing built query to append to.
    * @param column The name of the column to add in the alter query.
-   * @param columnType The type of the new column.
-   * @return A CQLQuery enclosing the ADD part of an alter query.
-   */
-  def add(qb: CQLQuery, column: String, columnType: String): CQLQuery = {
-    qb.pad.append(CQLSyntax.Alter.Add)
-      .forcePad.append(column)
-      .forcePad.append(columnType)
+    * @param columnType The type of the new column.
+  * @return A CQLQuery enclosing the ADD part of an alter query.
+  */
+  def add(column: String, columnType: String): CQLQuery = {
+    CQLQuery(column).forcePad.append(columnType)
   }
 
   /**
@@ -52,22 +54,12 @@ private[phantom] trait AlterQueryBuilder {
    *  ADD $column $columnType.
    * }}}
    *
-   * @param qb The existing built query to append to.
    * @param column The name of the column to add in the alter query.
    * @param columnType The type of the new column.
    * @return A CQLQuery enclosing the ADD part of an alter query.
    */
-  def addStatic(qb: CQLQuery, column: String, columnType: String): CQLQuery = {
-    qb.pad.append(CQLSyntax.Alter.Add)
-      .forcePad.append(column)
-      .forcePad.append(columnType)
-      .forcePad.append(CQLSyntax.static)
-  }
-
-
-  def add(qb: CQLQuery, definition: CQLQuery): CQLQuery = {
-    qb.pad.append(CQLSyntax.Alter.Add)
-      .forcePad.append(definition)
+  def addStatic(column: String, columnType: String): CQLQuery = {
+    CQLQuery(column).forcePad.append(columnType).forcePad.append(CQLSyntax.static)
   }
 
   /**

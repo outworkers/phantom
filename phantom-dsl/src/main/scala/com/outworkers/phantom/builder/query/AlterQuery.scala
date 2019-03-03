@@ -32,16 +32,18 @@ case class AlterQuery[
   Chain <: WithBound
 ](
   table: Table,
-  qb: CQLQuery,
+  init: CQLQuery,
   options: QueryOptions = QueryOptions.empty,
   alterPart: AlterPart = AlterPart.empty
 ) extends RootQuery[Table, Record, Status] {
 
+  val qb: CQLQuery = alterPart build init
+
   final def add(column: String, columnType: String, static: Boolean = false): AlterQuery[Table, Record, Status, Chain] = {
     val query = if (static) {
-      QueryBuilder.Alter.addStatic(qb, column, columnType)
+      QueryBuilder.Alter.addStatic(column, columnType)
     } else {
-      QueryBuilder.Alter.add(qb, column, columnType)
+      QueryBuilder.Alter.add(column, columnType)
     }
 
     copy(
