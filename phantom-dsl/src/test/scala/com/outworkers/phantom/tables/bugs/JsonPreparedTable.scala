@@ -17,7 +17,7 @@ package com.outworkers.phantom.tables.bugs
 
 import com.outworkers.phantom.ResultSet
 import com.outworkers.phantom.dsl._
-import org.json4s.Extraction
+import org.json4s.{DefaultFormats, Extraction}
 import org.json4s.native._
 
 import scala.concurrent.Future
@@ -28,7 +28,7 @@ case class JsonUser(
 )
 
 object JsonUser {
-  implicit val formats = org.json4s.DefaultFormats
+  implicit val formats: DefaultFormats = org.json4s.DefaultFormats
 
   implicit val jsonPrimitive: Primitive[JsonUser] = {
     Primitive.json[JsonUser](js => compactJson(renderJValue(Extraction.decompose(js))))(JsonParser.parse(_).extract[JsonUser])

@@ -204,13 +204,6 @@ class PrimitiveMacro(override val c: blackbox.Context) extends BlackboxToolbelt 
     }"""
   }
 
-  def mapPrimitive(tpe: Type): Tree = {
-    tpe.typeArgs match {
-      case k :: v :: Nil => q"""$prefix.Primitives.map[$k, $v]"""
-      case _ => c.abort(c.enclosingPosition, "Expected exactly two type arguments to be provided to map")
-    }
-  }
-
   def setPrimitive(tpe: Type): Tree = {
     tpe.typeArgs.headOption match {
       case Some(inner) => q"$prefix.Primitives.set[$inner]"
@@ -271,7 +264,6 @@ class PrimitiveMacro(override val c: blackbox.Context) extends BlackboxToolbelt 
       case Symbols.enumValue => enumValuePrimitive(wkType)
       case Symbols.listSymbol => listPrimitive(wkType)
       case Symbols.setSymbol => setPrimitive(wkType)
-      case Symbols.mapSymbol => mapPrimitive(wkType)
       case _ => c.abort(
         c.enclosingPosition,
         s"""
