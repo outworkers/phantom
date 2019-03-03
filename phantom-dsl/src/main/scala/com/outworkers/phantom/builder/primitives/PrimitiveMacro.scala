@@ -271,7 +271,7 @@ class PrimitiveMacro(override val c: blackbox.Context) extends BlackboxToolbelt 
       case Symbols.enumValue => enumValuePrimitive(wkType)
       case Symbols.listSymbol => listPrimitive(wkType)
       case Symbols.setSymbol => setPrimitive(wkType)
-      case Symbols.mapSymbol => mapPrimitive(wkType)
+      //case Symbols.mapSymbol => mapPrimitive(wkType)
       case _ => c.abort(
         c.enclosingPosition,
         s"""
