@@ -185,3 +185,16 @@ object OptionPart {
 
   def empty: OptionPart = new OptionPart()
 }
+
+
+sealed class AlterPart(
+  override val queries: Seq[CQLQuery] = Seq.empty
+) extends CQLQueryPart[AlterPart](queries) {
+  override def qb: CQLQuery = QueryBuilder.Alter.add(queries)
+
+  override def instance(list: Seq[CQLQuery]): AlterPart = new AlterPart(list)
+}
+
+object AlterPart {
+  def empty: AlterPart = new AlterPart(Nil)
+}

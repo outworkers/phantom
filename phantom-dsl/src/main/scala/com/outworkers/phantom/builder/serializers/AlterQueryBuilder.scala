@@ -64,6 +64,7 @@ private[phantom] trait AlterQueryBuilder {
       .forcePad.append(CQLSyntax.static)
   }
 
+
   def add(qb: CQLQuery, definition: CQLQuery): CQLQuery = {
     qb.pad.append(CQLSyntax.Alter.Add)
       .forcePad.append(definition)

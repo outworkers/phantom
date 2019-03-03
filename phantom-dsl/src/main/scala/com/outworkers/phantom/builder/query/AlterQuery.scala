@@ -25,12 +25,17 @@ import com.outworkers.phantom.builder.{ConsistencyBound, QueryBuilder, Unspecifi
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.KeySpace
 
-class AlterQuery[
+case class AlterQuery[
   Table <: CassandraTable[Table, _],
   Record,
   Status <: ConsistencyBound,
   Chain <: WithBound
-](table: Table, val qb: CQLQuery, val options: QueryOptions) extends RootQuery[Table, Record, Status] {
+](
+  table: Table,
+  qb: CQLQuery,
+  options: QueryOptions = QueryOptions.empty,
+  alterPart: AlterPart = AlterPart.empty
+) extends RootQuery[Table, Record, Status] {
 
   final def add(column: String, columnType: String, static: Boolean = false): AlterQuery[Table, Record, Status, Chain] = {
     val query = if (static) {
@@ -39,11 +44,15 @@ class AlterQuery[
       QueryBuilder.Alter.add(qb, column, columnType)
     }
 
-    new AlterQuery(table, query, options)
+    copy(
+      alterPart = alterPart append query
+    )
   }
 
   final def add(definition: CQLQuery): AlterQuery[Table, Record, Status, Chain] = {
-    new AlterQuery(table, QueryBuilder.Alter.add(qb, definition), options)
+    copy (
+      alterPart = alterPart append definition
+    )
   }
 
   final def alter[RR](columnSelect: Table => AbstractColumn[RR], newType: String): AlterQuery[Table, Record, Status, Chain] = {
