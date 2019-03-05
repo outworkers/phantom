@@ -216,7 +216,7 @@ class AlterQueryBuilderTest extends QueryBuilderTest {
 
       "alter a column type from placedholder to test" in {
 
-        val qb = basicTable.alter(_.placeholder, "test").queryString
+        val qb = basicTable.alter.rename(_.placeholder, "test").queryString
         qb shouldEqual "ALTER TABLE phantom.basicTable RENAME placeholder TO test;"
       }
 

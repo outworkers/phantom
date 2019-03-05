@@ -31,6 +31,35 @@ private[phantom] trait AlterQueryBuilder {
     }
   }
 
+
+  def rename(definitions: Seq[CQLQuery]): CQLQuery = {
+    if (definitions.isEmpty) {
+      CQLQuery.empty
+    } else {
+      CQLQuery(CQLSyntax.Alter.Rename).forcePad.append(definitions.map(_.queryString).mkString(s" ${CQLSyntax.And} "))
+    }
+  }
+
+  def alter(definitions: Seq[CQLQuery]): CQLQuery = {
+    if (definitions.size > 1) {
+      val query = Utils.join(definitions: _*)
+      CQLQuery(CQLSyntax.Alter.Alter).forcePad.wrapn(query)
+    } else {
+      CQLQuery(CQLSyntax.Alter.Alter).forcePad.append(definitions.head)
+    }
+  }
+
+
+  def dropAll(definitions: Seq[CQLQuery]): CQLQuery = {
+    if (definitions.size > 1) {
+      val query = Utils.join(definitions: _*)
+      CQLQuery(CQLSyntax.Alter.Drop).forcePad.wrapn(query)
+    } else {
+      CQLQuery(CQLSyntax.Alter.Drop).forcePad.append(definitions.head)
+    }
+  }
+
+
   /**
    * Creates the ADD part of an alter query for a column name and a type.
    * This is used when new columns are added to an existing definitions.
@@ -121,9 +150,16 @@ private[phantom] trait AlterQueryBuilder {
     CQLQuery(CQLSyntax.With).pad.append(clause)
   }
 
+  def withOptions(clauses: Seq[CQLQuery]): CQLQuery = {
+    if (clauses.isEmpty) {
+      CQLQuery.empty
+    } else {
+      CQLQuery(CQLSyntax.With).forcePad.append(clauses.map(_.queryString).mkString(s" ${CQLSyntax.And} "))
+    }
+  }
+
   def rename(column: String, newColumn: String): CQLQuery = {
-    CQLQuery(CQLSyntax.Alter.Rename)
-      .forcePad.append(column)
+      CQLQuery(column)
       .forcePad.append(CQLSyntax.To)
       .forcePad.append(newColumn)
   }

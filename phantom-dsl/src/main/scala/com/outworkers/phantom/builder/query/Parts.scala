@@ -150,7 +150,7 @@ object LightweightPart {
 }
 
 sealed class WithPart(override val queries: Seq[CQLQuery] = Seq.empty) extends CQLQueryPart[WithPart](queries) {
-  override def qb: CQLQuery = QueryBuilder.Update.clauses(queries)
+  override def qb: CQLQuery = QueryBuilder.Alter.withOptions(queries)
 
   override def instance(l: Seq[CQLQuery]): WithPart = new WithPart(l)
 }
@@ -192,7 +192,7 @@ sealed class AlterPart(
 ) extends CQLQueryPart[AlterPart](queries) {
   override def qb: CQLQuery = {
     if (queries.nonEmpty) {
-      QueryBuilder.Alter.addAll(queries)
+      QueryBuilder.Alter.alter(queries)
     } else {
       CQLQuery.empty
     }
@@ -205,12 +205,49 @@ object AlterPart {
   def empty: AlterPart = new AlterPart(Nil)
 }
 
+sealed class AddPart(
+  override val queries: Seq[CQLQuery] = Seq.empty
+) extends CQLQueryPart[AddPart](queries) {
+  override def qb: CQLQuery = {
+    if (queries.nonEmpty) {
+      QueryBuilder.Alter.addAll(queries)
+    } else {
+      CQLQuery.empty
+    }
+  }
+
+  override def instance(list: Seq[CQLQuery]): AddPart = new AddPart(list)
+}
+
+object AddPart {
+  def empty: AddPart = new AddPart(Nil)
+}
+
+
+sealed class RenamePart(
+  override val queries: Seq[CQLQuery] = Seq.empty
+) extends CQLQueryPart[RenamePart](queries) {
+  override def qb: CQLQuery = {
+    if (queries.nonEmpty) {
+      QueryBuilder.Alter.rename(queries)
+    } else {
+      CQLQuery.empty
+    }
+  }
+
+  override def instance(list: Seq[CQLQuery]): RenamePart = new RenamePart(list)
+}
+
+object RenamePart {
+  def empty: RenamePart = new RenamePart(Nil)
+}
+
 sealed class DropPart(
   override val queries: Seq[CQLQuery] = Seq.empty
 ) extends CQLQueryPart[DropPart](queries) {
   override def qb: CQLQuery = {
     if (queries.nonEmpty) {
-      QueryBuilder.Alter.addAll(queries)
+      QueryBuilder.Alter.dropAll(queries)
     } else {
       CQLQuery.empty
     }

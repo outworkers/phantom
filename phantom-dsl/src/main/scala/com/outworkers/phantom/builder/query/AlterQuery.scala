@@ -35,11 +35,13 @@ case class AlterQuery[
   init: CQLQuery,
   options: QueryOptions = QueryOptions.empty,
   alterPart: AlterPart = AlterPart.empty,
+  addPart: AddPart = AddPart.empty,
   dropPart: DropPart = DropPart.empty,
-  withPart: WithPart = WithPart.empty
+  withPart: WithPart = WithPart.empty,
+  renamePart: RenamePart = RenamePart.empty
 ) extends RootQuery[Table, Record, Status] {
 
-  val qb: CQLQuery = (alterPart merge dropPart merge withPart) build init
+  val qb: CQLQuery = (alterPart merge addPart merge dropPart merge renamePart merge withPart) build init
 
   final def add(column: String, columnType: String, static: Boolean = false): AlterQuery[Table, Record, Status, Chain] = {
     val query = if (static) {
@@ -48,11 +50,11 @@ case class AlterQuery[
       QueryBuilder.Alter.add(column, columnType)
     }
 
-    copy(alterPart = alterPart append query)
+    copy(addPart = addPart append query)
   }
 
   final def add(definition: CQLQuery): AlterQuery[Table, Record, Status, Chain] = {
-    copy (alterPart = alterPart append definition)
+    copy (addPart = addPart append definition)
   }
 
   final def alter[RR](columnSelect: Table => AbstractColumn[RR], newType: String): AlterQuery[Table, Record, Status, Chain] = {
@@ -63,7 +65,7 @@ case class AlterQuery[
 
   final def rename[RR](select: Table => AbstractColumn[RR], newName: String) : AlterQuery[Table, Record, Status, Chain] = {
     copy(
-      alterPart = alterPart append QueryBuilder.Alter.rename(select(table).name, newName)
+      renamePart = renamePart append QueryBuilder.Alter.rename(select(table).name, newName)
     )
   }
 
@@ -114,7 +116,7 @@ case class AlterQuery[
     * @return A new alter query with the underlying builder containing a DROP clause.
     */
   final def drop(column: String): AlterQuery[Table, Record, Status, Chain] = {
-    copy(dropPart = dropPart append QueryBuilder.Alter.drop(column))
+    copy(dropPart = dropPart append CQLQuery(column))
   }
 
   @deprecated("Use option instead", "2.0.0")
@@ -125,12 +127,11 @@ case class AlterQuery[
   final def option(clause: TablePropertyClause)(
     implicit ev: Chain =:= WithUnchainned
   ): AlterQuery[Table, Record, Status, WithChainned] = {
-
-    new AlterQuery(table, CQLQuery.empty, options, AlterPart.empty, DropPart.empty, WithPart.empty append clause.qb)
+    copy(withPart = withPart append clause.qb)
   }
 
   final def and(clause: TablePropertyClause)(implicit ev: Chain =:= WithChainned): AlterQuery[Table, Record, Status, WithChainned] = {
-    new AlterQuery(table, CQLQuery.empty, options, AlterPart.empty, DropPart.empty, WithPart.empty append clause.qb)
+    copy(withPart = withPart append clause.qb)
   }
 
   override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options, Nil)
@@ -165,8 +166,7 @@ object AlterQuery {
   ): AlterQuery.Default[T, R] = {
     new AlterQuery[T, R, Unspecified, WithUnchainned](
       table,
-      QueryBuilder.Alter.alter(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString),
-      QueryOptions.empty
+      QueryBuilder.Alter.alter(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString)
     )
   }
 
@@ -178,13 +178,9 @@ object AlterQuery {
     implicit keySpace: KeySpace
   ): AlterQuery.Default[T, R] = {
 
-    val qb = QueryBuilder.Alter.alter(
-      QueryBuilder.keyspace(keySpace.name, table.tableName).queryString
-    )
-
     new AlterQuery(
       table,
-      CQLQuery.empty,
+      QueryBuilder.Alter.alter(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString),
       QueryOptions.empty,
       AlterPart.empty append QueryBuilder.Alter.alterType(select(table).name, newType.dataType)
     )
