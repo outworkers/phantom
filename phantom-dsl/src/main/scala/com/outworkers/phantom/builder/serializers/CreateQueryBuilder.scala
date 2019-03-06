@@ -196,14 +196,6 @@ private[builder] class CreateTableBuilder {
     Utils.tableOption(CQLSyntax.CreateOptions.caching, CQLQuery.empty.append(qb))
   }
 
-  def `with`(clause: CQLQuery): CQLQuery = {
-    if (clause.nonEmpty) {
-      clause
-    } else {
-      CQLQuery.empty
-    }
-  }
-
   /**
     * Creates an index on the keys on any column except for a Map column which requires special handling.
     * By default, mixing an index in a column will result in an index created on the values of the column.
