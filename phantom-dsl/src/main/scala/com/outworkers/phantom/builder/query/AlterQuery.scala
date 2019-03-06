@@ -25,33 +25,48 @@ import com.outworkers.phantom.builder.{ConsistencyBound, QueryBuilder, Unspecifi
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.KeySpace
 
-class AlterQuery[
+case class AlterQuery[
   Table <: CassandraTable[Table, _],
   Record,
   Status <: ConsistencyBound,
   Chain <: WithBound
-](table: Table, val qb: CQLQuery, val options: QueryOptions) extends RootQuery[Table, Record, Status] {
+](
+  table: Table,
+  init: CQLQuery,
+  options: QueryOptions = QueryOptions.empty,
+  alterPart: AlterPart = AlterPart.empty,
+  addPart: AddPart = AddPart.empty,
+  dropPart: DropPart = DropPart.empty,
+  withPart: WithPart = WithPart.empty,
+  renamePart: RenamePart = RenamePart.empty
+) extends RootQuery[Table, Record, Status] {
+
+  val qb: CQLQuery = (alterPart merge addPart merge dropPart merge renamePart merge withPart) build init
 
   final def add(column: String, columnType: String, static: Boolean = false): AlterQuery[Table, Record, Status, Chain] = {
     val query = if (static) {
-      QueryBuilder.Alter.addStatic(qb, column, columnType)
+      QueryBuilder.Alter.addStatic(column, columnType)
     } else {
-      QueryBuilder.Alter.add(qb, column, columnType)
+      QueryBuilder.Alter.add(column, columnType)
     }
 
-    new AlterQuery(table, query, options)
+    copy(addPart = addPart append query)
   }
 
   final def add(definition: CQLQuery): AlterQuery[Table, Record, Status, Chain] = {
-    new AlterQuery(table, QueryBuilder.Alter.add(qb, definition), options)
+    copy (addPart = addPart append definition)
   }
 
   final def alter[RR](columnSelect: Table => AbstractColumn[RR], newType: String): AlterQuery[Table, Record, Status, Chain] = {
-    new AlterQuery(table, QueryBuilder.Alter.alter(qb, columnSelect(table).name, newType), options)
+    copy(
+      alterPart = alterPart append QueryBuilder.Alter.alterType(columnSelect(table).name, newType)
+    )
   }
 
   final def rename[RR](select: Table => AbstractColumn[RR], newName: String) : AlterQuery[Table, Record, Status, Chain] = {
-    new AlterQuery(table, QueryBuilder.Alter.rename(qb, select(table).name, newName), options)
+    copy(
+      renamePart = renamePart append QueryBuilder.Alter.rename(select(table).name, newName)
+    )
   }
 
   /**
@@ -101,24 +116,22 @@ class AlterQuery[
     * @return A new alter query with the underlying builder containing a DROP clause.
     */
   final def drop(column: String): AlterQuery[Table, Record, Status, Chain] = {
-    new AlterQuery(table, QueryBuilder.Alter.drop(qb, column), options)
+    copy(dropPart = dropPart append CQLQuery(column))
   }
 
   @deprecated("Use option instead", "2.0.0")
   final def `with`(clause: TablePropertyClause)(
     implicit ev: Chain =:= WithUnchainned
-  ): AlterQuery[Table, Record, Status, WithChainned] = {
-    new AlterQuery(table, QueryBuilder.Alter.option(qb, clause.qb), options)
-  }
+  ): AlterQuery[Table, Record, Status, WithChainned] = option(clause)
 
   final def option(clause: TablePropertyClause)(
     implicit ev: Chain =:= WithUnchainned
   ): AlterQuery[Table, Record, Status, WithChainned] = {
-    new AlterQuery(table, QueryBuilder.Alter.option(qb, clause.qb), options)
+    copy(withPart = withPart append clause.qb)
   }
 
   final def and(clause: TablePropertyClause)(implicit ev: Chain =:= WithChainned): AlterQuery[Table, Record, Status, WithChainned] = {
-    new AlterQuery(table, QueryBuilder.Where.and(qb, clause.qb), options)
+    copy(withPart = withPart append clause.qb)
   }
 
   override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(qb, options, Nil)
@@ -153,8 +166,7 @@ object AlterQuery {
   ): AlterQuery.Default[T, R] = {
     new AlterQuery[T, R, Unspecified, WithUnchainned](
       table,
-      QueryBuilder.Alter.alter(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString),
-      QueryOptions.empty
+      QueryBuilder.Alter.alter(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString)
     )
   }
 
@@ -166,14 +178,11 @@ object AlterQuery {
     implicit keySpace: KeySpace
   ): AlterQuery.Default[T, R] = {
 
-    val qb = QueryBuilder.Alter.alter(
-      QueryBuilder.keyspace(keySpace.name, table.tableName).queryString
-    )
-
     new AlterQuery(
       table,
-      QueryBuilder.Alter.alter(qb, select(table).name, newType.dataType),
-      QueryOptions.empty
+      QueryBuilder.Alter.alter(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString),
+      QueryOptions.empty,
+      AlterPart.empty append QueryBuilder.Alter.alterType(select(table).name, newType.dataType)
     )
   }
 
@@ -184,11 +193,15 @@ object AlterQuery {
     implicit keySpace: KeySpace
   ): AlterQuery.Default[T, R] = {
 
-    val qb = QueryBuilder.Alter.alter(QueryBuilder.keyspace(keySpace.name, table.tableName).queryString)
+    val qb = QueryBuilder.Alter.alter(
+      QueryBuilder.keyspace(keySpace.name, table.tableName).queryString
+    )
+
     new AlterQuery(
       table,
-      QueryBuilder.Alter.rename(qb, select(table).name, newName),
-      QueryOptions.empty
+      qb,
+      QueryOptions.empty,
+      AlterPart.empty append QueryBuilder.Alter.rename(select(table).name, newName)
     )
   }
 }

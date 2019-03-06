@@ -99,7 +99,7 @@ sealed trait TopologyStrategies {
   object SimpleStrategy extends SimpleStrategy(OptionPart(strategy(Strategies.simple)))
   object NetworkTopologyStrategy extends NetworkTopologyStrategy(OptionPart(strategy(Strategies.networkTopology)))
 
-  val replication = new {
+  object replication {
     def eqs(strategy: ReplicationStrategy[_]): BuilderClause = {
       new BuilderClause(
         CQLQuery(Strategies.replication)
@@ -109,7 +109,7 @@ sealed trait TopologyStrategies {
     }
   }
 
-  val durable_writes = new {
+  object durable_writes {
     def eqs(clause: Boolean): BuilderClause = {
       new BuilderClause(CQLQuery(s"${Strategies.durableWrites} ${CQLSyntax.eqs} ${clause.toString}"))
     }
