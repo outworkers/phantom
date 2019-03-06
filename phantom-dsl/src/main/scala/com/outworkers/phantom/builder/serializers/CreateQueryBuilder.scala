@@ -198,7 +198,7 @@ private[builder] class CreateTableBuilder {
 
   def `with`(clause: CQLQuery): CQLQuery = {
     if (clause.nonEmpty) {
-      CQLQuery(CQLSyntax.With).forcePad.append(clause)
+      clause
     } else {
       CQLQuery.empty
     }
