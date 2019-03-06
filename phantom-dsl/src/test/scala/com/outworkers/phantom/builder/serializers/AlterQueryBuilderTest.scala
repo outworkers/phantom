@@ -56,6 +56,7 @@ class AlterQueryBuilderTest extends QueryBuilderTest {
 
       "serialise an ADD query for a column with a STATIC modifier from a CQLQuery" in {
         val qb = basicTable.alter.add(TestDatabase.staticTable.staticTest.qb).queryString
+        Console.println(qb)
         qb shouldEqual s"ALTER TABLE phantom.basicTable ADD staticTest ${CQLSyntax.Types.Text} STATIC;"
       }
     }
@@ -215,7 +216,7 @@ class AlterQueryBuilderTest extends QueryBuilderTest {
 
       "alter a column type from placedholder to test" in {
 
-        val qb = basicTable.alter(_.placeholder, "test").queryString
+        val qb = basicTable.alter.rename(_.placeholder, "test").queryString
         qb shouldEqual "ALTER TABLE phantom.basicTable RENAME placeholder TO test;"
       }
 

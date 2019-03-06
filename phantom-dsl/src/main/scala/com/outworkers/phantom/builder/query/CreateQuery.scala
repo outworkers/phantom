@@ -98,11 +98,7 @@ case class CreateQuery[
 
   @implicitNotFound("You cannot use 2 `with` clauses on the same create query. Use `and` instead.")
   final def `with`(clause: TablePropertyClause): CreateQuery[Table, Record, Status] = {
-    if (withClause.queries.isEmpty) {
-      copy(withClause = withClause append QueryBuilder.Create.`with`(clause.qb))
-    } else {
-      copy(withClause = withClause append QueryBuilder.Update.and(clause.qb))
-    }
+    copy(withClause = withClause append clause.qb)
   }
 
   /**

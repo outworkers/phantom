@@ -16,7 +16,6 @@
 package com.outworkers.phantom.builder.query.db.crud
 
 import com.outworkers.phantom.PhantomSuite
-import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
 import com.outworkers.util.samplers._
@@ -40,9 +39,9 @@ class UpdateQueryTest extends PhantomSuite with Inside with EitherValues {
     val updatedRow = gen[PrimitiveRecord].copy(pkey = row.pkey)
 
     val chain = for {
-      store <- database.primitives.store(row).future()
+      _ <- database.primitives.store(row).future()
       a <- database.primitives.select.where(_.pkey eqs row.pkey).one
-      u <- database.primitives.update.where(_.pkey eqs row.pkey)
+      _ <- database.primitives.update.where(_.pkey eqs row.pkey)
         .modify(_.long setTo updatedRow.long)
         .and(_.boolean setTo updatedRow.boolean)
         .and(_.bDecimal setTo updatedRow.bDecimal)
@@ -77,9 +76,9 @@ class UpdateQueryTest extends PhantomSuite with Inside with EitherValues {
     )
 
     val chain = for {
-      store <- database.testTable.store(row).future()
+      _ <- database.testTable.store(row).future()
       a <- database.testTable.select.where(_.key eqs row.key).one
-      u <- database.testTable.update
+      _ <- database.testTable.update
         .where(_.key eqs row.key)
         .modify(_.list setTo updatedRow.list)
         .and(_.setText setTo updatedRow.setText)
@@ -100,9 +99,9 @@ class UpdateQueryTest extends PhantomSuite with Inside with EitherValues {
     val updated = gen[OptionalPrimitive].copy(pkey = sample.pkey)
 
     val chain = for {
-      store <- database.optionalPrimitives.store(sample).future()
+      _ <- database.optionalPrimitives.store(sample).future()
       get <- database.optionalPrimitives.findByKey(sample.pkey)
-      update <- database.optionalPrimitives.updateColumns(updated)
+      _ <- database.optionalPrimitives.updateColumns(updated)
       get2 <- database.optionalPrimitives.findByKey(sample.pkey)
     } yield (get, get2)
 
@@ -120,9 +119,9 @@ class UpdateQueryTest extends PhantomSuite with Inside with EitherValues {
     val updated = gen[OptionalPrimitive].copy(pkey = sample.pkey, double = None, float = None)
 
     val chain = for {
-      store <- database.optionalPrimitives.store(sample).future()
+      _ <- database.optionalPrimitives.store(sample).future()
       get <- database.optionalPrimitives.findByKey(sample.pkey)
-      update <- database.optionalPrimitives.updateColumns(updated)
+      _ <- database.optionalPrimitives.updateColumns(updated)
       get2 <- database.optionalPrimitives.findByKey(sample.pkey)
     } yield (get, get2)
 
@@ -139,9 +138,9 @@ class UpdateQueryTest extends PhantomSuite with Inside with EitherValues {
     val sample = OptionalPrimitive.empty
 
     val chain = for {
-      store <- database.optionalPrimitives.store(sample).future()
+      _ <- database.optionalPrimitives.store(sample).future()
       get <- database.optionalPrimitives.findByKey(sample.pkey)
-      update <- database.optionalPrimitives.update
+      _ <- database.optionalPrimitives.update
         .where(_.pkey eqs sample.pkey)
         .modify(_.boolean setIfDefined Some(false))
         .future()
@@ -165,16 +164,10 @@ class UpdateQueryTest extends PhantomSuite with Inside with EitherValues {
       .modify(_.boolean setIfDefined Some(updatedBool))
       .and(_.date setIfDefined None)
 
-    query.setPart.queries.size shouldEqual 1
-    query.setPart.qb shouldEqual QueryBuilder.Update.set(QueryBuilder.Update.setTo(
-      database.optionalPrimitives.boolean.name,
-      updatedBool.toString
-    ))
-
     val chain = for {
-      store <- database.optionalPrimitives.store(sample).future()
+      _ <- database.optionalPrimitives.store(sample).future()
       get <- database.optionalPrimitives.findByKey(sample.pkey)
-      update <- query.future()
+      _ <- query.future()
       get2 <- database.optionalPrimitives.findByKey(sample.pkey)
     } yield (get, get2)
 
@@ -197,17 +190,10 @@ class UpdateQueryTest extends PhantomSuite with Inside with EitherValues {
       .and(_.double setIfDefined None)
       .and(_.inet setIfDefined None)
 
-
-    query.setPart.queries.size shouldEqual 1
-    query.setPart.qb shouldEqual QueryBuilder.Update.set(QueryBuilder.Update.setTo(
-      database.optionalPrimitives.boolean.name,
-      updatedBool.toString
-    ))
-
     val chain = for {
-      store <- database.optionalPrimitives.store(sample).future()
+      _ <- database.optionalPrimitives.store(sample).future()
       get <- database.optionalPrimitives.findByKey(sample.pkey)
-      update <- query.future()
+      _ <- query.future()
       get2 <- database.optionalPrimitives.findByKey(sample.pkey)
     } yield (get, get2)
 
@@ -228,9 +214,9 @@ class UpdateQueryTest extends PhantomSuite with Inside with EitherValues {
     val t2 = DateTime.now(DateTimeZone.UTC).plusMinutes(1)
 
     val chain = for {
-      store <- database.primitives.store(row).timestamp(t1).future()
+      _ <- database.primitives.store(row).timestamp(t1).future()
       a <- database.primitives.select.where(_.pkey eqs row.pkey).one
-      u <- database.primitives.update.where(_.pkey eqs row.pkey)
+      _ <- database.primitives.update.where(_.pkey eqs row.pkey)
         .modify(_.long setTo sample.long)
         .and(_.boolean setTo sample.boolean)
         .and(_.bDecimal setTo sample.bDecimal)
@@ -271,9 +257,9 @@ class UpdateQueryTest extends PhantomSuite with Inside with EitherValues {
     val updatedRow = gen[PrimitiveRecord].copy(pkey = row.pkey)
 
     val chain = for {
-      store <- database.primitives.store(row).future()
+      _ <- database.primitives.store(row).future()
       a <- database.primitives.select.where(_.pkey eqs row.pkey).one
-      u <- database.primitives.update.where(_.pkey eqs row.pkey)
+      _ <- database.primitives.update.where(_.pkey eqs row.pkey)
         .modify(_.long setIfDefined None)
         .and(_.boolean setTo updatedRow.boolean)
         .and(_.bDecimal setTo updatedRow.bDecimal)
@@ -303,9 +289,9 @@ class UpdateQueryTest extends PhantomSuite with Inside with EitherValues {
     val updatedRow = gen[PrimitiveRecord].copy(pkey = row.pkey)
 
     val chain = for {
-      store <- database.primitives.store(row).future()
+      _ <- database.primitives.store(row).future()
       a <- database.primitives.select.where(_.pkey eqs row.pkey).one
-      u <- database.primitives.update.where(_.pkey eqs row.pkey)
+      _ <- database.primitives.update.where(_.pkey eqs row.pkey)
         .modify(_.long setIfDefined Some(updatedRow.long))
         .and(_.boolean setTo updatedRow.boolean)
         .and(_.bDecimal setTo updatedRow.bDecimal)
@@ -333,7 +319,7 @@ class UpdateQueryTest extends PhantomSuite with Inside with EitherValues {
     val row = gen[PrimitiveRecord]
 
     val chain = for {
-      store <- database.primitives.storeRecord(row)
+      _ <- database.primitives.storeRecord(row)
       a <- database.primitives.select.where(_.pkey eqs row.pkey).one
       u <- database.primitives.update.where(_.pkey eqs row.pkey)
         .modify(_.long setIfDefined None)
@@ -365,7 +351,7 @@ class UpdateQueryTest extends PhantomSuite with Inside with EitherValues {
     val updatedRow = gen[PrimitiveRecord].copy(pkey = row.pkey)
 
     val chain = for {
-      store <- database.primitives.store(row).future()
+      _ <- database.primitives.store(row).future()
       a <- database.primitives.select.where(_.pkey eqs row.pkey).one
       u <- database.primitives.update.where(_.pkey eqs row.pkey)
         .modify(_.long setIfDefined Some(updatedRow.long))

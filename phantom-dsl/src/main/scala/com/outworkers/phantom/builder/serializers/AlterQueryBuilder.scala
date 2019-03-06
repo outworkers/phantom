@@ -16,10 +16,49 @@
 package com.outworkers.phantom.builder.serializers
 
 import com.outworkers.phantom.builder.QueryBuilder
+import com.outworkers.phantom.builder.QueryBuilder.Utils
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 
 private[phantom] trait AlterQueryBuilder {
+
+  def addAll(definitions: Seq[CQLQuery]): CQLQuery = {
+    if (definitions.size > 1) {
+      val query = Utils.join(definitions: _*)
+      CQLQuery(CQLSyntax.Alter.Add).forcePad.wrapn(query)
+    } else {
+      CQLQuery(CQLSyntax.Alter.Add).forcePad.append(definitions.head)
+    }
+  }
+
+
+  def rename(definitions: Seq[CQLQuery]): CQLQuery = {
+    if (definitions.isEmpty) {
+      CQLQuery.empty
+    } else {
+      CQLQuery(CQLSyntax.Alter.Rename).forcePad.append(definitions.map(_.queryString).mkString(s" ${CQLSyntax.And} "))
+    }
+  }
+
+  def alter(definitions: Seq[CQLQuery]): CQLQuery = {
+    if (definitions.size > 1) {
+      val query = Utils.join(definitions: _*)
+      CQLQuery(CQLSyntax.Alter.Alter).forcePad.wrapn(query)
+    } else {
+      CQLQuery(CQLSyntax.Alter.Alter).forcePad.append(definitions.head)
+    }
+  }
+
+
+  def dropAll(definitions: Seq[CQLQuery]): CQLQuery = {
+    if (definitions.size > 1) {
+      val query = Utils.join(definitions: _*)
+      CQLQuery(CQLSyntax.Alter.Drop).forcePad.wrapn(query)
+    } else {
+      CQLQuery(CQLSyntax.Alter.Drop).forcePad.append(definitions.head)
+    }
+  }
+
 
   /**
    * Creates the ADD part of an alter query for a column name and a type.
@@ -30,15 +69,12 @@ private[phantom] trait AlterQueryBuilder {
    *  ADD $column $columnType.
    * }}}
    *
-   * @param qb The existing built query to append to.
    * @param column The name of the column to add in the alter query.
-   * @param columnType The type of the new column.
-   * @return A CQLQuery enclosing the ADD part of an alter query.
-   */
-  def add(qb: CQLQuery, column: String, columnType: String): CQLQuery = {
-    qb.pad.append(CQLSyntax.Alter.Add)
-      .forcePad.append(column)
-      .forcePad.append(columnType)
+    * @param columnType The type of the new column.
+  * @return A CQLQuery enclosing the ADD part of an alter query.
+  */
+  def add(column: String, columnType: String): CQLQuery = {
+    CQLQuery(column).forcePad.append(columnType)
   }
 
   /**
@@ -52,22 +88,12 @@ private[phantom] trait AlterQueryBuilder {
    *  ADD $column $columnType.
    * }}}
    *
-   * @param qb The existing built query to append to.
    * @param column The name of the column to add in the alter query.
    * @param columnType The type of the new column.
    * @return A CQLQuery enclosing the ADD part of an alter query.
    */
-  def addStatic(qb: CQLQuery, column: String, columnType: String): CQLQuery = {
-    qb.pad.append(CQLSyntax.Alter.Add)
-      .forcePad.append(column)
-      .forcePad.append(columnType)
-      .forcePad.append(CQLSyntax.static)
-  }
-
-
-  def add(qb: CQLQuery, definition: CQLQuery): CQLQuery = {
-    qb.pad.append(CQLSyntax.Alter.Add)
-      .forcePad.append(definition)
+  def addStatic(column: String, columnType: String): CQLQuery = {
+    CQLQuery(column).forcePad.append(columnType).forcePad.append(CQLSyntax.static)
   }
 
   /**
@@ -81,11 +107,28 @@ private[phantom] trait AlterQueryBuilder {
    * @param columnType The type of the new column.
    * @return A CQLQuery enclosing the ALTER part of an alter query.
    */
-  def alter(qb: CQLQuery, column: String, columnType: String): CQLQuery = {
-    qb.pad.append(CQLSyntax.Alter.Alter)
-      .forcePad.append(column)
+  def alterType(column: String, columnType: String): CQLQuery = {
+      CQLQuery(column)
       .forcePad.append(CQLSyntax.Type)
       .forcePad.append(columnType)
+  }
+
+  /**
+    * Adds an option to an ALTER query from the list of CREATE query options.
+    * Inside an ALTER query, the `with` definition is a chainned query, not a multi-part query.
+    * That means every single option call will alter the init part of a query with no
+    * preservation of state or immutable state.
+    *
+    * This specific type of option refers to things like:
+    * - Compaction strategies
+    * - Compression strategies
+    * - etc..
+    *
+    * @param clause The clause or option to append to the root query.
+    * @return A new CQL query, where the underlying query contains an option clause.
+    */
+  def option(qb: CQLQuery, clause: CQLQuery): CQLQuery = {
+    qb.pad.append(CQLSyntax.With).pad.append(clause)
   }
 
 
@@ -100,26 +143,30 @@ private[phantom] trait AlterQueryBuilder {
    * - Compression strategies
    * - etc..
    *
-   * @param qb The init query clause.
    * @param clause The clause or option to append to the root query.
    * @return A new CQL query, where the underlying query contains an option clause.
    */
-  def option(qb: CQLQuery, clause: CQLQuery): CQLQuery = {
-    qb.pad.append(CQLSyntax.With).pad.append(clause)
+  def option(clause: CQLQuery): CQLQuery = {
+    CQLQuery(CQLSyntax.With).pad.append(clause)
   }
 
-  def rename(qb: CQLQuery, column: String, newColumn: String): CQLQuery = {
-    qb.pad.append(CQLSyntax.Alter.Rename)
-      .forcePad.append(column)
+  def withOptions(clauses: Seq[CQLQuery]): CQLQuery = {
+    if (clauses.isEmpty) {
+      CQLQuery.empty
+    } else {
+      CQLQuery(CQLSyntax.With).forcePad.append(clauses.map(_.queryString).mkString(s" ${CQLSyntax.And} "))
+    }
+  }
+
+  def rename(column: String, newColumn: String): CQLQuery = {
+      CQLQuery(column)
       .forcePad.append(CQLSyntax.To)
       .forcePad.append(newColumn)
   }
 
-  def drop(qb: CQLQuery, column: String): CQLQuery = {
-    qb.pad.append(CQLSyntax.Alter.Drop)
-      .forcePad.append(column)
+  def drop(column: String): CQLQuery = {
+    CQLQuery(CQLSyntax.Alter.Drop).forcePad.append(column)
   }
-
 
   def dropTable(table: String, keyspace: String): CQLQuery = {
     CQLQuery(CQLSyntax.Alter.Drop)
