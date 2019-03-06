@@ -133,9 +133,10 @@ private[builder] class CreateTableBuilder {
       root.append(CQLSyntax.`)`)
     }
 
-    clusteringKeys match {
-      case head :: tail => stage2.append(clusteringKey(clusteringKeys))
-      case _ => stage2
+    if (clusteringKeys.isEmpty) {
+      stage2
+    } else {
+      stage2.append(clusteringKey(clusteringKeys))
     }
   }
 
@@ -194,6 +195,14 @@ private[builder] class CreateTableBuilder {
 
   def caching(qb: CQLQuery): CQLQuery = {
     Utils.tableOption(CQLSyntax.CreateOptions.caching, CQLQuery.empty.append(qb))
+  }
+
+  def withOptions(clause: CQLQuery): CQLQuery = {
+    if (clause.nonEmpty) {
+      CQLQuery(CQLSyntax.With).forcePad.append(clause)
+    } else {
+      CQLQuery.empty
+    }
   }
 
   /**
@@ -294,7 +303,7 @@ private[builder] class CreateTableBuilder {
       .wrapn(columnName)
       .forcePad.append(CQLSyntax.using)
       .forcePad.append(CQLQuery.escape(CQLSyntax.SASI.indexClass))
-      .forcePad.append(`with`(options))
+      .forcePad.append(withOptions(options))
   }
 
   def defaultCreateQuery(
