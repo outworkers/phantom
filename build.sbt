@@ -61,7 +61,7 @@ val XLintOptions = Seq(
 val Scala212Options = Seq(
   "-Xlint:infer-any", // Warn when a type argument is inferred to be `Any`.
   "-Ypartial-unification", // Enable partial unification in type constructor inference,
-  "-Ywarn-extra-implicit", // Warn when more than one implicit parameter section is defined.
+  //"-Ywarn-extra-implicit", // Warn when more than one implicit parameter section is defined.
   "-Ywarn-unused:implicits", // Warn if an implicit parameter is unused.
   "-Ywarn-unused:imports", // Warn if an import selector is not referenced.
   "-Ywarn-unused:locals", // Warn if a local definition is unused.
@@ -87,7 +87,7 @@ val scalacOptionsFn: String => Seq[String] = { s =>
   }
 }
 
-scalacOptions in Global ++= scalacOptionsFn(scalaVersion.value)
+scalacOptions in ThisBuild ++= scalacOptionsFn(scalaVersion.value)
 
 lazy val Versions = new {
   val logback = "1.2.3"
@@ -257,7 +257,8 @@ lazy val phantom = (project in file("."))
     sharedSettings ++ Publishing.noPublishSettings
   ).settings(
     name := "phantom",
-    moduleName := "phantom"
+    moduleName := "phantom",
+    crossScalaVersions := Seq(Versions.scala210, Versions.scala211, Versions.scala212)
   ).aggregate(
     fullProjectList: _*
   )
