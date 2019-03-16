@@ -30,34 +30,30 @@ lazy val Versions = new {
   val scrooge = if (isCi) {
     if (sys.props("java.specification.version") == "1.8" && !isScala210) "4.18.0" else "4.7.0"
   } else {
-    if (sys.props("java.specification.version") == "1.8") "4.18.0" else "4.7.0"
+    if (sys.props("java.specification.version") == "1.8") "19.3.0" else "19.3.0"
   }
 }
 
-addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "1.5.0")
+addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "1.5.1")
 
-addSbtPlugin("org.scoverage" %% "sbt-coveralls" % "1.1.0")
+addSbtPlugin("org.scoverage" %% "sbt-coveralls" % "1.2.7")
 
-addSbtPlugin("io.get-coursier" % "sbt-coursier" % "1.0.3")
+addSbtPlugin("io.get-coursier" % "sbt-coursier" % "1.1.0-M13-1")
 
 addSbtPlugin("com.jsuereth" % "sbt-pgp" % "1.1.1")
 
-if (sys.env.get("MAVEN_PUBLISH").exists("true" ==)) {
-  addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "2.3")
-} else {
-  addSbtPlugin("org.foundweekends" % "sbt-bintray" % "0.5.4")
-}
+addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "2.5")
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "0.8.5")
+addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "1.0.0")
 
 addSbtPlugin("com.twitter" % "scrooge-sbt-plugin" % Versions.scrooge)
 
 dependencyOverrides += "org.apache.thrift" % "libthrift" % "0.8.0"
 
-addSbtPlugin("org.tpolecat" % "tut-plugin" % "0.5.6")
+addSbtPlugin("org.tpolecat" % "tut-plugin" % "0.6.10")
 
-addSbtPlugin("com.eed3si9n" % "sbt-doge" % "0.1.5")
+// addSbtPlugin("com.eed3si9n" % "sbt-doge" % "0.1.5")
 
 libraryDependencies += "org.slf4j" % "slf4j-nop" % "1.7.22"
 
-addSbtPlugin("com.github.gseitz" % "sbt-release" % "1.0.5")
+addSbtPlugin("com.github.gseitz" % "sbt-release" % "1.0.11")
