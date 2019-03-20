@@ -394,10 +394,10 @@ lazy val phantomSbtPlugin = (project in file("phantom-sbt"))
   ).settings(
     name := "phantom-sbt",
     moduleName := "phantom-sbt",
-    crossScalaVersions := Seq(Versions.scala210),
+    crossScalaVersions := Seq(Versions.scala212),
     publishMavenStyle := false,
     sbtPlugin := true,
-    publishArtifact := scalaVersion.value.startsWith("2.10"),
+    publishArtifact := scalaVersion.value.startsWith("2.12"),
     libraryDependencies ++= Seq(
       "com.datastax.cassandra" % "cassandra-driver-core" % Versions.datastax,
       "org.cassandraunit" % "cassandra-unit"  % Versions.cassandraUnit excludeAll (
