@@ -48,7 +48,7 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "1.0.0")
 
 addSbtPlugin("com.twitter" % "scrooge-sbt-plugin" % Versions.scrooge)
 
-//dependencyOverrides += "org.apache.thrift" % "libthrift" % "0.8.0"
+dependencyOverrides += "org.apache.thrift" % "libthrift" % "0.10.0"
 
 addSbtPlugin("org.tpolecat" % "tut-plugin" % "0.6.10")
 

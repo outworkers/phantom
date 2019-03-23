@@ -97,7 +97,7 @@ lazy val Versions = new {
   val scalatest = "3.0.5"
   val shapeless = "2.3.3"
   val thrift = "0.8.0"
-  val finagle = "17.12.0"
+  val finagle = "19.1.0"
   val scalameter = "0.8.2"
   val scalacheck = "1.14.0"
   val slf4j = "1.7.25"
@@ -128,7 +128,7 @@ lazy val Versions = new {
 
   val twitterUtil: String => String = {
     s => CrossVersion.partialVersion(s) match {
-      case Some((_, minor)) if minor >= 12 => "6.45.0"
+      case Some((_, minor)) if minor >= 12 => "19.1.0"
       case _ => "6.34.0"
     }
   }
@@ -149,9 +149,9 @@ lazy val Versions = new {
 
   val scrooge: String => String = {
     s => CrossVersion.partialVersion(s) match {
-      case Some((_, minor)) if minor >= 11 && Publishing.isJdk8 => "4.18.0"
-      case Some((_, minor)) if minor >= 11 && !Publishing.isJdk8 => "4.7.0"
-      case _ => "4.7.0"
+      //case Some((_, minor)) if minor >= 11 && Publishing.isJdk8 => "4.18.0"
+      //case Some((_, minor)) if minor >= 11 && !Publishing.isJdk8 => "4.7.0"
+      case _ => "19.1.0"
     }
   }
   val play: String => String = {
