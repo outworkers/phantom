@@ -28,7 +28,7 @@ lazy val isCi = sys.env.get("CI").exists("true" == )
 
 lazy val Versions = new {
   val scrooge = if (isCi) {
-    if (sys.props("java.specification.version") == "1.8" && !isScala210) "4.18.0" else "4.7.0"
+    if (sys.props("java.specification.version") == "1.8" && !isScala210) "19.3.0" else "19.3.0"
   } else {
     if (sys.props("java.specification.version") == "1.8") "19.3.0" else "19.3.0"
   }
@@ -48,7 +48,7 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "1.0.0")
 
 addSbtPlugin("com.twitter" % "scrooge-sbt-plugin" % Versions.scrooge)
 
-dependencyOverrides += "org.apache.thrift" % "libthrift" % "0.8.0"
+//dependencyOverrides += "org.apache.thrift" % "libthrift" % "0.8.0"
 
 addSbtPlugin("org.tpolecat" % "tut-plugin" % "0.6.10")
 
