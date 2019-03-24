@@ -87,8 +87,6 @@ val scalacOptionsFn: String => Seq[String] = { s =>
   }
 }
 
-scalacOptions in ThisBuild ++= scalacOptionsFn(scalaVersion.value)
-
 lazy val Versions = new {
   val logback = "1.2.3"
   val util = "0.48.0"
@@ -114,10 +112,13 @@ lazy val Versions = new {
   val scala211 = "2.11.12"
   val scala212 = "2.12.8"
   val monix = "2.3.3"
-  val scalaAll = Seq(scala210, scala211, scala212)
 
   val scala = new {
-    val all = Seq(scala210, scala211, scala212)
+    val all = Seq(
+      //scala210,
+      scala211,
+      scala212
+    )
   }
 
   val typesafeConfig: String = if (Publishing.isJdk8) {
@@ -236,7 +237,9 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   ),
   envVars := Map("SCALACTIC_FILL_FILE_PATHNAMES" -> "yes"),
   parallelExecution in ThisBuild := false
-) ++ Publishing.effectiveSettings ++ releaseSettings
+) ++ Publishing.effectiveSettings ++ releaseSettings ++ Seq {
+  scalacOptions := scalacOptionsFn((scalaVersion in ThisBuild).value)
+}
 
 lazy val baseProjectList: Seq[ProjectReference] = Seq(
   phantomDsl,
@@ -258,7 +261,7 @@ lazy val phantom = (project in file("."))
   ).settings(
     name := "phantom",
     moduleName := "phantom",
-    crossScalaVersions := Seq(Versions.scala210, Versions.scala211, Versions.scala212)
+    crossScalaVersions := Versions.scala.all
   ).aggregate(
     fullProjectList: _*
   )
@@ -293,7 +296,7 @@ lazy val phantomDsl = (project in file("phantom-dsl"))
   .settings(
     name := "phantom-dsl",
     moduleName := "phantom-dsl",
-    crossScalaVersions := Versions.scalaAll,
+    crossScalaVersions := Versions.scala.all,
     concurrentRestrictions in Test := Seq(
       Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
     ),
@@ -322,7 +325,7 @@ lazy val phantomJdk8 = (project in file("phantom-jdk8"))
   .settings(
     name := "phantom-jdk8",
     moduleName := "phantom-jdk8",
-    crossScalaVersions := Versions.scalaAll,
+    crossScalaVersions := Versions.scala.all,
     testOptions in Test += Tests.Argument("-oF"),
     concurrentRestrictions in Test := Seq(
       Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
@@ -342,7 +345,7 @@ lazy val phantomConnectors = (project in file("phantom-connectors"))
   ).settings(
     name := "phantom-connectors",
     moduleName := "phantom-connectors",
-    crossScalaVersions := Versions.scalaAll,
+    crossScalaVersions := Versions.scala.all,
     libraryDependencies ++= Seq(
       "com.datastax.cassandra"       %  "cassandra-driver-core"             % Versions.datastax,
       "com.outworkers"               %% "util-testing"                      % Versions.util % Test
@@ -354,7 +357,7 @@ lazy val phantomFinagle = (project in file("phantom-finagle"))
   .settings(
     name := "phantom-finagle",
     moduleName := "phantom-finagle",
-    crossScalaVersions := Versions.scalaAll,
+    crossScalaVersions := Versions.scala.all,
     testFrameworks in Test ++= Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
     libraryDependencies ++= Seq(
       compilerPlugin("org.scalamacros" % "paradise" % Versions.macrosVersion(scalaVersion.value) cross CrossVersion.full),
@@ -411,7 +414,7 @@ lazy val phantomStreams = (project in file("phantom-streams"))
   .settings(
     name := "phantom-streams",
     moduleName := "phantom-streams",
-    crossScalaVersions := Versions.scalaAll,
+    crossScalaVersions := Versions.scala.all,
     testFrameworks in Test ++= Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
     libraryDependencies ++= Seq(
       compilerPlugin("org.scalamacros" % "paradise" % Versions.macrosVersion(scalaVersion.value) cross CrossVersion.full),
@@ -452,7 +455,7 @@ lazy val phantomExample = (project in file("phantom-example"))
   lazy val phantomMonix = (project in file("phantom-monix"))
     .settings(
       name := "phantom-monix",
-      crossScalaVersions := Versions.scalaAll,
+      crossScalaVersions := Versions.scala.all,
       moduleName := "phantom-monix",
       libraryDependencies ++= Seq(
         "com.outworkers" %% "util-testing" % Versions.util % Test,
