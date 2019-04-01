@@ -122,6 +122,7 @@ abstract class ExampleRecord extends Table[ExampleRecord, ExampleModel] {
   object name extends StringColumn
   object props extends MapColumn[String, String]
   object test extends OptionalIntColumn
+}
 ```
 
 
@@ -328,7 +329,7 @@ key that would allow us to retrieve all records by both `country` and `region`.
 
 So the new type of the generated store method will now be:
 
-```tut:silent
+```scala
   def store(
     countryCode: String,
     region: String,
@@ -339,13 +340,12 @@ So the new type of the generated store method will now be:
 The new table definition to store the above is:
 
 ```tut:silent
-
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.builder.query.InsertQuery
 import scala.concurrent.duration._
 
 case class Record(
-  id: java.util.UUID,
+  id: UUID,
   name: String,
   firstName: String,
   email: String
