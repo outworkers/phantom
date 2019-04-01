@@ -30,6 +30,12 @@ object Publishing {
 
   val ciSkipSequence = "[ci skip]"
 
+  private def toProcessLogger(st: State): ProcessLogger = new ProcessLogger {
+    override def error(s: => String): Unit = st.log.error(s)
+    override def info(s: => String): Unit = st.log.info(s)
+    override def buffer[T](f: => T): T = st.log.buffer(f)
+  }
+
   def vcs(state: State): Vcs = {
     Project.extract(state).get(releaseVcs)
       .getOrElse(sys.error("Aborting release. Working directory is not a repository of a recognized VCS."))
@@ -43,6 +49,7 @@ object Publishing {
     val logger = ConsoleLogger()
     logger.info(s"Found modified files: ${vcs(st).hasModifiedFiles}")
 
+    val log = toProcessLogger(st)
     val versionsFile = settings.get(releaseVersionFile).getCanonicalFile
     val docsFolder = settings.get(releaseTutFolder).getCanonicalFile
 
@@ -69,19 +76,19 @@ object Publishing {
       }
     }
 
-    vcs(st).add(commitablePaths: _*)
+    vcs(st).add(commitablePaths: _*) !! log
     val status = (vcs(st).status !!) trim
 
     val newState = if (status.nonEmpty) {
       val (state, msg) = settings.runTask(releaseCommitMessage, st)
-      val x = vcs(state).commit(msg, sign, false)
+      val x = vcs(state).commit(msg, sign)
 
       state
     } else {
       // nothing to commit. this happens if the version.sbt file hasn't changed or no docs have been added.
       st
     }
-    vcs(newState).status
+    vcs(newState).status !! log
 
     newState
   }
@@ -133,6 +140,7 @@ object Publishing {
         Some("releases" at nexus + "service/local/staging/deploy/maven2")
       }
     },
+    externalResolvers := Resolver.withDefaultResolvers(resolvers.value, mavenCentral = true),
     publishArtifact in Test := false,
     pomIncludeRepository := { _ => true },
     pomExtra :=
