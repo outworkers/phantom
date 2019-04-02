@@ -121,6 +121,7 @@ object UpdateClause extends Clause {
 
 object OperatorClause extends Clause {
   class Condition(override val qb: CQLQuery) extends QueryCondition[HNil](qb, Nil)
+  class Prepared[T](override val qb: CQLQuery) extends QueryCondition[T :: HNil](qb, Nil)
 }
 
 object TypedClause extends Clause {

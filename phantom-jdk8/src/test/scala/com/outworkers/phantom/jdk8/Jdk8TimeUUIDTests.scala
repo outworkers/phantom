@@ -175,6 +175,75 @@ class Jdk8TimeUUIDTests extends PhantomSuite {
     }
   }
 
+  it should "be able to store and retrieve a time slice of records based on ZonedDateTime and prepared statements" in {
+
+    val interval = 60
+    val now = ZonedDateTime.now()
+    val start = now.plusMinutes(-interval)
+    val end = now.plusMinutes(interval)
+    val user = UUIDs.random()
+
+    val record = TimeUUIDRecord(
+      user,
+      UUIDs.timeBased(),
+      gen[String]
+    )
+
+    /**
+      * Cassandra sometimes skews the timestamp of this date by exactly 1 milliseconds
+      * for reasons beyond our understanding, which means the test is flaky unless this
+      * list is added to make sure at least one of t, t minus 1 millisecond, or t plus 1 millisecond
+      * is found in the expected list of records.
+      */
+    val recordList = record :: Nil
+
+    val minuteOffset = start.plusMinutes(-1).timeuuid
+    val secondOffset = start.plusSeconds(-15).timeuuid
+
+    val record1 = TimeUUIDRecord(
+      user,
+      minuteOffset,
+      gen[String]
+    )
+
+    val record2 = TimeUUIDRecord(
+      user,
+      secondOffset,
+      gen[String]
+    )
+
+    val query = database.timeuuidTable.select
+      .where(_.user eqs ?)
+      .and(_.id <= maxTimeuuid(?))
+      .and(_.id >= minTimeuuid(?))
+      .prepareAsync()
+
+    val chain = for {
+      _ <- database.timeuuidTable.store(record).future()
+      _ <- database.timeuuidTable.store(record1).future()
+      _ <- database.timeuuidTable.store(record2).future()
+      one <- query.flatMap(_.bind(end, start, record.user).fetch())
+
+      one2 <- query.flatMap(_.bind(end, start.plusMinutes(-2), record.user).fetch())
+    } yield (one, one2)
+
+    whenReady(chain) { case (res, res2) =>
+      info("At least one timestamp value, including potential time skewes, should be included here")
+      recordList exists(res contains) shouldEqual true
+
+      info("Should not contain record with a timestamp 1 minute before the selection window")
+      res should not contain record1
+
+      info("Should not contain record with a timestamp 15 seconds before the selection window")
+      res should not contain record2
+
+      info("Should contain all elements if we expand the selection window by 1 minute")
+      res2.find(_.id == record.id) shouldBe defined
+      res2.find(_.id == record1.id) shouldBe defined
+      res2.find(_.id == record2.id) shouldBe defined
+    }
+  }
+
   it should "not retrieve anything for a mismatched selection time window using ZonedDateTime" in {
 
     val intervalOffset = 60
