@@ -147,8 +147,8 @@ class Jdk8TimeUUIDTests extends PhantomSuite {
       _ <- database.timeuuidTable.store(record2).future()
       one <- database.timeuuidTable.select
         .where(_.user eqs record.user)
-        .and(_.id <= maxTimeuuid(end))
         .and(_.id >= minTimeuuid(start))
+        .and(_.id <= maxTimeuuid(end))
         .fetch()
 
       one2 <- database.timeuuidTable.select
@@ -214,17 +214,17 @@ class Jdk8TimeUUIDTests extends PhantomSuite {
 
     val query = database.timeuuidTable.select
       .where(_.user eqs ?)
-      .and(_.id <= maxTimeuuid(?))
       .and(_.id >= minTimeuuid(?))
+      .and(_.id <= maxTimeuuid(?))
       .prepareAsync()
 
     val chain = for {
       _ <- database.timeuuidTable.store(record).future()
       _ <- database.timeuuidTable.store(record1).future()
       _ <- database.timeuuidTable.store(record2).future()
-      one <- query.flatMap(_.bind(end, start, record.user).fetch())
+      one <- query.flatMap(_.bind(record.user, start, end).fetch())
 
-      one2 <- query.flatMap(_.bind(end, start.plusMinutes(-2), record.user).fetch())
+      one2 <- query.flatMap(_.bind(record.user, start.plusMinutes(-2), end).fetch())
     } yield (one, one2)
 
     whenReady(chain) { case (res, res2) =>
