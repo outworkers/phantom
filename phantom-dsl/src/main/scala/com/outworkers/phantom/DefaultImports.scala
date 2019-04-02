@@ -215,13 +215,33 @@ trait DefaultImports extends ImplicitMechanism
       new UpdateClause.Condition(QueryBuilder.Update.increment(col.name, value.toString))
     }
 
+    final def +=(value: PrepareMark): UpdateClause.Prepared[Long] = {
+      increment(value)
+    }
+
     final def increment[T : Numeric](value: T): UpdateClause.Default = +=(value)
+
+    final def increment(value: PrepareMark): UpdateClause.Prepared[Long] = {
+      new UpdateClause.Prepared[Long](
+        QueryBuilder.Update.increment(col.name, value.qb.queryString)
+      )
+    }
 
     final def -=[T : Numeric](value: T): UpdateClause.Default = {
       new UpdateClause.Condition(QueryBuilder.Update.decrement(col.name, value.toString))
     }
 
+    final def -=(value: PrepareMark): UpdateClause.Prepared[Long] = {
+      decrement(value)
+    }
+
     final def decrement[T : Numeric](value: T): UpdateClause.Default = -=(value)
+
+    final def decrement(value: PrepareMark): UpdateClause.Prepared[Long] = {
+      new UpdateClause.Prepared[Long](
+        QueryBuilder.Update.decrement(col.name, value.qb.queryString)
+      )
+    }
   }
 
   /**
