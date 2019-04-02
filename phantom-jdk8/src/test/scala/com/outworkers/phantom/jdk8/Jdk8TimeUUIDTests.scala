@@ -175,6 +175,69 @@ class Jdk8TimeUUIDTests extends PhantomSuite {
     }
   }
 
+  it should "be able to store and retrieve a fixed time slice of records with prepared statements" in {
+
+    val interval = 60
+    val now = ZonedDateTime.now()
+    val start = now.plusMinutes(-interval)
+    val end = now.plusMinutes(interval)
+    val user = UUIDs.random()
+
+    val record = TimeUUIDRecord(
+      user,
+      UUIDs.timeBased(),
+      gen[String]
+    )
+
+    val minuteOffset = start.plusMinutes(-1).timeuuid
+    val secondOffset = start.plusSeconds(-15).timeuuid
+
+    val record1 = TimeUUIDRecord(
+      user,
+      minuteOffset,
+      gen[String]
+    )
+
+    val record2 = TimeUUIDRecord(
+      user,
+      secondOffset,
+      gen[String]
+    )
+
+    val query = database.timeuuidTable.select
+      .where(_.user eqs ?)
+      .and(_.id > minTimeuuid(?))
+      .and(_.id < maxTimeuuid(?))
+      .prepareAsync()
+
+    val chain = for {
+      _ <- database.timeuuidTable.store(record).future()
+      _ <- database.timeuuidTable.store(record1).future()
+      _ <- database.timeuuidTable.store(record2).future()
+      one <- query.flatMap(_.bind(record.user, start.toInstant.toEpochMilli, end.toInstant.toEpochMilli).fetch())
+
+      one2 <- query.flatMap(_.bind(
+        record.user,
+        start.plusMinutes(-2).toInstant.toEpochMilli,
+        end.toInstant.toEpochMilli
+      ).fetch())
+    } yield (one, one2)
+
+    whenReady(chain) { case (res, res2) =>
+      info("At least one timestamp value, including potential time skews, should be included here")
+      res should contain (record)
+
+      info("Should not contain record with a timestamp 1 minute before the selection window")
+      res should not contain record1
+
+      info("Should not contain record with a timestamp 15 seconds before the selection window")
+      res should not contain record2
+
+      info("Should contain all elements if we expand the selection window by 1 minute")
+      res2.find(_.id == record1.id) shouldBe defined
+    }
+  }
+
   it should "be able to store and retrieve a time slice of records with prepared statements" in {
 
     val interval = 60
