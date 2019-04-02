@@ -158,8 +158,8 @@ private[phantom] trait TimeUUIDOperator {
     new Condition(fn(CQLQuery.escape(new DateTime(date).toString())))
   }
 
-  def apply(mark: PrepareMark): OperatorClause.Prepared[DateTime] = {
-    new OperatorClause.Prepared[DateTime](fn(mark.qb.queryString))
+  def apply(mark: PrepareMark): OperatorClause.Prepared[Long] = {
+    new OperatorClause.Prepared[Long](fn(mark.qb.queryString))
   }
 
   def fn: String => CQLQuery

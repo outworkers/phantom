@@ -175,7 +175,7 @@ class Jdk8TimeUUIDTests extends PhantomSuite {
     }
   }
 
-  it should "be able to store and retrieve a time slice of records based on ZonedDateTime and prepared statements" in {
+  it should "be able to store and retrieve a time slice of records with prepared statements" in {
 
     val interval = 60
     val now = ZonedDateTime.now()
@@ -222,9 +222,13 @@ class Jdk8TimeUUIDTests extends PhantomSuite {
       _ <- database.timeuuidTable.store(record).future()
       _ <- database.timeuuidTable.store(record1).future()
       _ <- database.timeuuidTable.store(record2).future()
-      one <- query.flatMap(_.bind(record.user, start, end).fetch())
+      one <- query.flatMap(_.bind(record.user, start.toInstant.toEpochMilli, end.toInstant.toEpochMilli).fetch())
 
-      one2 <- query.flatMap(_.bind(record.user, start.plusMinutes(-2), end).fetch())
+      one2 <- query.flatMap(_.bind(
+        record.user,
+        start.plusMinutes(-2).toInstant.toEpochMilli,
+        end.toInstant.toEpochMilli
+      ).fetch())
     } yield (one, one2)
 
     whenReady(chain) { case (res, res2) =>
@@ -292,18 +296,18 @@ class Jdk8TimeUUIDTests extends PhantomSuite {
           Gen.choose(
             -intervalOffset,
             intervalOffset
-          ).sample.get
+          ).sample.value
         ).timeuuid)
       )
 
     val chain = for {
       _ <- database.timeuuidTable.storeRecords(records)
-      get <- database.timeuuidTable.select
+      records <- database.timeuuidTable.select
         .where(_.user eqs user)
         .and(_.id >= minTimeuuid(start.plusSeconds(-3 * intervalOffset)))
         .and(_.id <= maxTimeuuid(start.plusSeconds(-2 * intervalOffset)))
         .fetch()
-    } yield get
+    } yield records
 
     whenReady(chain) { res =>
       res.size shouldEqual 0
