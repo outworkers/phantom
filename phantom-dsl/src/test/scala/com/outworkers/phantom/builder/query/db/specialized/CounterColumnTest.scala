@@ -31,9 +31,9 @@ class CounterColumnTest extends PhantomSuite {
     val sample = gen[CounterRecord]
 
     val chain = for {
-      incr <-  database.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 0).future()
+      _ <-  database.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 0).future()
       select <- database.counterTableTest.select.where(_.id eqs sample.id).one
-      incr <-  database.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 1).future()
+      _ <-  database.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 1).future()
       select2 <- database.counterTableTest.select.where(_.id eqs sample.id).one
     } yield (select, select2)
 
@@ -54,7 +54,10 @@ class CounterColumnTest extends PhantomSuite {
       .prepareAsync()
 
     val chain = for {
-      _ <- database.counterTableTest.storeRecord(sample)
+      _ <- database.counterTableTest.update
+        .where(_.id eqs sample.id)
+        .modify(_.count_entries += sample.count)
+        .future()
       _ <-  query.flatMap(_.bind(1L, sample.id).future())
       select2 <- database.counterTableTest.select.where(_.id eqs sample.id).one
     } yield select2
@@ -112,7 +115,10 @@ class CounterColumnTest extends PhantomSuite {
       .prepareAsync()
 
     val chain = for {
-      _ <- database.counterTableTest.storeRecord(sample)
+      _ <- database.counterTableTest.update
+        .where(_.id eqs sample.id)
+        .modify(_.count_entries += sample.count)
+        .future()
       _ <-  query.flatMap(_.bind(added, sample.id).future())
       select2 <- database.counterTableTest.select.where(_.id eqs sample.id).one
     } yield select2
@@ -127,7 +133,7 @@ class CounterColumnTest extends PhantomSuite {
     val sample = gen[CounterRecord]
 
     val chain = for {
-      _ <-  database.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 1).future()
+      _ <- database.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries += 1).future()
       select <- database.counterTableTest.select.where(_.id eqs sample.id).one()
       _ <-  database.counterTableTest.update.where(_.id eqs sample.id).modify(_.count_entries -= 1).future()
       select2 <- database.counterTableTest.select.where(_.id eqs sample.id).one()
@@ -150,7 +156,10 @@ class CounterColumnTest extends PhantomSuite {
       .prepareAsync()
 
     val chain = for {
-      _ <- database.counterTableTest.storeRecord(sample)
+      _ <- database.counterTableTest.update
+        .where(_.id eqs sample.id)
+        .modify(_.count_entries += sample.count)
+        .future()
       _ <-  query.flatMap(_.bind(1L, sample.id).future())
       select2 <- database.counterTableTest.select.where(_.id eqs sample.id).one
     } yield select2
@@ -197,7 +206,10 @@ class CounterColumnTest extends PhantomSuite {
       .prepareAsync()
 
     val chain = for {
-      _ <- database.counterTableTest.storeRecord(sample)
+      _ <- database.counterTableTest.update
+        .where(_.id eqs sample.id)
+        .modify(_.count_entries += sample.count)
+        .future()
       _ <-  query.flatMap(_.bind(removed, sample.id).future())
       select2 <- database.counterTableTest.select.where(_.id eqs sample.id).one
     } yield select2
