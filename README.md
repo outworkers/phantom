@@ -119,7 +119,7 @@ This is a list of resources to help you learn phantom and Cassandra:
 - [ ] [A series on Cassandra: Advanced features](https://medium.com/@flavian_87939/a-series-on-cassandra-part-3-advanced-features-73abed9d99ab)
 - [ ] [A series on phantom: Getting started with phantom](https://medium.com/@flavian_87939/a-series-of-phantom-part1-getting-started-with-phantom-1014787bc550)
 - [ ] [The Play! Phantom Activator template](https://github.com/outworkers/phantom-activator-template)
-- [ ] [Thiago's Cassandra + Phantom demo repository](https://github.com/thiagoandrade6/cassandra-phantom)
+- [ ] [Thiago's Cassandra + Phantom demo repository](https://github.com/iamthiago/cassandra-phantom)
 
 
 <a id="issues-and-questions">Issues and questions</a>
@@ -184,7 +184,7 @@ Phantom was developed at outworkers as an in-house project. All Cassandra integr
 * Kevin Wright ([@kevinwright](https://github.com/kevinwright))
 * Eugene Zhulenev ([@ezhulenev](https://github.com/ezhulenev))
 * Michal Matloka ([@mmatloka](https://github.com/mmatloka))
-* Thiago Pereira ([@thiagoandrade6](https://github.com/thiagoandrade6))
+* Thiago Pereira ([@iamthiago](https://github.com/iamthiago))
 * Juan José Vázquez ([@juanjovazquez](https://github.com/juanjovazquez))
 * Viktor Taranenko ([@viktortnk](https://github.com/viktortnk))
 * Stephen Samuel ([@sksamuel](https://github.com/sksamuel))
