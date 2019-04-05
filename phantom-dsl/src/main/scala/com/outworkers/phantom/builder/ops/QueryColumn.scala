@@ -19,6 +19,7 @@ import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.clauses._
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.prepared.{ListValue, PrepareMark}
+import shapeless.HList
 
 /**
  * A class enforcing columns used in where clauses to be indexed.
@@ -34,10 +35,14 @@ abstract class RootQueryColumn[RR](val name: String)(implicit p: Primitive[RR]) 
     new WhereClause.Condition(QueryBuilder.Where.eqs(name, p.asCql(value)))
   }
 
-  def eqs(value: OperatorClause.Condition): WhereClause.Condition = {
-    new WhereClause.Condition(QueryBuilder.Where.eqs(name, value.qb.queryString))
+  def eqs[HL <: HList](value: QueryCondition[HL]): WhereClause.HListCondition[HL] = {
+    new WhereClause.HListCondition[HL](
+      QueryBuilder.Where.eqs(name, value.qb.queryString)
+    )
   }
 
+
+  // LT Clauses
   def lt(value: RR): WhereClause.Condition = {
     new WhereClause.Condition(QueryBuilder.Where.lt(name, p.asCql(value)))
   }
@@ -46,14 +51,15 @@ abstract class RootQueryColumn[RR](val name: String)(implicit p: Primitive[RR]) 
     new WhereClause.Condition(QueryBuilder.Where.lt(name, p.asCql(value)))
   }
 
-  def lt(value: OperatorClause.Condition): WhereClause.Condition = {
-    new WhereClause.Condition(QueryBuilder.Where.lt(name, value.qb.queryString))
+  def lt[HL <: HList](value: QueryCondition[HL]): WhereClause.HListCondition[HL] = {
+    new WhereClause.HListCondition[HL](
+      QueryBuilder.Where.lt(name, value.qb.queryString)
+    )
   }
 
-  def <(value: OperatorClause.Condition): WhereClause.Condition = {
-    new WhereClause.Condition(QueryBuilder.Where.lt(name, value.qb.queryString))
-  }
+  def <[HL <: HList](value: QueryCondition[HL]): WhereClause.HListCondition[HL] = lt(value)
 
+  // LTE clauses
   def lte(value: RR): WhereClause.Condition = {
     new WhereClause.Condition(QueryBuilder.Where.lte(name, implicitly[Primitive[RR]].asCql(value)))
   }
@@ -62,14 +68,16 @@ abstract class RootQueryColumn[RR](val name: String)(implicit p: Primitive[RR]) 
     new WhereClause.Condition(QueryBuilder.Where.lte(name, implicitly[Primitive[RR]].asCql(value)))
   }
 
-  def lte(value: OperatorClause.Condition): WhereClause.Condition = {
-    new WhereClause.Condition(QueryBuilder.Where.lte(name, value.qb.queryString))
+  def lte[HL <: HList](value: QueryCondition[HL]): WhereClause.HListCondition[HL] = {
+    new WhereClause.HListCondition[HL](
+      QueryBuilder.Where.lte(name, value.qb.queryString)
+    )
   }
 
-  def <=(value: OperatorClause.Condition): WhereClause.Condition = {
-    new WhereClause.Condition(QueryBuilder.Where.lte(name, value.qb.queryString))
-  }
+  def <=[HL <: HList](value: QueryCondition[HL]): WhereClause.HListCondition[HL] = lte(value)
 
+
+  // GT Clauses
   def gt(value: RR): WhereClause.Condition = {
     new WhereClause.Condition(QueryBuilder.Where.gt(name, p.asCql(value)))
   }
@@ -78,14 +86,15 @@ abstract class RootQueryColumn[RR](val name: String)(implicit p: Primitive[RR]) 
     new WhereClause.Condition(QueryBuilder.Where.gt(name, p.asCql(value)))
   }
 
-  def gt(value: OperatorClause.Condition): WhereClause.Condition = {
-    new WhereClause.Condition(QueryBuilder.Where.gt(name, value.qb.queryString))
+  def gt[HL <: HList](value: QueryCondition[HL]): WhereClause.HListCondition[HL] = {
+    new WhereClause.HListCondition[HL](
+      QueryBuilder.Where.gt(name, value.qb.queryString)
+    )
   }
 
-  def >(value: OperatorClause.Condition): WhereClause.Condition = {
-    new WhereClause.Condition(QueryBuilder.Where.gt(name, value.qb.queryString))
-  }
+  def >[HL <: HList](value: QueryCondition[HL]): WhereClause.HListCondition[HL] = gt(value)
 
+  // GTE clauses
   def gte(value: RR): WhereClause.Condition = {
     new WhereClause.Condition(QueryBuilder.Where.gte(name, p.asCql(value)))
   }
@@ -94,13 +103,13 @@ abstract class RootQueryColumn[RR](val name: String)(implicit p: Primitive[RR]) 
     new WhereClause.Condition(QueryBuilder.Where.gte(name, p.asCql(value)))
   }
 
-  def gte(value: OperatorClause.Condition): WhereClause.Condition = {
-    new WhereClause.Condition(QueryBuilder.Where.gte(name, value.qb.queryString))
+  def gte[HL <: HList](value: QueryCondition[HL]): WhereClause.HListCondition[HL] = {
+    new WhereClause.HListCondition[HL](
+      QueryBuilder.Where.gte(name, value.qb.queryString)
+    )
   }
 
-  def >=(value: OperatorClause.Condition): WhereClause.Condition = {
-    new WhereClause.Condition(QueryBuilder.Where.gte(name, value.qb.queryString))
-  }
+  def >=[HL <: HList](value: QueryCondition[HL]): WhereClause.HListCondition[HL] = gte(value)
 
   def in(values: List[RR]): WhereClause.Condition = {
     new WhereClause.Condition(QueryBuilder.Where.in(name, values.map(p.asCql)))
