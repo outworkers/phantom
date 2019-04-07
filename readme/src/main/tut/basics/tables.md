@@ -122,6 +122,7 @@ abstract class ExampleRecord extends Table[ExampleRecord, ExampleModel] {
   object name extends StringColumn
   object props extends MapColumn[String, String]
   object test extends OptionalIntColumn
+}
 ```
 
 
