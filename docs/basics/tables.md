@@ -298,14 +298,14 @@ import com.outworkers.phantom.dsl._
 import scala.concurrent.duration._
 import com.outworkers.phantom.builder.query.InsertQuery
 
-case class Record(
+case class CountryRecord(
   id: java.util.UUID,
   name: String,
   firstName: String,
   email: String
 )
 
-abstract class RecordsByCountry extends Table[RecordsByCountry, Record] {
+abstract class RecordsByCountry extends Table[RecordsByCountry, CountryRecord] {
   object countryCode extends StringColumn with PartitionKey
   object id extends UUIDColumn with PrimaryKey
   object name extends StringColumn
@@ -315,8 +315,8 @@ abstract class RecordsByCountry extends Table[RecordsByCountry, Record] {
   // Phantom now auto-generates the below method
   def storeExample(
     countryCode: String,
-    record: Record
-  ): InsertQuery.Default[RecordsByCountry, Record] = {
+    record: CountryRecord
+  ): InsertQuery.Default[RecordsByCountry, CountryRecord] = {
     insert
       .value(_.countryCode, countryCode)
       .value(_.id, record.id)
