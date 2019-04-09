@@ -122,6 +122,7 @@ abstract class ExampleRecord extends Table[ExampleRecord, ExampleModel] {
   object name extends StringColumn
   object props extends MapColumn[String, String]
   object test extends OptionalIntColumn
+}
 ```
 
 
@@ -295,6 +296,7 @@ by the `Record` type.
 import java.util.UUID
 import com.outworkers.phantom.dsl._
 import scala.concurrent.duration._
+import com.outworkers.phantom.builder.query.InsertQuery
 
 case class Record(
   id: java.util.UUID,
@@ -311,7 +313,10 @@ abstract class RecordsByCountry extends Table[RecordsByCountry, Record] {
   object email extends StringColumn
 
   // Phantom now auto-generates the below method
-  def store(countryCode: String, record: Record): InsertQuery.Default[RecordsByCountry, Record] = {
+  def storeExample(
+    countryCode: String,
+    record: Record
+  ): InsertQuery.Default[RecordsByCountry, Record] = {
     insert
       .value(_.countryCode, countryCode)
       .value(_.id, record.id)
