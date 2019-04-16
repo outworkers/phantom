@@ -151,7 +151,7 @@ object Primitives {
           val coll = cbf()
           coll.sizeHint(size)
 
-          for (i <- 0 until size) {
+          for (_ <- 0 until size) {
             val databb = CodecUtils.readValue(input, version)
             coll += ev.deserialize(databb, version)
           }
