@@ -47,6 +47,7 @@ class TestDatabase(
   object secondaryCounterTable extends SecondaryCounterTable with Connector
   object brokenCounterCounterTable extends BrokenCounterTableTest with Connector
 
+  object collectionNpeTable extends PrimitiveColumnRecipes with Connector
   object indexedCollectionsTable extends IndexedCollectionsTable with Connector
   object indexedEntriesTable extends IndexedEntriesTable with Connector
   object jsonTable extends JsonTable with Connector
