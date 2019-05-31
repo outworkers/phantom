@@ -137,36 +137,6 @@ case class UpdateQuery[
     copy(setPart = setPart append QueryBuilder.ttl(seconds.toString))
   }
 
-  final def ttl(
-    mark: PrepareMark
-  ): UpdateQuery[Table, Record, Limit, Order, Status, Chain, PS, Int :: HNil]  = {
-    copy(usingPart = usingPart append QueryBuilder.ttl(mark.qb.queryString))
-  }
-
-  def prepareAsync[
-    P[_],
-    F[_],
-    RevWhere <: HList,
-    TTLAdded <: HList
-  ]()(
-    implicit session: Session,
-    executor: ExecutionContextExecutor,
-    keySpace: KeySpace,
-    ev: PS =:!= HNil,
-    rev: Reverse.Aux[PS, RevWhere],
-    prependTTL: Prepend.Aux[TTL, RevWhere, TTLAdded],
-    fMonad: FutureMonad[F],
-    adapter: GuavaAdapter[F],
-    interface: PromiseInterface[P, F]
-  ): F[PreparedBlock[TTLAdded]] = {
-    val flatten = new PreparedFlattener(qb)
-
-    flatten.async map { ps =>
-      new PreparedBlock[TTLAdded](ps, flatten.protocolVersion, options)
-    }
-  }
-
-
   def withOptions(opts: QueryOptions => QueryOptions): UpdateQuery[Table, Record, Limit, Order, Status, Chain, PS, TTL] = {
     copy(options = opts(this.options))
   }
