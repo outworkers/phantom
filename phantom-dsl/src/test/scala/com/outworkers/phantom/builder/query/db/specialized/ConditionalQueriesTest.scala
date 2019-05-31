@@ -33,9 +33,9 @@ class ConditionalQueriesTest extends PhantomSuite {
     val updated = genOpt[String]
 
     val chain = for {
-      insert <- database.recipes.store(recipe).future()
+      _ <- database.recipes.store(recipe).future()
       select1 <- database.recipes.select.where(_.url eqs recipe.url).one()
-      update <- database.recipes.update.where(_.url eqs recipe.url)
+      _ <- database.recipes.update.where(_.url eqs recipe.url)
         .modify(_.description setTo updated)
         .onlyIf(_.description is recipe.description).future()
       select2 <- database.recipes.select.where(_.url eqs recipe.url).one()
@@ -62,9 +62,9 @@ class ConditionalQueriesTest extends PhantomSuite {
     val updated = genOpt[String]
 
     val chain = for {
-      insert <- database.recipes.store(recipe).future()
+      _ <- database.recipes.store(recipe).future()
       select1 <- database.recipes.select.where(_.url eqs recipe.url).one()
-      update <- database.recipes.update.where(_.url eqs recipe.url)
+      _ <- database.recipes.update.where(_.url eqs recipe.url)
         .modify(_.description setTo updated)
         .onlyIf(_.ingredients is recipe.ingredients).future()
       select2 <- database.recipes.select.where(_.url eqs recipe.url).one()
@@ -91,9 +91,9 @@ class ConditionalQueriesTest extends PhantomSuite {
     val updated = genOpt[String]
 
     val chain = for {
-      insert <- database.recipes.store(recipe).future()
+      _ <- database.recipes.store(recipe).future()
       select1 <- database.recipes.select.where(_.url eqs recipe.url).one()
-      update <- database.recipes.update.where(_.url eqs recipe.url)
+      _ <- database.recipes.update.where(_.url eqs recipe.url)
         .modify(_.description setTo updated)
         .onlyIf(_.ingredients is invalidMatch).future()
       select2 <- database.recipes.select.where(_.url eqs recipe.url).one()
@@ -120,9 +120,9 @@ class ConditionalQueriesTest extends PhantomSuite {
     val updated = genOpt[String]
 
     val chain = for {
-      insert <- database.recipes.store(recipe).future()
+      _ <- database.recipes.store(recipe).future()
       select1 <- database.recipes.select.where(_.url eqs recipe.url).one()
-      update <- database.recipes.update.where(_.url eqs recipe.url)
+      _ <- database.recipes.update.where(_.url eqs recipe.url)
         .modify(_.description setTo updated)
         .onlyIf(_.description is updated).future()
       select2 <- database.recipes.select.where(_.url eqs recipe.url).one()
@@ -150,9 +150,9 @@ class ConditionalQueriesTest extends PhantomSuite {
     val updated = genOpt[String]
 
     val chain = for {
-      insert <- database.recipes.store(recipe).future()
+      _ <- database.recipes.store(recipe).future()
       select1 <- database.recipes.select.where(_.url eqs recipe.url).one()
-      update <- database.recipes.update.where(_.url eqs recipe.url)
+      _ <- database.recipes.update.where(_.url eqs recipe.url)
         .modify(_.description setTo updated)
         .onlyIf(_.description is recipe.description)
         .and(_.uid is recipe.uid).future()
@@ -182,9 +182,9 @@ class ConditionalQueriesTest extends PhantomSuite {
     val updated = genOpt[String]
 
     val chain = for {
-      insert <- database.recipes.store(recipe).future()
+      _ <- database.recipes.store(recipe).future()
       select1 <- database.recipes.select.where(_.url eqs recipe.url).one()
-      update <- database.recipes.update.where(_.url eqs recipe.url)
+      _ <- database.recipes.update.where(_.url eqs recipe.url)
         .modify(_.description setTo updated)
         .onlyIf(_.description is recipe.description)
         .and(_.lastcheckedat is recipe.lastCheckedAt)
@@ -213,9 +213,9 @@ class ConditionalQueriesTest extends PhantomSuite {
     val updated = genOpt[String]
 
     val chain = for {
-      insert <- database.recipes.store(recipe).future()
+      _ <- database.recipes.store(recipe).future()
       select1 <- database.recipes.select.where(_.url eqs recipe.url).one()
-      update <- database.recipes.update.where(_.url eqs recipe.url)
+      _ <- database.recipes.update.where(_.url eqs recipe.url)
         .modify(_.description setTo updated)
         .onlyIf(_.props is recipe.props)
         .and(_.ingredients is recipe.ingredients)
@@ -244,9 +244,9 @@ class ConditionalQueriesTest extends PhantomSuite {
     val updated = genOpt[String]
 
     val chain = for {
-      insert <- database.recipes.store(recipe).future()
+      _ <- database.recipes.store(recipe).future()
       select1 <- database.recipes.select.where(_.url eqs recipe.url).one()
-      update <- database.recipes.update.where(_.url eqs recipe.url)
+      _ <- database.recipes.update.where(_.url eqs recipe.url)
         .modify(_.description setTo updated)
         .onlyIf(_.props is recipe.props)
         .and(_.uid is recipe.uid)

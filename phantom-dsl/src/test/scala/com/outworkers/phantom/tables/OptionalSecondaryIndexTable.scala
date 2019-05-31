@@ -38,6 +38,6 @@ abstract class OptionalSecondaryIndexTable extends Table[
   }
 
   def findByOptionalSecondary(sec: Int): Future[Option[OptionalSecondaryRecord]] = {
-    select.where(_.secondary eqs sec).one()
+    select.where(_.secondary eqs Some(sec)).one()
   }
 }

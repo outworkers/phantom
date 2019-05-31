@@ -19,16 +19,20 @@ import com.outworkers.phantom.dsl._
 
 import scala.concurrent.Future
 
-final case class Token(email: String, token: UUID, counter: Int)
+final case class TokenRecord(
+  email: String,
+  token: UUID,
+  counter: Int
+)
 
-abstract class TokensTable extends Table[TokensTable, Token] {
+abstract class TokensTable extends Table[TokensTable, TokenRecord] {
   object email extends StringColumn
   object token extends UUIDColumn with PartitionKey {
     override val name = "tokenuid"
   }
   object counter extends IntColumn
 
-  def save(t: Token): Future[ResultSet] = {
+  def save(t: TokenRecord): Future[ResultSet] = {
     insert
       .value(_.email, t.email)
       .value(_.token, t.token)
@@ -36,15 +40,15 @@ abstract class TokensTable extends Table[TokensTable, Token] {
       .future()
   }
 
-  def get(id: UUID): Future[Option[Token]] = {
+  def getById(id: UUID): Future[Option[TokenRecord]] = {
     select.where( _.token eqs id).one()
   }
 
-  def delete(id: UUID) : Future[ResultSet] = {
-    delete.where( _.token eqs id).future()
+  def deleteById(id: UUID) : Future[ResultSet] = {
+    this.delete.where( _.token eqs id).future()
   }
 
-  def expired(counter: Int): Future[List[Token]] = {
+  def expired(counter: Int): Future[List[TokenRecord]] = {
 
     /* PHANTOM NOT IMPLEMENTED FEATURE:
      * With "allow filtering" Cassandra allows to query
