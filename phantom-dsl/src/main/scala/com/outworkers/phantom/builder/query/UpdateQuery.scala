@@ -39,8 +39,7 @@ case class UpdateQuery[
   Order <: OrderBound,
   Status <: ConsistencyBound,
   Chain <: WhereBound,
-  PS <: HList,
-  TTL <: HList
+  PS <: HList
 ](table: Table,
   init: CQLQuery,
   tokens: List[TokenizerKey],
@@ -66,7 +65,7 @@ case class UpdateQuery[
   ](condition: Table => QueryCondition[HL])(implicit
     ev: Chain =:= Unchainned,
     prepend: Prepend.Aux[HL, PS, Out]
-  ): UpdateQuery[Table, Record, Limit, Order, Status, Chainned, Out, TTL] = {
+  ): UpdateQuery[Table, Record, Limit, Order, Status, Chainned, Out] = {
     copy(
       wherePart = wherePart append QueryBuilder.Update.where(condition(table).qb),
       tokens = tokens ::: condition(table).tokens
@@ -86,7 +85,7 @@ case class UpdateQuery[
   ](condition: Table => QueryCondition[HL])(implicit
     ev: Chain =:= Chainned,
     prepend: Prepend.Aux[HL, PS, Out]
-  ): UpdateQuery[Table, Record, Limit, Order, Status, Chainned, Out, TTL] = {
+  ): UpdateQuery[Table, Record, Limit, Order, Status, Chainned, Out] = {
     copy(
       wherePart = wherePart append QueryBuilder.Update.and(condition(table).qb),
       tokens = tokens ::: condition(table).tokens
@@ -98,7 +97,7 @@ case class UpdateQuery[
     Out <: HList
   ](clause: Table => UpdateClause.Condition[HL])(
     implicit prepend: Prepend.Aux[HL, HNil, Out]
-  ): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, Out, TTL] = {
+  ): AssignmentsQuery[Table, Record, Limit, Order, Status, Chain, PS, Out, HNil] = {
     AssignmentsQuery(
       table = table,
       init = init,
@@ -133,18 +132,18 @@ case class UpdateQuery[
     )
   }
 
-  def ttl(seconds: Long): UpdateQuery[Table, Record, Limit, Order, Status, Chain, PS, TTL] = {
+  def ttl(seconds: Long): UpdateQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
     copy(setPart = setPart append QueryBuilder.ttl(seconds.toString))
   }
 
-  def withOptions(opts: QueryOptions => QueryOptions): UpdateQuery[Table, Record, Limit, Order, Status, Chain, PS, TTL] = {
+  def withOptions(opts: QueryOptions => QueryOptions): UpdateQuery[Table, Record, Limit, Order, Status, Chain, PS] = {
     copy(options = opts(this.options))
   }
 
   def consistencyLevel_=(level: ConsistencyLevel)(
     implicit ev: Status =:= Unspecified,
     session: Session
-  ): UpdateQuery[Table, Record, Limit, Order, Specified, Chain, PS, TTL] = {
+  ): UpdateQuery[Table, Record, Limit, Order, Specified, Chain, PS] = {
     if (session.protocolConsistency) {
       copy(options = options.consistencyLevel_=(level))
     } else {
@@ -413,10 +412,10 @@ sealed case class ConditionalQuery[
 
 object UpdateQuery {
 
-  type Default[T <: CassandraTable[T, _], R] = UpdateQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, HNil, HNil]
+  type Default[T <: CassandraTable[T, _], R] = UpdateQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, HNil]
 
   def apply[T <: CassandraTable[T, _], R](table: T)(implicit keySpace: KeySpace): UpdateQuery.Default[T, R] = {
-    new UpdateQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, HNil, HNil](
+    new UpdateQuery[T, R, Unlimited, Unordered, Unspecified, Unchainned, HNil](
       table = table,
       init = QueryBuilder.Update.update(
         QueryBuilder.keyspace(keySpace.name, table.tableName).queryString

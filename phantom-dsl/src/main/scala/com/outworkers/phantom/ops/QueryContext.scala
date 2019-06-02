@@ -115,9 +115,8 @@ abstract class QueryContext[P[_], F[_], Timeout](
     O <: OrderBound,
     S <: ConsistencyBound,
     Chain <: WhereBound,
-    PS <: HList,
-    TTL <: HList
-  ](query: UpdateQuery[T, R, L, O, S, Chain, PS, TTL]): UpdateIncompleteQueryOps[P, F] = {
+    PS <: HList
+  ](query: UpdateQuery[T, R, L, O, S, Chain, PS]): UpdateIncompleteQueryOps[P, F] = {
     new UpdateIncompleteQueryOps(query.executableQuery, query.setPart)
   }
 
