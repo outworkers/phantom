@@ -375,7 +375,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
     * @return A new table name adjusted according to the [[NamingStrategy]].
     */
   def adjustedTableName(table: String): Tree = {
-    val strategy = c.inferImplicitValue(typeOf[NamingStrategy], silent = true)
+    val strategy = c.inferImplicitValue(typeOf[NamingStrategy], silent = true, withMacrosDisabled = true)
 
     if (strategy.isEmpty) {
       info("No NamingStrategy found in implicit scope.")

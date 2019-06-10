@@ -75,8 +75,14 @@ abstract class Primitive[RR] {
     index: Int,
     row: Row
   )(fn: Row => T): Try[T] = {
-    if (Option(row).isEmpty || row.isNull(index)) {
-      Failure(new Exception(s"Column $index is null") with NoStackTrace)
+    if (row == Primitive.nullValue) {
+      Failure(new Exception(s"Row for column $index is null") with NoStackTrace)
+    } else if (row.isNull(index)) {
+      if (row.getColumnDefinitions.getType(index).isCollection) {
+        Try(fn(row))
+      } else {
+        Failure(new Exception(s"Column $index is null") with NoStackTrace)
+      }
     } else {
       Try(fn(row))
     }
@@ -86,8 +92,15 @@ abstract class Primitive[RR] {
     column: String,
     row: Row
   )(fn: Row => T): Try[T] = {
-    if (Option(row).isEmpty || row.isNull(column)) {
-      Failure(new Exception(s"Column $column is null") with NoStackTrace)
+
+    if (row == Primitive.nullValue) {
+      Failure(new Exception(s"Row for column $column is null") with NoStackTrace)
+    } else if (row.isNull(column)) {
+      if (row.getColumnDefinitions.getType(column).isCollection) {
+        Try(fn(row))
+      } else {
+        Failure(new Exception(s"Column $column is null") with NoStackTrace)
+      }
     } else {
       Try(fn(row))
     }

@@ -165,6 +165,13 @@ class PrimitivesTest extends FlatSpec with Matchers with GeneratorDrivenProperty
     test.asCql(EnumTest.one) shouldEqual CQLQuery.escape("one")
   }
 
+  it should "read a bytebuffer with a single size element as an empty collection" in {
+    val ev = Primitive[List[String]]
+    val bb = ev.serialize(List.empty[String], ProtocolVersion.V4)
+    val decoded = ev.deserialize(bb, ProtocolVersion.V4)
+    decoded shouldEqual List.empty[String]
+  }
+
   it should "derive a primitive for a custom wrapper type" in {
     val str = gen[String]
 

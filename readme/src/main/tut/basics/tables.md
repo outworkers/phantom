@@ -88,7 +88,7 @@ All available imports will have two flavours. It's important to note they only w
 when imported in the scope where tables are defined. That's where the macro will evaluate
 the call site for implicits.
 
-```tut:silent
+```scala
 import com.outworkers.phantom.NamingStrategy.CamelCase.caseSensitive
 import com.outworkers.phantom.NamingStrategy.CamelCase.caseInsensitive
 
@@ -103,7 +103,7 @@ import com.outworkers.phantom.NamingStrategy.Default.caseInsensitive
 ====================================================
 <a href="#table-of-contents">back to top</a>
 
-```tut:silent
+```scala
 
 import java.util.UUID
 import com.outworkers.phantom.dsl._
@@ -227,19 +227,20 @@ This is the most standard use case, where your table has the exact same number o
  record and there is a perfect mapping(bijection) between your table and your record. In this case,
  the generated `store` method will simply take a single argument of type `Record`, as illustrated below.
 
-```scala
+```tut:silent
 
 import com.outworkers.phantom.dsl._
 import scala.concurrent.duration._
+import com.outworkers.phantom.builder.query.InsertQuery
 
-case class Record(
+case class MyRecord(
   id: java.util.UUID,
   name: String,
   firstName: String,
   email: String
 )
 
-abstract class MyTable extends Table[MyTable, Record] {
+abstract class MyTable extends Table[MyTable, MyRecord] {
 
   object id extends UUIDColumn with PartitionKey
   object name extends StringColumn
@@ -247,10 +248,10 @@ abstract class MyTable extends Table[MyTable, Record] {
   object email extends StringColumn
 
   // Phantom now auto-generates the below method
-  def store(record: Record): InsertQuery.Default[MyTable, Record] = {
+  def store(record: MyRecord): InsertQuery.Default[MyTable, MyRecord] = {
     insert.value(_.id, record.id)
       .value(_.name, record.name)
-      .value(_firstName, record.firstName)
+      .value(_.firstName, record.firstName)
       .value(_.email, record.email)
   }
 
@@ -296,15 +297,16 @@ by the `Record` type.
 import java.util.UUID
 import com.outworkers.phantom.dsl._
 import scala.concurrent.duration._
+import com.outworkers.phantom.builder.query.InsertQuery
 
-case class Record(
+case class CountryRecord(
   id: java.util.UUID,
   name: String,
   firstName: String,
   email: String
 )
 
-abstract class RecordsByCountry extends Table[RecordsByCountry, Record] {
+abstract class RecordsByCountry extends Table[RecordsByCountry, CountryRecord] {
   object countryCode extends StringColumn with PartitionKey
   object id extends UUIDColumn with PrimaryKey
   object name extends StringColumn
@@ -312,7 +314,10 @@ abstract class RecordsByCountry extends Table[RecordsByCountry, Record] {
   object email extends StringColumn
 
   // Phantom now auto-generates the below method
-  def store(countryCode: String, record: Record): InsertQuery.Default[RecordsByCountry, Record] = {
+  def storeExample(
+    countryCode: String,
+    record: CountryRecord
+  ): InsertQuery.Default[RecordsByCountry, CountryRecord] = {
     insert
       .value(_.countryCode, countryCode)
       .value(_.id, record.id)
@@ -360,7 +365,12 @@ abstract class RecordsByCountryAndRegion extends Table[RecordsByCountryAndRegion
   object email extends StringColumn
 
   // Phantom now auto-generates the below method
-  def store(countryCode: String, region: String, record: Record): InsertQuery.Default[RecordsByCountryAndRegion, Record] = {
+  def storeExample(
+    countryCode: String,
+    region: String,
+    record: Record
+): InsertQuery.Default[RecordsByCountryAndRegion, Record] = {
+    
     insert
       .value(_.countryCode, countryCode)
       .value(_.region, region)
