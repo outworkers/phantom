@@ -24,7 +24,9 @@ private[phantom] trait Unmodifiable
 private[phantom] trait Indexed
 
 object Indexed {
-  implicit def indexedToQueryColumn[T : Primitive](col: AbstractColumn[T] with Indexed): QueryColumn[T] = {
+  implicit def indexedToQueryColumn[T : Primitive](
+    col: AbstractColumn[T] with Indexed
+  ): QueryColumn[T] = {
     new QueryColumn(col.name)
   }
 
