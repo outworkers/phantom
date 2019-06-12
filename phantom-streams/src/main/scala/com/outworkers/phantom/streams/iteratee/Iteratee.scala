@@ -48,8 +48,8 @@ object Iteratee {
    * @tparam E The type of the Record, dictated by the Cassandra table.
    * @return A new iteratee, where the result of the operation is a long with the count.
    */
-  def count[E](f: E => Long)(implicit ec: ExecutionContext): PlayIteratee[E, Long] = {
-    PlayIteratee.fold(0L)((acc, _) => acc + 1)
+  def count[E](f: E => Long = _ => 1L)(implicit ec: ExecutionContext): PlayIteratee[E, Long] = {
+    PlayIteratee.fold(0L)((acc, e) => acc + f(e))
   }
 
   /**
