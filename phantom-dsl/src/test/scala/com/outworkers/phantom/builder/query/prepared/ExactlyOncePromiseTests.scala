@@ -32,9 +32,9 @@ class ExactlyOncePromiseTests extends FlatSpec with Matchers with ScalaFutures {
     val promise = new ExactlyOncePromise(Future(atomic.incrementAndGet()))
 
     val chain = for {
-      one <- promise.future
-      two <- promise.future
-      three <- promise.future
+      _ <- promise.future
+      _ <- promise.future
+      _ <- promise.future
       four <- promise.future
     } yield four
 

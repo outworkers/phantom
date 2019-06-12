@@ -38,7 +38,7 @@ class IndexedCollectionsTest extends PhantomSuite {
     val record = gen[TestRow]
 
     val chain = for {
-      store <- database.indexedCollectionsTable.store(record).future()
+      _ <- database.indexedCollectionsTable.store(record).future()
       one <- database.indexedCollectionsTable.select
         .where(_.setText contains record.setText.headOption.value)
         .fetch()
@@ -64,7 +64,7 @@ class IndexedCollectionsTest extends PhantomSuite {
       .prepareAsync()
 
     val chain = for {
-      store <- database.indexedCollectionsTable.store(record).future()
+      _ <- database.indexedCollectionsTable.store(record).future()
       prep <- query
       list <- prep.bind(record.setText.headOption.value).fetch()
     } yield list
@@ -86,7 +86,7 @@ class IndexedCollectionsTest extends PhantomSuite {
     val record = gen[TestRow]
 
     val chain = for {
-      store <- database.indexedCollectionsTable.store(record).future()
+      _ <- database.indexedCollectionsTable.store(record).future()
       one <- database.indexedCollectionsTable.select
         .where(_.mapTextToText contains record.mapTextToText.values.headOption.value)
         .fetch()
@@ -112,7 +112,7 @@ class IndexedCollectionsTest extends PhantomSuite {
       .prepareAsync()
 
     val chain = for {
-      store <- database.indexedCollectionsTable.store(record).future()
+      _ <- database.indexedCollectionsTable.store(record).future()
       results <- query.flatMap(_.bind(record.mapTextToText.values.headOption.value).fetch())
     } yield results
 
@@ -130,7 +130,7 @@ class IndexedCollectionsTest extends PhantomSuite {
     val record = gen[TestRow]
 
     val chain = for {
-      store <- database.indexedCollectionsTable.store(record).future()
+      _ <- database.indexedCollectionsTable.store(record).future()
       get <- database.indexedCollectionsTable
         .select
         .where(_.mapIntToText containsKey record.mapIntToText.keys.headOption.value)
@@ -153,7 +153,7 @@ class IndexedCollectionsTest extends PhantomSuite {
     val record = gen[TestRow]
 
     val chain = for {
-      store <- database.indexedCollectionsTable.store(record).future()
+      _ <- database.indexedCollectionsTable.store(record).future()
       get <- database.indexedCollectionsTable
         .select
         .where(_.mapIntToText containsKey ?)
@@ -177,7 +177,7 @@ class IndexedCollectionsTest extends PhantomSuite {
     val record = gen[TestRow].copy(mapIntToInt = Map(5 -> 10, 10 -> 15, 20 -> 25))
 
     val chain = for {
-      store <- database.indexedEntriesTable.store(record).future()
+      _ <- database.indexedEntriesTable.store(record).future()
       result <- database.indexedEntriesTable.select.where(_.mapIntToInt(20) eqs 25).fetch()
     } yield result
 
@@ -199,7 +199,7 @@ class IndexedCollectionsTest extends PhantomSuite {
     val query = database.indexedEntriesTable.select.where(_.mapIntToInt(20) eqs ?).prepareAsync()
 
     val chain = for {
-      store <- database.indexedEntriesTable.store(record).future()
+      _ <- database.indexedEntriesTable.store(record).future()
       result <- query.flatMap(_.bind(25).fetch())
     } yield result
 

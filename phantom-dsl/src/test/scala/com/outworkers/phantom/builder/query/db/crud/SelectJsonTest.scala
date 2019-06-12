@@ -34,7 +34,7 @@ class SelectJsonTest extends PhantomSuite {
     val row = gen[PrimitiveRecord]
 
     val chain = for {
-      store <- database.primitives.store(row).future()
+      _ <- database.primitives.store(row).future()
       b <- database.primitives.select.json().where(_.pkey eqs row.pkey).one
     } yield b
 
@@ -56,7 +56,7 @@ class SelectJsonTest extends PhantomSuite {
     val expected = row.take(Nat._8)
 
     val chain = for {
-      store <- database.primitives.store(row).future()
+      _ <- database.primitives.store(row).future()
       one <- database.primitives.select(_.pkey, _.long, _.boolean, _.bDecimal, _.double, _.float, _.inet, _.int)
         .json()
         .where(_.pkey eqs row.pkey).one()

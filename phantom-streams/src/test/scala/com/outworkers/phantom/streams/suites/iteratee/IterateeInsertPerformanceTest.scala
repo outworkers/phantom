@@ -50,8 +50,8 @@ class IterateeInsertPerformanceTest extends BigTest with Matchers {
     val counter: AtomicLong = new AtomicLong(0)
 
     val chain = for {
-      res <- TestDatabase.primitivesJoda.select.fetchEnumerator run Iteratee.forEach { r => counter.incrementAndGet() }
-      seq <- Future.sequence(fs)
+      _ <- TestDatabase.primitivesJoda.select.fetchEnumerator run Iteratee.forEach { _ => val _ = counter.incrementAndGet() }
+      _ <- Future.sequence(fs)
       count <- TestDatabase.primitivesJoda.select.count.one()
     } yield count
 

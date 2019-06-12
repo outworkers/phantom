@@ -31,7 +31,7 @@ class JsonPreparedInserts extends PhantomSuite {
     val sample = gen[NestedJsonRecord]
 
     val chain = for {
-      insert <- database.jsonPreparedTable.insertItem(sample)
+      _ <- database.jsonPreparedTable.insertItem(sample)
       one <- database.jsonPreparedTable.findById(sample.id)
     } yield one
 
@@ -45,7 +45,7 @@ class JsonPreparedInserts extends PhantomSuite {
     val sample = gen[NestedJsonRecord]
 
     val chain = for {
-      insert <- database.jsonPreparedTable.storeRecord(sample)
+      _ <- database.jsonPreparedTable.storeRecord(sample)
       one <- database.jsonPreparedTable.findById(sample.id)
     } yield one
 

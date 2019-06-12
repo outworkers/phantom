@@ -182,7 +182,7 @@ class PreparedUpdateQueryTest extends PhantomSuite {
       res <- db.verizonSchema.select.where(_.uid eqs sample.uid).one()
     } yield (updated, res)
 
-    whenReady(chain) { case (updated, res) =>
+    whenReady(chain) { case (_, res) =>
       res shouldBe defined
       res.value.isDeleted shouldBe false
     }

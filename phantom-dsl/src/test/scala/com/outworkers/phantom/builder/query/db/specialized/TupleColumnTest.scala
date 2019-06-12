@@ -36,7 +36,7 @@ class TupleColumnTest extends PhantomSuite {
     val insert = database.tuple2Table.store(sample)
 
     val chain = for {
-      store <- insert.future()
+      _ <- insert.future()
       rec <- database.tuple2Table.findById(sample.id)
     } yield rec
 
@@ -53,9 +53,9 @@ class TupleColumnTest extends PhantomSuite {
     val insert = database.tuple2Table.store(sample)
 
     val chain = for {
-      store <- insert.future()
+      _ <- insert.future()
       rec <- database.tuple2Table.findById(sample.id)
-      update <- database.tuple2Table.update.where(_.id eqs sample.id).modify(_.tp setTo sample2.tp).future()
+      _ <- database.tuple2Table.update.where(_.id eqs sample.id).modify(_.tp setTo sample2.tp).future()
       rec2 <- database.tuple2Table.findById(sample.id)
     } yield (rec, rec2)
 
@@ -74,7 +74,7 @@ class TupleColumnTest extends PhantomSuite {
     val insert = database.nestedTupleTable.store(sample)
 
     val chain = for {
-      store <- insert.future()
+      _ <- insert.future()
       rec <- database.nestedTupleTable.findById(sample.id)
     } yield rec
 
@@ -91,9 +91,9 @@ class TupleColumnTest extends PhantomSuite {
     val insert = database.nestedTupleTable.store(sample)
 
     val chain = for {
-      store <- insert.future()
+      _ <- insert.future()
       rec <- database.nestedTupleTable.findById(sample.id)
-      update <- database.nestedTupleTable.update
+      _ <- database.nestedTupleTable.update
         .where(_.id eqs sample.id)
         .modify(_.tp setTo sample2.tp)
         .future()
@@ -116,7 +116,7 @@ class TupleColumnTest extends PhantomSuite {
     val insert = database.tupleCollectionsTable.store(sample)
 
     val chain = for {
-      store <- insert.future()
+      _ <- insert.future()
       rec <- database.tupleCollectionsTable.findById(sample.id)
     } yield rec
 
@@ -133,9 +133,9 @@ class TupleColumnTest extends PhantomSuite {
     val appended = gen[Int] -> gen[String]
 
     val chain = for {
-      store <- database.tupleCollectionsTable.store(sample).future()
+      _ <- database.tupleCollectionsTable.store(sample).future()
       rec <- database.tupleCollectionsTable.findById(sample.id)
-      update <- database.tupleCollectionsTable.update
+      _ <- database.tupleCollectionsTable.update
         .where(_.id eqs sample.id)
         .modify(_.tuples append appended)
         .future()
@@ -156,7 +156,7 @@ class TupleColumnTest extends PhantomSuite {
     val sample = gen[TuplePartitionRecord]
 
     val chain = for {
-      store <- database.tuplePartitionKeyTable.store(sample).future
+      _ <- database.tuplePartitionKeyTable.store(sample).future
       rec <- database.tuplePartitionKeyTable.select.where(_.id eqs sample.id).one()
     } yield rec
 
@@ -171,9 +171,9 @@ class TupleColumnTest extends PhantomSuite {
     val newUuid = gen[UUID]
 
     val chain = for {
-      store <- database.tuplePartitionKeyTable.store(sample).future
+      _ <- database.tuplePartitionKeyTable.store(sample).future
       rec <- database.tuplePartitionKeyTable.select.where(_.id eqs sample.id).one()
-      updateRec <- database.tuplePartitionKeyTable.update
+      _ <- database.tuplePartitionKeyTable.update
         .where(_.id eqs sample.id)
           .modify(_.rec setTo newUuid)
           .future()

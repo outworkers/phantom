@@ -132,8 +132,8 @@ class SecondaryIndexTest extends PhantomSuite {
     val sample = gen[SecondaryIndexRecord]
 
     val chain = for {
-      create <- database.quotedSecondaryIndexTable.create.ifNotExists().future()
-      insert <- database.quotedSecondaryIndexTable.storeRecord(sample)
+      _ <- database.quotedSecondaryIndexTable.create.ifNotExists().future()
+      _ <- database.quotedSecondaryIndexTable.storeRecord(sample)
       query <- database.quotedSecondaryIndexTable.select.where(_.secondary eqs sample.secondary).one()
     } yield query
 
