@@ -52,7 +52,7 @@ class OptionalIndexesTest extends PhantomSuite {
     val chain = for {
       _ <- database.optionalIndexesTable.store(sample).future()
       select <- database.optionalIndexesTable.findByOptionalSecondary(sample.secondary.value)
-      _ <- database.optionalIndexesTable.delete.where(_.secondary eqs sample.secondary).future()
+      _ <- database.optionalIndexesTable.delete.where(_.secondary eqs sample.secondary.value).future()
       select2 <- database.optionalIndexesTable.findByOptionalSecondary(sample.secondary.value)
     } yield (select, select2)
 

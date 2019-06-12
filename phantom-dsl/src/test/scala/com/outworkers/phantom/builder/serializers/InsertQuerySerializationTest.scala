@@ -111,6 +111,8 @@ class InsertQuerySerializationTest extends QueryBuilderTest {
         val sample = gen[Recipe]
         val json = compactJson(renderJValue(Extraction.decompose(sample)))
         val query = TestDatabase.recipes.insert.json(json).queryString
+
+        query shouldEqual query
       }
 
       "should append USING clause after lightweight part " in {
