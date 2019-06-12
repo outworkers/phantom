@@ -32,20 +32,12 @@ abstract class TokensTable extends Table[TokensTable, TokenRecord] {
   }
   object counter extends IntColumn
 
-  def save(t: TokenRecord): Future[ResultSet] = {
-    insert
-      .value(_.email, t.email)
-      .value(_.token, t.token)
-      .value(_.counter, t.counter)
-      .future()
-  }
-
-  def getById(id: UUID): Future[Option[TokenRecord]] = {
+  def findById(id: UUID): Future[Option[TokenRecord]] = {
     select.where( _.token eqs id).one()
   }
 
   def deleteById(id: UUID) : Future[ResultSet] = {
-    this.delete.where( _.token eqs id).future()
+    delete.where( _.token eqs id).future()
   }
 
   def expired(counter: Int): Future[List[TokenRecord]] = {
