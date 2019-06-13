@@ -58,21 +58,27 @@ This is a table of the available modules for the various Scala versions. Not all
 
 #### Phantom Pro subscription edition
 
-Modules marked with "x" are still in beta or pre-publishing mode.
+The below modules are already available and are being used in production by companies as big as the Fortune 20.
 
 | Module name           | Scala 2.10.x        | Scala 2.11.x      | Scala 2.12.x      | Release date   |
 | ------------          | ------------------- | ------------------| ----------------- | -------------- |
 | phantom-dse           | <span>yes</span>    | <span>yes</span>  | <span>yes</span>  | Released       |
 | phantom-udt           | <span>yes</span>    | <span>yes</span>  | <span>yes</span>  | Released       |
-| phantom-autotables    | <span>x</span>      | <span>x</span>    | <span>x</span>    | Released       |
-| phantom-monix         | <span>x</span>      | <span>x</span>    | <span>x</span>    | Released       |
-| phantom-docker        | <span>x</span>      | <span>x</span>    | <span>x</span>    | Released       |
-| phantom-graph         | <span>x</span>      | <span>x</span>    | <span>x</span>    | April 2017     |
-| phantom-spark         | <span>x</span>      | <span>x</span>    | <span>x</span>    | July 2017      |
-| phantom-solr          | <span>x</span>      | <span>x</span>    | <span>x</span>    | July 2017      |
-| phantom-migrations    | <span>x</span>      | <span>x</span>    | <span>x</span>    | September 2017 |
-| phantom-native        | <span>x</span>      | <span>x</span>    | <span>x</span>    | December 2017  |
-| phantom-java-dsl      | <span>x</span>      | <span>x</span>    | <span>x</span>    | December 2017  |
+| phantom-monix         | <span>yes</span>    | <span>yes</span>  | <span>yes</span>  | Released       |
+| phantom-docker        | <span>yes</span>    | <span>yes</span>  | <span>yes</span>  | Released       |
+| phantom-migrations    | <span>yes</span>    | <span>yes</span>  | <span>yes</span>  | Released       |
+
+
+Modules below are in development or in beta-testing. 
+
+| Module name           | Scala 2.10.x        | Scala 2.11.x      | Scala 2.12.x      | Release date   |
+| ------------          | ------------------- | ------------------| ----------------- | -------------- |
+| phantom-graph         | <span>x</span>      | <span>x</span>    | <span>x</span>    | May 2020       |
+| phantom-spark         | <span>x</span>      | <span>x</span>    | <span>x</span>    | May 2020       |
+| phantom-solr          | <span>x</span>      | <span>x</span>    | <span>x</span>    | May 2020       |
+| phantom-native        | <span>x</span>      | <span>x</span>    | <span>x</span>    | May 2020       |
+| phantom-java-dsl      | <span>x</span>      | <span>x</span>    | <span>x</span>    | May 2020       |
+| phantom-autotables    | <span>x</span>      | <span>x</span>    | <span>x</span>    | May 2020       |
 
 Using phantom
 =============
