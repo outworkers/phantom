@@ -51,7 +51,7 @@ class ListOperatorsTest extends PhantomSuite {
 
     whenReady(operation) { items =>
       items.value shouldEqual recipe.ingredients
-      items.value should have size recipe.ingredients.size
+      items.value should have size recipe.ingredients.size.toLong
     }
   }
 

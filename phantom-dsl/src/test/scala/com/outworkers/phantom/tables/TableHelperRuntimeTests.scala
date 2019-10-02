@@ -34,7 +34,7 @@ class TableHelperRuntimeTests extends PhantomSuite {
     val (id, _, _) = sample
 
     val chain = for {
-      store <- database.tableTypeTuple.store(sample).future()
+      _ <- database.tableTypeTuple.store(sample).future()
       find <- database.tableTypeTuple.findById(id)
     } yield find
 
@@ -48,7 +48,7 @@ class TableHelperRuntimeTests extends PhantomSuite {
     val sample = gen[OAuth2Session]
 
     val chain = for {
-      store <- database.sessionsByUser.store(sample).future()
+      _ <- database.sessionsByUser.store(sample).future()
       find <- database.sessionsByUser.select.where(_.user_id eqs sample.user_id).one()
     } yield find
 

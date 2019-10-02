@@ -73,7 +73,7 @@ class PreparedInsertQueryTest extends PhantomSuite {
         .p_value(_.props, ?)
         .p_value(_.uid, ?)
         .prepareAsync()
-      store <- query.bind(sample).future()
+      _ <- query.bind(sample).future()
       get <- database.recipes.select.where(_.url eqs sample.url).one()
     } yield get
 
@@ -134,7 +134,7 @@ class PreparedInsertQueryTest extends PhantomSuite {
       .prepare()
 
     val chain = for {
-      store <- query.bind(sample).future()
+      _ <- query.bind(sample).future()
       get <- database.primitives.select.where(_.pkey eqs sample.pkey).one()
     } yield get
 
@@ -160,7 +160,7 @@ class PreparedInsertQueryTest extends PhantomSuite {
         .prepare()
 
       val chain = for {
-        store <- query.bind(sample).future()
+        _ <- query.bind(sample).future()
         res <- selectQuery.bind(sample.pkey).one()
       } yield res
 
@@ -199,7 +199,7 @@ class PreparedInsertQueryTest extends PhantomSuite {
     )
 
     val chain = for {
-      store <- exec.future()
+      _ <- exec.future()
       res <- database.recipes.select.where(_.url eqs sample.url).one()
     } yield res
 
@@ -225,7 +225,7 @@ class PreparedInsertQueryTest extends PhantomSuite {
       .prepare()
 
     val chain = for {
-      store <- query.bind(sample).future()
+      _ <- query.bind(sample).future()
       res <- database.derivedPrimitivesTable.select.where(_.id eqs sample.id).one()
     } yield res
 
@@ -249,7 +249,7 @@ class PreparedInsertQueryTest extends PhantomSuite {
         .p_value(_.rec, ?)
         .p_value(_.complex, ?)
         .prepareAsync()
-      store <- query.bind(sample).future()
+      _ <- query.bind(sample).future()
       res <- database.derivedPrimitivesTable.select.where(_.id eqs sample.id).one()
     } yield res
 
@@ -278,7 +278,7 @@ class PreparedInsertQueryTest extends PhantomSuite {
       .prepare()
 
     val chain = for {
-      store <- query.bind(sample).future()
+      _ <- query.bind(sample).future()
       res <- database.primitives.select.where(_.pkey eqs sample.pkey).one()
     } yield res
 
@@ -306,7 +306,7 @@ class PreparedInsertQueryTest extends PhantomSuite {
         .p_value(_.bi, ?)
         .p_value(_.ascii, ?)
         .prepareAsync()
-       store <- query.bind(sample).future()
+      _ <- query.bind(sample).future()
       res <- database.primitives.select.where(_.pkey eqs sample.pkey).one()
     } yield res
 

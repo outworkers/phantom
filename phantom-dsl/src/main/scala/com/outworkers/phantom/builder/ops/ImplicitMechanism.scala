@@ -174,6 +174,10 @@ private[phantom] trait ImplicitMechanism extends ModifyMechanism {
     new MapEntriesConditionals[K, V](cond)
   }
 
+  implicit def nonIndexedColumnQueries[RR : Primitive](col: AbstractColumn[RR])(
+    implicit ev: col.type <:!< Indexed
+  ): QueryColumn[RR] = new QueryColumn[RR](col.name)
+
   implicit def partitionColumnQueries[RR : Primitive](
     col: AbstractColumn[RR] with PartitionKey
   ): PartitionQueryColumn[RR] = new PartitionQueryColumn[RR](col.name)
