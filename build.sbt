@@ -115,7 +115,7 @@ lazy val Versions = new {
 
   val scala = new {
     val all = Seq(
-      //scala210,
+      scala210,
       scala211,
       scala212
     )
