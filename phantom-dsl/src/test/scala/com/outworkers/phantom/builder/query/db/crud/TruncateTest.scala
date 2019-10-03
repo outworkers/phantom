@@ -31,10 +31,10 @@ class TruncateTest extends PhantomSuite {
     val articles = genList[Article]()
 
     val result = for {
-      truncateBefore <- database.articles.truncate.future()
-      store <- database.articles.storeRecords(articles)
+      _ <- database.articles.truncate.future()
+      _ <- database.articles.storeRecords(articles)
       records <- database.articles.select.fetch
-      truncate <- database.articles.truncate.future()
+      _ <- database.articles.truncate.future()
       records1 <- database.articles.select.fetch
     } yield (records, records1)
 
@@ -52,10 +52,10 @@ class TruncateTest extends PhantomSuite {
     val articles = genList[Article]()
 
     val result = for {
-      truncateBefore <- database.articles.truncate.future()
-      i1 <- database.articles.storeRecords(articles)
+      _ <- database.articles.truncate.future()
+      _ <- database.articles.storeRecords(articles)
       records <- database.articles.select.fetch
-      truncate <- database.articles.truncate.consistencyLevel_=(ConsistencyLevel.ONE).future()
+      _ <- database.articles.truncate.consistencyLevel_=(ConsistencyLevel.ONE).future()
       records1 <- database.articles.select.fetch
     } yield (records, records1)
 

@@ -35,8 +35,8 @@ class MapOperationsTest extends PhantomSuite {
     val (key , value) = gen[(String, String)]
 
     val operation = for {
-      insertDone <- database.recipes.store(recipe).future()
-      update <- database.recipes.update.where(_.url eqs recipe.url).modify(_.props set (key, value)).future()
+      _ <- database.recipes.store(recipe).future()
+      _ <- database.recipes.update.where(_.url eqs recipe.url).modify(_.props set (key, value)).future()
 
       select <- database.recipes.select(_.props).where(_.url eqs recipe.url).one
     } yield select
@@ -55,8 +55,8 @@ class MapOperationsTest extends PhantomSuite {
     val query = database.recipes.update.where(_.url eqs ?).modify(_.props set ?).prepareAsync()
 
     val operation = for {
-      insertDone <- database.recipes.store(recipe).future()
-      update <- query.flatMap(_.bind(key, value, recipe.url).future())
+      _ <- database.recipes.store(recipe).future()
+      _ <- query.flatMap(_.bind(key, value, recipe.url).future())
       select <- database.recipes.select(_.props).where(_.url eqs recipe.url).one
     } yield select
 
@@ -73,8 +73,8 @@ class MapOperationsTest extends PhantomSuite {
     val item = gen[(String, String)]
 
     val operation = for {
-      insertDone <- database.recipes.store(recipe).future()
-      update <- database.recipes.update.where(_.url eqs recipe.url).modify(_.props put item).future()
+      _ <- database.recipes.store(recipe).future()
+      _ <- database.recipes.update.where(_.url eqs recipe.url).modify(_.props put item).future()
       select <- database.recipes.select(_.props).where(_.url eqs recipe.url).one
     } yield select
 
@@ -89,8 +89,8 @@ class MapOperationsTest extends PhantomSuite {
     val mapItems = genMap[String, String](mapSize)
 
     val operation = for {
-      insertDone <- database.recipes.store(recipe).future()
-      update <- database.recipes.update.where(_.url eqs recipe.url).modify(_.props putAll mapItems).future()
+      _ <- database.recipes.store(recipe).future()
+      _ <- database.recipes.update.where(_.url eqs recipe.url).modify(_.props putAll mapItems).future()
       select <- database.recipes.select(_.props).where(_.url eqs recipe.url).one
     } yield select
 
@@ -107,8 +107,8 @@ class MapOperationsTest extends PhantomSuite {
     val updateQuery = database.recipes.update.where(_.url eqs ?).modify(_.props putAll ?).prepareAsync()
 
     val operation = for {
-      insertDone <- database.recipes.store(recipe).future()
-      update <- updateQuery.flatMap(_.bind(mapItems, recipe.url).future())
+      _ <- database.recipes.store(recipe).future()
+      _ <- updateQuery.flatMap(_.bind(mapItems, recipe.url).future())
       select <- database.recipes.select(_.props).where(_.url eqs recipe.url).one
     } yield select
 
@@ -124,8 +124,8 @@ class MapOperationsTest extends PhantomSuite {
     val postRemove = recipe.props - removals
 
     val operation = for {
-      insertDone <- database.recipes.store(recipe).future()
-      update <- database.recipes.update
+      _ <- database.recipes.store(recipe).future()
+      _ <- database.recipes.update
         .where(_.url eqs recipe.url)
         .modify(_.props - removals)
         .future()
@@ -145,8 +145,8 @@ class MapOperationsTest extends PhantomSuite {
     }
 
     val operation = for {
-      insertDone <- database.recipes.store(recipe).future()
-      update <- database.recipes.update
+      _ <- database.recipes.store(recipe).future()
+      _ <- database.recipes.update
         .where(_.url eqs recipe.url)
         .modify(_.props - removals)
         .future()
@@ -162,13 +162,11 @@ class MapOperationsTest extends PhantomSuite {
     val event = gen[SampleEvent]
 
     val chain = for {
-      store <- database.events.store(event).future()
-      get <- database.events.findById(event.id)
-    } yield get
+      _ <- database.events.store(event).future()
+      res <- database.events.findById(event.id)
+    } yield res
 
-    whenReady(chain) {
-      res => res.value shouldEqual event
-    }
+    whenReady(chain) { res => res.value shouldEqual event }
   }
 
   it should "allow storing maps that use Scala primitives who do not have a TypeCodec" in {
@@ -182,9 +180,9 @@ class MapOperationsTest extends PhantomSuite {
     )
 
     val chain = for {
-      store <- database.scalaPrimitivesTable.store(sample).future()
-      get <- database.scalaPrimitivesTable.findById(sample.id)
-    } yield get
+      _ <- database.scalaPrimitivesTable.store(sample).future()
+      res <- database.scalaPrimitivesTable.findById(sample.id)
+    } yield res
 
     whenReady(chain) { res =>
       res.value shouldEqual sample
@@ -206,14 +204,14 @@ class MapOperationsTest extends PhantomSuite {
     )
 
     val chain = for {
-      store <- database.scalaPrimitivesTable.store(sample).future()
-      get <- database.scalaPrimitivesTable.findById(sample.id)
-      update <- database.scalaPrimitivesTable.update
+      _ <- database.scalaPrimitivesTable.store(sample).future()
+      res <- database.scalaPrimitivesTable.findById(sample.id)
+      _ <- database.scalaPrimitivesTable.update
         .where(_.id eqs sample.id)
         .modify(_.map(updateKey) setTo BigDecimal(updatedValue))
         .future()
-      get2 <- database.scalaPrimitivesTable.findById(sample.id)
-    } yield (get, get2)
+      res2 <- database.scalaPrimitivesTable.findById(sample.id)
+    } yield (res, res2)
 
     whenReady(chain) { case (beforeUpdate, afterUpdate) =>
       beforeUpdate.value shouldEqual sample

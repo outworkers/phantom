@@ -44,7 +44,7 @@ class InsertTest extends PhantomSuite {
     val row = gen[OldPrimitiveRecord].copy(timeuuid = UUIDs.timeBased())
 
     val chain = for {
-      store <- database.oldPrimitives.store(row).future()
+      _ <- database.oldPrimitives.store(row).future()
       one <- database.oldPrimitives.select.where(_.pkey eqs row.pkey).one
     } yield one
 
@@ -57,7 +57,7 @@ class InsertTest extends PhantomSuite {
     val row = gen[PrimitiveRecord]
 
     val chain = for {
-      store <- database.primitives.store(row).future()
+      _ <- database.primitives.store(row).future()
       one <- database.primitives.select.where(_.pkey eqs row.pkey).one
     } yield one
 
@@ -68,11 +68,10 @@ class InsertTest extends PhantomSuite {
 
   if (session.v4orNewer) {
     "Insert" should "work fine for primitives cassandra 2.2 columns" in {
-      JodaTimeSampler
       val row = gen[PrimitiveCassandra22]
 
       val chain = for {
-        store <- database.primitivesCassandra22.store(row).future()
+        _ <- database.primitivesCassandra22.store(row).future()
         one <- database.primitivesCassandra22.select.where(_.pkey eqs row.pkey).one
       } yield one
 
@@ -86,7 +85,7 @@ class InsertTest extends PhantomSuite {
     val row = gen[TestRow].copy(key = "test'", mapIntToInt = Map.empty[Int, Int])
 
     val chain = for {
-      store <- database.testTable.store(row).future()
+      _ <- database.testTable.store(row).future()
       one <- database.testTable.select.where(_.key eqs row.key).one
     } yield one
 
@@ -99,7 +98,7 @@ class InsertTest extends PhantomSuite {
     val row = gen[TestRow].copy(mapIntToInt = Map.empty)
 
     val chain = for {
-      store <- database.testTable.store(row).future()
+      _ <- database.testTable.store(row).future()
       one <- database.testTable.select.where(_.key eqs row.key).one
     } yield one
 
@@ -112,7 +111,7 @@ class InsertTest extends PhantomSuite {
     val recipe = gen[Recipe]
 
     val chain = for {
-      store <- database.recipes.store(recipe).future()
+      _ <- database.recipes.store(recipe).future()
       one <- database.recipes.select.where(_.url eqs recipe.url).one
     } yield one
 
@@ -131,7 +130,7 @@ class InsertTest extends PhantomSuite {
     val row = gen[MyTestRow].copy(stringlist = List.empty)
 
     val chain = for {
-      store <- database.listCollectionTable.store(row).future()
+      _ <- database.listCollectionTable.store(row).future()
       one <- database.listCollectionTable.select.where(_.key eqs row.key).one
     } yield one
 
@@ -145,7 +144,7 @@ class InsertTest extends PhantomSuite {
     val row = gen[MyTestRow]
 
     val chain = for {
-      store <- database.listCollectionTable.store(row).future()
+      _ <- database.listCollectionTable.store(row).future()
       get <- database.listCollectionTable.select.where(_.key eqs row.key).one
     } yield get
 
@@ -158,7 +157,7 @@ class InsertTest extends PhantomSuite {
     val sample = gen[Recipe]
 
     val chain = for {
-      store <- database.recipes.insert.json(compactJson(renderJValue(Extraction.decompose(sample)))).future()
+      _ <- database.recipes.insert.json(compactJson(renderJValue(Extraction.decompose(sample)))).future()
       get <- database.recipes.select.where(_.url eqs sample.url).one()
     } yield get
 
@@ -176,7 +175,7 @@ class InsertTest extends PhantomSuite {
     val sample = gen[OptTypesRecord].copy(wrapped = None)
 
     val chain = for {
-      store <- database.optDerivedTable.store(sample).future()
+      _ <- database.optDerivedTable.store(sample).future()
       res <- database.optDerivedTable.select.where(_.pkey eqs sample.pkey).one()
     } yield res
 
@@ -190,7 +189,7 @@ class InsertTest extends PhantomSuite {
     val sample = gen[OptTypesRecord]
 
     val chain = for {
-      store <- database.optDerivedTable.store(sample).future()
+      _ <- database.optDerivedTable.store(sample).future()
       res <- database.optDerivedTable.select.where(_.pkey eqs sample.pkey).one()
     } yield res
 

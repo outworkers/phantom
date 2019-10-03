@@ -31,7 +31,7 @@ class JsonColumnTest extends PhantomSuite {
     val sample = gen[JsonClass]
 
     val chain = for {
-      done <- database.jsonTable.store(sample).future()
+      _ <- database.jsonTable.store(sample).future()
       select <- database.jsonTable.select.where(_.id eqs sample.id).one
     } yield select
 
@@ -45,9 +45,9 @@ class JsonColumnTest extends PhantomSuite {
     val sample2 = gen[JsonClass]
 
     val chain = for {
-      done <- database.jsonTable.store(sample).future()
+      _ <- database.jsonTable.store(sample).future()
       select <- database.jsonTable.select.where(_.id eqs sample.id).one
-      update <- database.jsonTable.update.where(_.id eqs sample.id).modify(_.json setTo sample2.json).future()
+      _ <- database.jsonTable.update.where(_.id eqs sample.id).modify(_.json setTo sample2.json).future()
       select2 <- database.jsonTable.select.where(_.id eqs sample.id).one()
     } yield (select, select2)
 
@@ -62,7 +62,7 @@ class JsonColumnTest extends PhantomSuite {
     val updated = genOpt[JsonTest]
 
     val chain = for {
-      done <- database.jsonTable.store(sample).future()
+      _ <- database.jsonTable.store(sample).future()
       select <- database.jsonTable.select.where(_.id eqs sample.id).one
       _ <- database.jsonTable.update
         .where(_.id eqs sample.id)
@@ -82,9 +82,9 @@ class JsonColumnTest extends PhantomSuite {
     val sample2 = gen[JsonClass]
 
     val chain = for {
-      done <- database.jsonTable.store(sample).future()
+      _ <- database.jsonTable.store(sample).future()
       select <- database.jsonTable.select.where(_.id eqs sample.id).one
-      update <- database.jsonTable.update.where(_.id eqs sample.id)
+      _ <- database.jsonTable.update.where(_.id eqs sample.id)
         .modify(_.jsonList setIdx (0, sample2.json) ).future()
       select2 <- database.jsonTable.select.where(_.id eqs sample.id).one()
     } yield (select, select2)
@@ -100,9 +100,9 @@ class JsonColumnTest extends PhantomSuite {
     val sample2 = gen[JsonClass]
 
     val chain = for {
-      done <- database.jsonTable.store(sample).future()
+      _ <- database.jsonTable.store(sample).future()
       select <- database.jsonTable.select.where(_.id eqs sample.id).one
-      update <- database.jsonTable.update.where(_.id eqs sample.id).modify(_.jsonSet add sample2.json).future()
+      _ <- database.jsonTable.update.where(_.id eqs sample.id).modify(_.jsonSet add sample2.json).future()
       select2 <- database.jsonTable.select.where(_.id eqs sample.id).one()
     } yield (select, select2)
 

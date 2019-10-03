@@ -31,7 +31,7 @@ class JodaDateTimeColumnTest extends PhantomSuite {
     val row = gen[JodaRow]
 
     val chain = for {
-      store <- database.primitivesJoda.store(row).future()
+      _ <- database.primitivesJoda.store(row).future()
       select <- database.primitivesJoda.select.where(_.pkey eqs row.pkey).one()
     } yield select
 

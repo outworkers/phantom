@@ -19,6 +19,7 @@ import com.outworkers.phantom.PhantomSuite
 import com.outworkers.phantom.builder.query.bugs.UserSchema
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
+import com.outworkers.phantom.tables.bugs.TokenRecord
 import com.outworkers.util.samplers._
 
 class SelectTest extends PhantomSuite {
@@ -27,6 +28,7 @@ class SelectTest extends PhantomSuite {
     super.beforeAll()
     val _ = database.primitives.createSchema()
     database.userSchema.createSchema()
+    database.tokensTable.createSchema()
   }
 
   "Selecting the whole row" should "work fine" in {
@@ -68,6 +70,23 @@ class SelectTest extends PhantomSuite {
 
     whenReady(chain) { res =>
       res.value shouldEqual row.id
+    }
+  }
+
+  it should "allowFiltering on partition key columns with Cassandra 3.10+" in {
+    if (cassandraVersion.value > Version.`3.10.0`) {
+
+      val counter = gen[Int]
+      val rows = genList[TokenRecord]().map(_.copy(counter = counter))
+
+      val chain = for {
+        _ <- database.tokensTable.storeRecords(rows)
+        res <- database.tokensTable.expired(counter)
+      } yield res
+
+      whenReady(chain) { res =>
+        res should contain allElementsOf rows
+      }
     }
   }
 }

@@ -31,7 +31,7 @@ class InOperatorTest extends PhantomSuite {
     val recipe = gen[Recipe]
 
     val chain = for {
-      done <- database.recipes.store(recipe).future()
+      _ <- database.recipes.store(recipe).future()
       select <- database.recipes.select.where(_.url in List(recipe.url, gen[EmailAddress].value)).one()
     } yield select
 
@@ -44,7 +44,7 @@ class InOperatorTest extends PhantomSuite {
     val recipe = gen[Recipe]
 
     val chain = for {
-      done <- database.recipes.store(recipe).future()
+      _ <- database.recipes.store(recipe).future()
       selectIn <- database.recipes.select.where(_.url in ?).prepareAsync()
       bindedIn <- selectIn.bind(ListValue(recipe.url, gen[ShortString].value)).one()
     } yield bindedIn
@@ -58,7 +58,7 @@ class InOperatorTest extends PhantomSuite {
     val recipe = gen[Recipe]
 
     val chain = for {
-      done <- database.recipes.store(recipe).future()
+      _ <- database.recipes.store(recipe).future()
       select <- database.recipes.select.where(_.url in List(gen[EmailAddress].value)).one()
     } yield select
 
