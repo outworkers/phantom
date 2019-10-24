@@ -461,10 +461,9 @@ lazy val phantomExample = (project in file("phantom-example"))
     moduleName := "phantom-example",
     crossScalaVersions := Seq(Versions.scala211, Versions.scala212),
     libraryDependencies ++= Seq(
-      compilerPlugin("org.scalamacros" % "paradise" % Versions.macrosVersion(scalaVersion.value) cross CrossVersion.full),
       "org.json4s"                   %% "json4s-native"                     % Versions.json4s % Test,
       "com.outworkers"               %% "util-samplers"                      % Versions.util % Test
-    ),
+    ) ++ Versions.paradiseVersion(scalaVersion.value),
     coverageExcludedPackages := "com.outworkers.phantom.example.basics.thrift.*"
   ).settings(
     sharedSettings: _*
@@ -483,9 +482,8 @@ lazy val phantomExample = (project in file("phantom-example"))
       libraryDependencies ++= Seq(
         "com.outworkers" %% "util-testing" % Versions.util % Test,
         "org.scalatest" %% "scalatest" % Versions.scalatest % Test,
-        compilerPlugin("org.scalamacros" % "paradise" % Versions.macrosVersion(scalaVersion.value) cross CrossVersion.full),
         "io.monix" %% "monix" % Versions.monix
-      )
+      ) ++ Versions.paradiseVersion(scalaVersion.value)
     ).settings(
     sharedSettings: _*
   ).dependsOn(
