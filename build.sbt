@@ -89,7 +89,7 @@ val scalacOptionsFn: String => Seq[String] = { s =>
 
 lazy val Versions = new {
   val logback = "1.2.3"
-  val util = "0.48.0"
+  val util = "0.51.0"
   val json4s = "3.6.2"
   val datastax = "3.6.0"
   val scalatest = "3.0.5"
@@ -106,18 +106,17 @@ lazy val Versions = new {
   val scalamock = "3.6.0"
   val macrocompat = "1.1.1"
   val macroParadise = "2.1.1"
-  val circe = "0.9.2"
-
-  val scala210 = "2.10.6"
+  val circe = "0.12.3"
   val scala211 = "2.11.12"
   val scala212 = "2.12.8"
+  val scala213 = "2.13.1"
   val monix = "2.3.3"
 
   val scala = new {
     val all = Seq(
-      scala210,
       scala211,
-      scala212
+      scala212,
+      scala213
     )
   }
 
@@ -211,7 +210,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   credentials ++= Publishing.defaultCredentials,
   updateOptions := updateOptions.value.withCachedResolution(true),
   resolvers ++= Seq(
-    "Twitter Repository" at "http://maven.twttr.com",
+    "Twitter Repository" at "https://maven.twttr.com",
     Resolver.typesafeRepo("releases"),
     Resolver.sonatypeRepo("releases"),
     Resolver.jcenterRepo
@@ -269,7 +268,7 @@ lazy val phantom = (project in file("."))
 lazy val readme = (project in file("readme"))
   .settings(sharedSettings ++ Publishing.noPublishSettings)
   .settings(
-    crossScalaVersions := Seq(Versions.scala211, Versions.scala212),
+    crossScalaVersions := Seq(Versions.scala211, Versions.scala212, Versions.scala213),
     tutSourceDirectory := sourceDirectory.value / "main" / "tut",
     tutTargetDirectory := phantom.base / "docs",
     libraryDependencies ++= Seq(

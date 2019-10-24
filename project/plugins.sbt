@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 resolvers ++= Seq(
-  "jgit-repo" at "http://download.eclipse.org/jgit/maven",
-  "Twitter Repo" at "http://maven.twttr.com/",
+  "jgit-repo" at "https://download.eclipse.org/jgit/maven",
+  "Twitter Repo" at "https://maven.twttr.com/",
   Resolver.sonatypeRepo("releases"),
   Resolver.bintrayIvyRepo("sksamuel", "sbt-plugins"),
   Resolver.bintrayIvyRepo("twittercsl-ivy", "sbt-plugins"),
@@ -38,7 +38,7 @@ addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "1.5.1")
 
 addSbtPlugin("org.scoverage" %% "sbt-coveralls" % "1.2.7")
 
-// addSbtPlugin("io.get-coursier" % "sbt-coursier" % "1.1.0-M13-1")
+//addSbtPlugin("io.get-coursier" % "sbt-coursier" % "2.0.0-RC4")
 
 addSbtPlugin("com.jsuereth" % "sbt-pgp" % "1.1.1")
 
@@ -52,7 +52,6 @@ dependencyOverrides += "org.apache.thrift" % "libthrift" % "0.10.0"
 
 addSbtPlugin("org.tpolecat" % "tut-plugin" % "0.6.10")
 
-// addSbtPlugin("com.eed3si9n" % "sbt-doge" % "0.1.5")
 
 libraryDependencies += "org.slf4j" % "slf4j-nop" % "1.7.22"
 

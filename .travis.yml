@@ -2,8 +2,8 @@ language: scala
 sudo: required
 dist: trusty
 scala:
-- 2.10.6
 - 2.11.12
+- 2.13.1
 python: 2.7.13
 cache:
   directories:
