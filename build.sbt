@@ -19,6 +19,8 @@ import sbt.Keys._
 import sbt._
 import sbtrelease.ReleaseStateTransformations._
 
+Global / onChangedBuildSource := IgnoreSourceChanges
+
 lazy val ScalacOptions = Seq(
   "-deprecation", // Emit warning and location for usages of deprecated APIs.
   "-encoding",
@@ -90,27 +92,27 @@ val scalacOptionsFn: String => Seq[String] = { s =>
 lazy val Versions = new {
   val logback = "1.2.3"
   val util = "0.52.0-SNAPSHOT"
-  val json4s = "3.6.2"
+  val json4s = "3.6.7"
   val datastax = "3.6.0"
   val scalatest = "3.0.8"
   val shapeless = "2.3.3"
   val thrift = "0.10.0"
   val finagle = "19.1.0"
-  val scalameter = "0.8.2"
+  val scalameter = "0.19"
   val scalacheck = "1.14.0"
   val slf4j = "1.7.25"
   val reactivestreams = "1.0.2"
   val cassandraUnit = "3.5.0.1"
   val joda = "2.10.1"
   val jodaConvert = "2.1.2"
-  val scalamock = "3.6.0"
+  val scalamock = "4.4.0"
   val macrocompat = "1.1.1"
   val macroParadise = "2.1.1"
   val circe = "0.12.3"
   val scala211 = "2.11.12"
   val scala212 = "2.12.8"
   val scala213 = "2.13.1"
-  val monix = "2.3.3"
+  val monix = "3.1.0-2156c0e"
   val macroCompat = "1.1.1"
 
   val kindProjector = "0.11.0"
@@ -159,13 +161,15 @@ lazy val Versions = new {
 
   val twitterUtil: String => String = {
     s => CrossVersion.partialVersion(s) match {
-      case Some((_, minor)) if minor >= 12 => "19.1.0"
+      case Some((_, minor)) if minor >= 13 => "19.10.0"
+      case Some((_, minor)) if minor == 12 => "19.1.0"
       case _ => "6.34.0"
     }
   }
 
   val akka: String => String = {
     s => CrossVersion.partialVersion(s) match {
+      case Some((_, minor)) if minor >= 12 => "2.5.26"
       case Some((_, minor)) if minor >= 11 && Publishing.isJdk8 => "2.4.14"
       case _ => "2.3.15"
     }
@@ -337,7 +341,7 @@ lazy val phantomDsl = (project in file("phantom-dsl"))
       "org.json4s"                   %% "json4s-native"                     % Versions.json4s % Test,
       "io.circe"                     %% "circe-parser"                      % Versions.circe % Test,
       "io.circe"                     %% "circe-generic"                     % Versions.circe % Test,
-      "org.scalamock"                %% "scalamock-scalatest-support"       % Versions.scalamock % Test,
+      "org.scalamock"                %% "scalamock"                         % Versions.scalamock % Test,
       "org.scalacheck"               %% "scalacheck"                        % Versions.scalacheck % Test,
       "com.outworkers"               %% "util-samplers"                     % Versions.util % Test,
       "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter % Test,
@@ -372,7 +376,7 @@ lazy val phantomConnectors = (project in file("phantom-connectors"))
     crossScalaVersions := Versions.scala.all,
     libraryDependencies ++= Seq(
       "com.datastax.cassandra"       %  "cassandra-driver-core"             % Versions.datastax,
-      "com.outworkers"               %% "util-testing"                      % Versions.util % Test
+      "com.outworkers"               %% "util-samplers"                      % Versions.util % Test
     )
   )
 
@@ -385,7 +389,7 @@ lazy val phantomFinagle = (project in file("phantom-finagle"))
     testFrameworks in Test ++= Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
     libraryDependencies ++= Seq(
       "com.twitter"                  %% "util-core"                         % Versions.twitterUtil(scalaVersion.value),
-      "com.outworkers"               %% "util-testing"                      % Versions.util % Test,
+      "com.outworkers"               %% "util-samplers"                      % Versions.util % Test,
       "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter % Test
     ) ++ Versions.paradiseVersion(scalaVersion.value)
   ).dependsOn(
@@ -403,7 +407,7 @@ lazy val phantomThrift = (project in file("phantom-thrift"))
       "org.apache.thrift"            % "libthrift"                          % Versions.thrift,
       "com.twitter"                  %% "scrooge-core"                      % Versions.scrooge(scalaVersion.value),
       "com.twitter"                  %% "scrooge-serializer"                % Versions.scrooge(scalaVersion.value),
-      "com.outworkers"               %% "util-testing"                      % Versions.util % Test
+      "com.outworkers"               %% "util-samplers"                      % Versions.util % Test
     ) ++ Versions.paradiseVersion(scalaVersion.value),
     coverageExcludedPackages := "com.outworkers.phantom.thrift.models.*"
   ).settings(
@@ -443,7 +447,7 @@ lazy val phantomStreams = (project in file("phantom-streams"))
       "com.typesafe.play"   %% "play-iteratees" % Versions.play(scalaVersion.value) exclude ("com.typesafe", "config"),
       "org.reactivestreams" % "reactive-streams"            % Versions.reactivestreams,
       "com.typesafe.akka"   %% s"akka-actor"                % Versions.akka(scalaVersion.value) exclude ("com.typesafe", "config"),
-      "com.outworkers"      %% "util-testing"               % Versions.util            % Test,
+      "com.outworkers"      %% "util-samplers"               % Versions.util            % Test,
       "org.reactivestreams" % "reactive-streams-tck"        % Versions.reactivestreams % Test,
       "com.storm-enroute"   %% "scalameter"                 % Versions.scalameter      % Test
     ) ++ Versions.paradiseVersion(scalaVersion.value)
@@ -478,7 +482,7 @@ lazy val phantomExample = (project in file("phantom-example"))
       crossScalaVersions := Versions.scala.all,
       moduleName := "phantom-monix",
       libraryDependencies ++= Seq(
-        "com.outworkers" %% "util-testing" % Versions.util % Test,
+        "com.outworkers" %% "util-samplers" % Versions.util % Test,
         "org.scalatest" %% "scalatest" % Versions.scalatest % Test,
         "io.monix" %% "monix" % Versions.monix
       ) ++ Versions.paradiseVersion(scalaVersion.value)
