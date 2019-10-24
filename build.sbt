@@ -84,7 +84,8 @@ val YWarnOptions = Seq(
 val scalacOptionsFn: String => Seq[String] = { s =>
   CrossVersion.partialVersion(s) match {
     case _ if Publishing.runningUnderCi => ScalacOptions
-    case Some((_, minor)) if minor >= 12 => ScalacOptions ++ YWarnOptions ++ Scala212Options
+    case Some((_, minor)) if minor > 12 => ScalacOptions ++ Scala212Options
+    case Some((_, minor)) if minor == 12 => ScalacOptions ++ YWarnOptions ++ Scala212Options
     case _ => ScalacOptions ++ YWarnOptions
   }
 }
@@ -148,8 +149,6 @@ lazy val Versions = new {
     }
   }
 
-
-
   val paradiseVersion: String => Seq[ModuleID] = {
     s => CrossVersion.partialVersion(s) match {
       case Some((_, minor)) if minor >= 13 =>
@@ -170,7 +169,7 @@ lazy val Versions = new {
   val akka: String => String = {
     s => CrossVersion.partialVersion(s) match {
       case Some((_, minor)) if minor >= 12 => "2.5.26"
-      case Some((_, minor)) if minor >= 11 && Publishing.isJdk8 => "2.4.14"
+      case Some((_, minor)) if minor >= 11 => "2.4.14"
       case _ => "2.3.15"
     }
   }
@@ -239,7 +238,7 @@ val defaultConcurrency = 4
 
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   organization := "com.outworkers",
-  scalaVersion := Versions.scala212,
+  scalaVersion := Versions.scala213,
   credentials ++= Publishing.defaultCredentials,
   updateOptions := updateOptions.value.withCachedResolution(true),
   resolvers ++= Seq(
@@ -270,22 +269,8 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   envVars := Map("SCALACTIC_FILL_FILE_PATHNAMES" -> "yes"),
   parallelExecution in ThisBuild := false
 ) ++ Publishing.effectiveSettings ++ releaseSettings ++ Seq {
-  scalacOptions := scalacOptionsFn((scalaVersion in ThisBuild).value)
+  scalacOptions := scalacOptionsFn((Global / scalaVersion).value)
 }
-
-lazy val baseProjectList: Seq[ProjectReference] = Seq(
-  phantomDsl,
-  phantomExample,
-  phantomConnectors,
-  phantomFinagle,
-  phantomStreams,
-  phantomThrift,
-  phantomSbtPlugin,
-  phantomMonix,
-  readme
-)
-
-lazy val fullProjectList = baseProjectList ++ Publishing.addOnCondition(Publishing.isJdk8, phantomJdk8)
 
 lazy val phantom = (project in file("."))
   .settings(
@@ -293,9 +278,17 @@ lazy val phantom = (project in file("."))
   ).settings(
     name := "phantom",
     moduleName := "phantom",
-    crossScalaVersions := Versions.scala.all
+    crossScalaVersions := Nil
   ).aggregate(
-    fullProjectList: _*
+    phantomDsl,
+    phantomExample,
+    phantomConnectors,
+    phantomFinagle,
+    phantomStreams,
+    phantomSbtPlugin,
+    phantomMonix,
+    phantomJdk8,
+    readme
   )
 
 lazy val readme = (project in file("readme"))
@@ -303,7 +296,7 @@ lazy val readme = (project in file("readme"))
   .settings(
     crossScalaVersions := Seq(Versions.scala211, Versions.scala212, Versions.scala213),
     tutSourceDirectory := sourceDirectory.value / "main" / "tut",
-    tutTargetDirectory := phantom.base / "docs",
+    tutTargetDirectory := baseDirectory.value / "docs",
     libraryDependencies ++= Seq(
       Versions.macroCompatVersion(scalaVersion.value),
       "org.scala-lang" % "scala-compiler" % scalaVersion.value,
@@ -315,10 +308,10 @@ lazy val readme = (project in file("readme"))
   ).dependsOn(
     phantomDsl,
     phantomJdk8,
-    phantomExample,
+    //phantomExample,
     phantomConnectors,
     phantomFinagle,
-    phantomStreams,
+    //phantomStreams,
     phantomThrift
   ).enablePlugins(TutPlugin)
 
@@ -440,7 +433,7 @@ lazy val phantomStreams = (project in file("phantom-streams"))
   .settings(
     name := "phantom-streams",
     moduleName := "phantom-streams",
-    crossScalaVersions := Versions.scala.all,
+    crossScalaVersions := List(Versions.scala211, Versions.scala212),
     testFrameworks in Test ++= Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
     libraryDependencies ++= Seq(
       "com.typesafe" % "config" % Versions.typesafeConfig force(),
