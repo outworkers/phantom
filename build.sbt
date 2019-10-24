@@ -92,7 +92,7 @@ lazy val Versions = new {
   val util = "0.51.0"
   val json4s = "3.6.2"
   val datastax = "3.6.0"
-  val scalatest = "3.0.5"
+  val scalatest = "3.0.8"
   val shapeless = "2.3.3"
   val thrift = "0.10.0"
   val finagle = "19.1.0"
@@ -111,6 +111,17 @@ lazy val Versions = new {
   val scala212 = "2.12.8"
   val scala213 = "2.13.1"
   val monix = "2.3.3"
+  val macroCompat = "1.1.1"
+
+  val kindProjector = "0.11.0"
+  val paradise = "2.1.1"
+
+  val scalaMacrosVersion: String => String = {
+    s => CrossVersion.partialVersion(s) match {
+      case Some((_, minor)) if minor >= 11 => paradise
+      case _ => "2.1.0"
+    }
+  }
 
   val scala = new {
     val all = Seq(
@@ -124,6 +135,26 @@ lazy val Versions = new {
     "1.3.3"
   } else {
     "1.2.0"
+  }
+
+
+  val macroCompatVersion: String => ModuleID = {
+    s => CrossVersion.partialVersion(s) match {
+      case Some((_, minor)) if minor >= 13 => "org.typelevel" % "macro-compat_2.13.0-RC2" % "1.1.1"
+      case Some((_, minor)) if minor < 13 => "org.typelevel" %% "macro-compat" % macroCompat
+
+    }
+  }
+
+
+
+  val paradiseVersion: String => Seq[ModuleID] = {
+    s => CrossVersion.partialVersion(s) match {
+      case Some((_, minor)) if minor >= 13 =>
+        Nil
+      case Some((_, minor)) if minor < 13 =>
+        List(compilerPlugin("org.scalamacros" % "paradise" % scalaMacrosVersion(s) cross CrossVersion.full))
+    }
   }
 
   val twitterUtil: String => String = {
@@ -272,14 +303,13 @@ lazy val readme = (project in file("readme"))
     tutSourceDirectory := sourceDirectory.value / "main" / "tut",
     tutTargetDirectory := phantom.base / "docs",
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "macro-compat" % Versions.macrocompat,
+      Versions.macroCompatVersion(scalaVersion.value),
       "org.scala-lang" % "scala-compiler" % scalaVersion.value,
-      compilerPlugin("org.scalamacros" % "paradise" % Versions.macrosVersion(scalaVersion.value) cross CrossVersion.full),
       "com.outworkers" %% "util-samplers" % Versions.util,
       "io.circe" %% "circe-parser" % Versions.circe,
       "io.circe" %% "circe-generic" % Versions.circe,
       "org.scalatest" %% "scalatest" % Versions.scalatest
-    )
+    ) ++ Versions.paradiseVersion(scalaVersion.value)
   ).dependsOn(
     phantomDsl,
     phantomJdk8,
@@ -300,9 +330,8 @@ lazy val phantomDsl = (project in file("phantom-dsl"))
       Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
     ),
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "macro-compat" % Versions.macrocompat,
+      Versions.macroCompatVersion(scalaVersion.value),
       "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
-      compilerPlugin("org.scalamacros" % "paradise" % Versions.macrosVersion(scalaVersion.value) cross CrossVersion.full),
       "com.chuusai"                  %% "shapeless"                         % Versions.shapeless,
       "joda-time"                    %  "joda-time"                         % Versions.joda,
       "org.joda"                     %  "joda-convert"                      % Versions.jodaConvert,
@@ -315,7 +344,7 @@ lazy val phantomDsl = (project in file("phantom-dsl"))
       "com.outworkers"               %% "util-samplers"                     % Versions.util % Test,
       "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter % Test,
       "ch.qos.logback"               % "logback-classic"                    % Versions.logback % Test
-    )
+    ) ++ Versions.paradiseVersion(scalaVersion.value)
   ).dependsOn(
     phantomConnectors
   )
@@ -329,9 +358,7 @@ lazy val phantomJdk8 = (project in file("phantom-jdk8"))
     concurrentRestrictions in Test := Seq(
       Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
     ),
-    libraryDependencies ++= Seq(
-      compilerPlugin("org.scalamacros" % "paradise" % Versions.macrosVersion(scalaVersion.value) cross CrossVersion.full)
-    )
+    libraryDependencies ++= Versions.paradiseVersion(scalaVersion.value)
   ).settings(
     sharedSettings: _*
   ).dependsOn(
@@ -359,11 +386,10 @@ lazy val phantomFinagle = (project in file("phantom-finagle"))
     crossScalaVersions := Versions.scala.all,
     testFrameworks in Test ++= Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
     libraryDependencies ++= Seq(
-      compilerPlugin("org.scalamacros" % "paradise" % Versions.macrosVersion(scalaVersion.value) cross CrossVersion.full),
       "com.twitter"                  %% "util-core"                         % Versions.twitterUtil(scalaVersion.value),
       "com.outworkers"               %% "util-testing"                      % Versions.util % Test,
       "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter % Test
-    )
+    ) ++ Versions.paradiseVersion(scalaVersion.value)
   ).dependsOn(
     phantomDsl % "compile->compile;test->test"
   )
@@ -374,14 +400,13 @@ lazy val phantomThrift = (project in file("phantom-thrift"))
     name := "phantom-thrift",
     moduleName := "phantom-thrift",
     libraryDependencies ++= Seq(
-      compilerPlugin("org.scalamacros" % "paradise" % Versions.macrosVersion(scalaVersion.value) cross CrossVersion.full),
-      "org.typelevel" %% "macro-compat" % Versions.macrocompat,
+      Versions.macroCompatVersion(scalaVersion.value),
       "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
       "org.apache.thrift"            % "libthrift"                          % Versions.thrift,
       "com.twitter"                  %% "scrooge-core"                      % Versions.scrooge(scalaVersion.value),
       "com.twitter"                  %% "scrooge-serializer"                % Versions.scrooge(scalaVersion.value),
       "com.outworkers"               %% "util-testing"                      % Versions.util % Test
-    ),
+    ) ++ Versions.paradiseVersion(scalaVersion.value),
     coverageExcludedPackages := "com.outworkers.phantom.thrift.models.*"
   ).settings(
     sharedSettings: _*
@@ -416,7 +441,6 @@ lazy val phantomStreams = (project in file("phantom-streams"))
     crossScalaVersions := Versions.scala.all,
     testFrameworks in Test ++= Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
     libraryDependencies ++= Seq(
-      compilerPlugin("org.scalamacros" % "paradise" % Versions.macrosVersion(scalaVersion.value) cross CrossVersion.full),
       "com.typesafe" % "config" % Versions.typesafeConfig force(),
       "com.typesafe.play"   %% "play-iteratees" % Versions.play(scalaVersion.value) exclude ("com.typesafe", "config"),
       "org.reactivestreams" % "reactive-streams"            % Versions.reactivestreams,
@@ -424,7 +448,7 @@ lazy val phantomStreams = (project in file("phantom-streams"))
       "com.outworkers"      %% "util-testing"               % Versions.util            % Test,
       "org.reactivestreams" % "reactive-streams-tck"        % Versions.reactivestreams % Test,
       "com.storm-enroute"   %% "scalameter"                 % Versions.scalameter      % Test
-    )
+    ) ++ Versions.paradiseVersion(scalaVersion.value)
   ).settings(
     sharedSettings: _*
   ).dependsOn(
