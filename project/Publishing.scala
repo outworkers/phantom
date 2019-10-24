@@ -15,7 +15,7 @@
  */
 import sbt.Keys._
 import sbt._
-import com.typesafe.sbt.pgp.PgpKeys._
+import com.jsuereth.sbtpgp.PgpKeys._
 import sbtrelease.ReleasePlugin.autoImport.{ReleaseStep, _}
 import sbtrelease.Vcs
 import scala.util.Properties

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import Publishing.{ciSkipSequence, pgpPass, releaseTutFolder, runningUnderCi}
-import com.typesafe.sbt.pgp.PgpKeys.pgpPassphrase
+import com.jsuereth.sbtpgp.PgpKeys.pgpPassphrase
 import sbt.Keys._
 import sbt._
 import sbtrelease.ReleaseStateTransformations._
@@ -89,7 +89,7 @@ val scalacOptionsFn: String => Seq[String] = { s =>
 
 lazy val Versions = new {
   val logback = "1.2.3"
-  val util = "0.51.0"
+  val util = "0.52.0-SNAPSHOT"
   val json4s = "3.6.2"
   val datastax = "3.6.0"
   val scalatest = "3.0.8"
@@ -209,8 +209,6 @@ pgpPassphrase in Scope.GlobalScope := {
   logger.info(s"Password longer than five characters: ${pgpPass.exists(_.length > 5)}")
   pgpPass
 }
-
-useGpg := false
 
 val releaseSettings = Seq(
   releaseTutFolder := baseDirectory.value / "docs",

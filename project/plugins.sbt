@@ -34,7 +34,7 @@ lazy val Versions = new {
   }
 }
 
-addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "1.5.1")
+addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "1.6.0")
 
 addSbtPlugin("org.scoverage" %% "sbt-coveralls" % "1.2.7")
 
@@ -44,15 +44,16 @@ addSbtPlugin("com.jsuereth" % "sbt-pgp" % "1.1.1")
 
 addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "2.5")
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "1.0.0")
+addSbtPlugin("com.jsuereth" % "sbt-pgp" % "2.0.0")
+
+addSbtPlugin("com.timushev.sbt" % "sbt-updates" % "0.5.0")
 
 addSbtPlugin("com.twitter" % "scrooge-sbt-plugin" % Versions.scrooge)
 
 dependencyOverrides += "org.apache.thrift" % "libthrift" % "0.10.0"
 
-addSbtPlugin("org.tpolecat" % "tut-plugin" % "0.6.10")
-
+addSbtPlugin("org.tpolecat" % "tut-plugin" % "0.6.13")
 
 libraryDependencies += "org.slf4j" % "slf4j-nop" % "1.7.22"
 
-addSbtPlugin("com.github.gseitz" % "sbt-release" % "1.0.11")
+addSbtPlugin("com.github.gseitz" % "sbt-release" % "1.0.12")
