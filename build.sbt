@@ -21,6 +21,7 @@ import sbtrelease.ReleaseStateTransformations._
 
 Global / onChangedBuildSource := IgnoreSourceChanges
 
+
 lazy val ScalacOptions = Seq(
   "-deprecation", // Emit warning and location for usages of deprecated APIs.
   "-encoding",
@@ -63,7 +64,7 @@ val XLintOptions = Seq(
 val Scala212Options = Seq(
   "-Xlint:infer-any", // Warn when a type argument is inferred to be `Any`.
   "-Ypartial-unification", // Enable partial unification in type constructor inference,
-  //"-Ywarn-extra-implicit", // Warn when more than one implicit parameter section is defined.
+  "-Ywarn-extra-implicit", // Warn when more than one implicit parameter section is defined.
   "-Ywarn-unused:implicits", // Warn if an implicit parameter is unused.
   "-Ywarn-unused:imports", // Warn if an import selector is not referenced.
   "-Ywarn-unused:locals", // Warn if a local definition is unused.
@@ -83,12 +84,12 @@ val YWarnOptions = Seq(
 
 val scalacOptionsFn: String => Seq[String] = { s =>
   CrossVersion.partialVersion(s) match {
-    case _ if Publishing.runningUnderCi => ScalacOptions
-    case Some((_, minor)) if minor > 12 => ScalacOptions ++ Scala212Options
-    case Some((_, minor)) if minor == 12 => ScalacOptions ++ YWarnOptions ++ Scala212Options
+    case Some((_, minor)) if minor >= 12 => ScalacOptions ++ YWarnOptions ++ Scala212Options
     case _ => ScalacOptions ++ YWarnOptions
   }
 }
+
+scalacOptions in ThisBuild ++= scalacOptionsFn(scalaVersion.value)
 
 lazy val Versions = new {
   val logback = "1.2.3"
@@ -183,8 +184,7 @@ lazy val Versions = new {
 
   val scrooge: String => String = {
     s => CrossVersion.partialVersion(s) match {
-      //case Some((_, minor)) if minor >= 11 && Publishing.isJdk8 => "4.18.0"
-      //case Some((_, minor)) if minor >= 11 && !Publishing.isJdk8 => "4.7.0"
+      case Some((_, minor)) if minor >= 13 => "19.10.0"
       case _ => "19.1.0"
     }
   }
@@ -205,7 +205,7 @@ lazy val Versions = new {
   }
 }
 
-pgpPassphrase in Scope.GlobalScope := {
+Global / pgpPassphrase := {
   val logger = ConsoleLogger()
   logger.info(s"Running under CI: $runningUnderCi")
   logger.info(s"pgpPass defined in local environment: ${pgpPass.isDefined}")
@@ -268,9 +268,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   ),
   envVars := Map("SCALACTIC_FILL_FILE_PATHNAMES" -> "yes"),
   parallelExecution in ThisBuild := false
-) ++ Publishing.effectiveSettings ++ releaseSettings ++ Seq {
-  scalacOptions := scalacOptionsFn((Global / scalaVersion).value)
-}
+) ++ Publishing.effectiveSettings ++ releaseSettings
 
 lazy val phantom = (project in file("."))
   .settings(
@@ -287,7 +285,6 @@ lazy val phantom = (project in file("."))
     phantomStreams,
     phantomSbtPlugin,
     phantomMonix,
-    phantomJdk8,
     readme
   )
 
@@ -307,12 +304,11 @@ lazy val readme = (project in file("readme"))
     ) ++ Versions.paradiseVersion(scalaVersion.value)
   ).dependsOn(
     phantomDsl,
-    phantomJdk8,
     //phantomExample,
-    phantomConnectors,
-    phantomFinagle,
+    phantomConnectors
+    //phantomFinagle,
     //phantomStreams,
-    phantomThrift
+    //phantomThrift
   ).enablePlugins(TutPlugin)
 
 lazy val phantomDsl = (project in file("phantom-dsl"))
@@ -344,22 +340,6 @@ lazy val phantomDsl = (project in file("phantom-dsl"))
     phantomConnectors
   )
 
-lazy val phantomJdk8 = (project in file("phantom-jdk8"))
-  .settings(
-    name := "phantom-jdk8",
-    moduleName := "phantom-jdk8",
-    crossScalaVersions := Versions.scala.all,
-    testOptions in Test += Tests.Argument("-oF"),
-    concurrentRestrictions in Test := Seq(
-      Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
-    ),
-    libraryDependencies ++= Versions.paradiseVersion(scalaVersion.value)
-  ).settings(
-    sharedSettings: _*
-  ).dependsOn(
-    phantomDsl % "compile->compile;test->test"
-  )
-
 lazy val phantomConnectors = (project in file("phantom-connectors"))
   .settings(
     sharedSettings: _*
@@ -382,7 +362,7 @@ lazy val phantomFinagle = (project in file("phantom-finagle"))
     testFrameworks in Test ++= Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
     libraryDependencies ++= Seq(
       "com.twitter"                  %% "util-core"                         % Versions.twitterUtil(scalaVersion.value),
-      "com.outworkers"               %% "util-samplers"                      % Versions.util % Test,
+      "com.outworkers"               %% "util-samplers"                     % Versions.util % Test,
       "com.storm-enroute"            %% "scalameter"                        % Versions.scalameter % Test
     ) ++ Versions.paradiseVersion(scalaVersion.value)
   ).dependsOn(
