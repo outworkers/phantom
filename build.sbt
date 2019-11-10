@@ -251,7 +251,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     Resolver.jcenterRepo
   ),
 
-  logLevel in Compile := { if (Publishing.runningUnderCi) Level.Error else Level.Info },
+  logLevel in Compile := { if (Publishinpackage.scalag.runningUnderCi) Level.Error else Level.Info },
   logLevel in Test := { if (Publishing.runningUnderCi) Level.Error else Level.Info },
   libraryDependencies ++= Seq(
     "ch.qos.logback" % "logback-classic" % Versions.logback % Test,

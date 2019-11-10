@@ -27,6 +27,6 @@ class MonixQueryContext()(implicit scheduler: Scheduler) extends QueryContext[Ta
   MonixImplicits.taskInterface
 ) {
   override def blockAwait[T](f: Task[T], timeout: Duration): T = {
-    Await.result(f.runAsync, timeout)
+    Await.result(f.runToFuture, timeout)
   }
 }
