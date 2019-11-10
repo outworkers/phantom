@@ -251,11 +251,12 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     Resolver.jcenterRepo
   ),
 
-  logLevel in Compile := { if (Publishinpackage.scalag.runningUnderCi) Level.Error else Level.Info },
+  logLevel in Compile := { if (Publishing.runningUnderCi) Level.Error else Level.Info },
   logLevel in Test := { if (Publishing.runningUnderCi) Level.Error else Level.Info },
   libraryDependencies ++= Seq(
     "ch.qos.logback" % "logback-classic" % Versions.logback % Test,
-    "org.slf4j" % "log4j-over-slf4j" % Versions.slf4j
+    "org.slf4j" % "log4j-over-slf4j" % Versions.slf4j,
+    "org.scalatest" %% "scalatest" % Versions.scalatest % Test
   ),
   fork in Test := true,
   scalacOptions in (Compile, console) := ScalacOptions.filterNot(
