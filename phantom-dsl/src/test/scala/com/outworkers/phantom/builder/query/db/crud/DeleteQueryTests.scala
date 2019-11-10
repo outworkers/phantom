@@ -31,9 +31,9 @@ class DeleteQueryTests extends PhantomSuite {
     val row = gen[PrimitiveRecord]
 
     val chain = for {
-      store <- database.primitives.store(row).future()
+      _ <- database.primitives.store(row).future()
       inserted <- database.primitives.select.where(_.pkey eqs row.pkey).one()
-      delete <- database.primitives.delete.where(_.pkey eqs row.pkey).future()
+      _ <- database.primitives.delete.where(_.pkey eqs row.pkey).future()
       deleted <- database.primitives.select.where(_.pkey eqs row.pkey).one
     } yield (inserted, deleted)
 
@@ -47,9 +47,9 @@ class DeleteQueryTests extends PhantomSuite {
     val row = gen[PrimitiveRecord]
 
     val chain = for {
-      store <- database.primitives.store(row).future()
+      _ <- database.primitives.store(row).future()
       inserted <- database.primitives.select.where(_.pkey eqs row.pkey).one()
-      delete <- database.primitives.delete.where(_.pkey eqs row.pkey).onlyIf(_.int is row.int).future()
+      _ <- database.primitives.delete.where(_.pkey eqs row.pkey).onlyIf(_.int is row.int).future()
       deleted <- database.primitives.select.where(_.pkey eqs row.pkey).one
     } yield (inserted, deleted)
 
@@ -63,9 +63,9 @@ class DeleteQueryTests extends PhantomSuite {
     val row = gen[PrimitiveRecord]
 
     val chain = for {
-      store <- database.primitives.store(row).future()
+      _ <- database.primitives.store(row).future()
       inserted <- database.primitives.select.where(_.pkey eqs row.pkey).one()
-      delete <- database.primitives.delete.where(_.pkey eqs row.pkey).onlyIf(_.int is (row.int + 1)).future()
+      _ <- database.primitives.delete.where(_.pkey eqs row.pkey).onlyIf(_.int is (row.int + 1)).future()
       deleted <- database.primitives.select.where(_.pkey eqs row.pkey).one
     } yield (inserted, deleted)
 
@@ -82,9 +82,9 @@ class DeleteQueryTests extends PhantomSuite {
     val time = gen[DateTime]
 
     val chain = for {
-      store <- database.primitives.store(row).timestamp(time).future()
+      _ <- database.primitives.store(row).timestamp(time).future()
       inserted <- database.primitives.select.where(_.pkey eqs row.pkey).one()
-      delete <- database.primitives.delete.where(_.pkey eqs row.pkey)
+      _ <- database.primitives.delete.where(_.pkey eqs row.pkey)
         .consistencyLevel_=(ConsistencyLevel.ONE)
         .future()
       deleted <- database.primitives.select.where(_.pkey eqs row.pkey).one
@@ -103,9 +103,9 @@ class DeleteQueryTests extends PhantomSuite {
     val time = gen[DateTime]
 
     val chain = for {
-      store <- database.primitives.store(row).timestamp(time).future()
+      _ <- database.primitives.store(row).timestamp(time).future()
       inserted <- database.primitives.select.where(_.pkey eqs row.pkey).one()
-      delete <- database.primitives.delete.where(_.pkey eqs row.pkey).timestamp(time.plusSeconds(1)).future()
+      _ <- database.primitives.delete.where(_.pkey eqs row.pkey).timestamp(time.plusSeconds(1)).future()
       deleted <- database.primitives.select.where(_.pkey eqs row.pkey).one
     } yield (inserted, deleted)
 
@@ -122,9 +122,9 @@ class DeleteQueryTests extends PhantomSuite {
     val time = gen[DateTime]
 
     val chain = for {
-      store <- database.primitives.store(row).timestamp(time).future()
+      _ <- database.primitives.store(row).timestamp(time).future()
       inserted <- database.primitives.select.where(_.pkey eqs row.pkey).one()
-      delete <- database.primitives.delete.where(_.pkey eqs row.pkey).timestamp(time.minusSeconds(1)).future()
+      _ <- database.primitives.delete.where(_.pkey eqs row.pkey).timestamp(time.minusSeconds(1)).future()
       deleted <- database.primitives.select.where(_.pkey eqs row.pkey).one
     } yield (inserted, deleted)
 
