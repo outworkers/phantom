@@ -188,9 +188,10 @@ lazy val Versions = new {
       case _ => "19.1.0"
     }
   }
+
   val play: String => String = {
     s => CrossVersion.partialVersion(s) match {
-      case Some((_, minor)) if minor == 12 => "2.6.1"
+      case Some((_, minor)) if minor >= 12 => "2.6.1"
       case Some((_, minor)) if minor == 11 => "2.5.8"
       case _ => "2.4.8"
     }
@@ -234,11 +235,13 @@ val releaseSettings = Seq(
   )
 )
 
-val defaultConcurrency = 4
+Global / scalaVersion := Versions.scala213
+
+lazy val defaultConcurrency = 4
 
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   organization := "com.outworkers",
-  scalaVersion := Versions.scala213,
+  scalaVersion := Versions.scala212,
   credentials ++= Publishing.defaultCredentials,
   updateOptions := updateOptions.value.withCachedResolution(true),
   resolvers ++= Seq(
@@ -291,7 +294,7 @@ lazy val phantom = (project in file("."))
 lazy val readme = (project in file("readme"))
   .settings(sharedSettings ++ Publishing.noPublishSettings)
   .settings(
-    crossScalaVersions := Seq(Versions.scala211, Versions.scala212, Versions.scala213),
+    crossScalaVersions := Seq(Versions.scala211, Versions.scala212),
     tutSourceDirectory := sourceDirectory.value / "main" / "tut",
     tutTargetDirectory := baseDirectory.value / "docs",
     libraryDependencies ++= Seq(

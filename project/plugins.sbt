@@ -27,11 +27,7 @@ def isScala210: Boolean = scalaTravisEnv.exists("2.10.6" ==)
 lazy val isCi = sys.env.get("CI").exists("true" == )
 
 lazy val Versions = new {
-  val scrooge = if (isCi) {
-    if (sys.props("java.specification.version") == "1.8" && !isScala210) "19.3.0" else "19.3.0"
-  } else {
-    if (sys.props("java.specification.version") == "1.8") "19.3.0" else "19.3.0"
-  }
+  val scrooge = if (isCi && isScala210) "19.1.0" else "19.10.0"
 }
 
 addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "1.6.0")
@@ -48,7 +44,6 @@ addSbtPlugin("com.timushev.sbt" % "sbt-updates" % "0.5.0")
 
 addSbtPlugin("com.twitter" % "scrooge-sbt-plugin" % Versions.scrooge)
 
-dependencyOverrides += "org.apache.thrift" % "libthrift" % "0.10.0"
 
 addSbtPlugin("org.tpolecat" % "tut-plugin" % "0.6.13")
 
