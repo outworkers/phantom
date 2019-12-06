@@ -57,6 +57,19 @@ class CassandraConnection(
       .toSet[VersionNumber]
   }
 
+  /**
+    * Returns the Cassandra version if the nodes of the cluster to which the connection has been
+    * made have all the same Cassandra version, otherwise None.
+    */
+  def cassandraVersionOpt: Option[VersionNumber] = {
+    cassandraVersions.headOption
+  }
+
+  /**
+    * Returns the Cassandra version if the nodes of the cluster to which the connection has been
+    * made have all the same Cassandra version, otherwise throws a RuntimeException.
+    * @deprecated use [[cassandraVersionOpt]] instead.
+    */
   def cassandraVersion: Option[VersionNumber] = {
     val versions = cassandraVersions
 

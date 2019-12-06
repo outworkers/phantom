@@ -20,7 +20,12 @@ import com.outworkers.phantom.connectors.{KeySpace, SessionAugmenterImplicits}
 
 trait DatabaseProvider[T <: Database[T]] extends SessionAugmenterImplicits {
 
+  /**
+    * @deprecated use [[cassandraVersionOpt]] instead. This method throws a RuntimeException when the version can't be determined.
+    */
   def cassandraVersion: Option[VersionNumber] = database.connector.cassandraVersion
+
+  def cassandraVersionOpt: Option[VersionNumber] = database.connector.cassandraVersionOpt
 
   def cassandraVersions: Set[VersionNumber] = database.connector.cassandraVersions
 
