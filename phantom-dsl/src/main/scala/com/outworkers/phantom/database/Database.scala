@@ -21,7 +21,7 @@ import com.outworkers.phantom.builder.query.QueryOptions
 import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, QueryCollection}
 import com.outworkers.phantom.connectors.{CassandraConnection, KeySpace}
 import com.outworkers.phantom.macros.DatabaseHelper
-
+import scala.collection.immutable.Seq
 import scala.concurrent.blocking
 
 abstract class Database[

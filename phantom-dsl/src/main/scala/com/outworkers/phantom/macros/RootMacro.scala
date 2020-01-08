@@ -22,6 +22,7 @@ import com.outworkers.phantom.keys.SASIIndex
 import com.outworkers.phantom.macros.toolbelt.{HListHelpers, WhiteboxToolbelt}
 import com.outworkers.phantom.{CassandraTable, SelectTable}
 
+import scala.collection.Factory
 import scala.collection.generic.CanBuildFrom
 import scala.collection.immutable.ListMap
 import scala.reflect.macros.whitebox
@@ -128,7 +129,7 @@ trait RootMacro extends HListHelpers with WhiteboxToolbelt {
       */
     def remove(key: K, elem: V): ListMap[K, M[V]] = {
       lm.get(key) match {
-        case Some(col) => lm + (key -> col.filterNot(elem ==).to[M])
+        case Some(col) => lm + (key -> col.filterNot(elem ==).to[M[V]])
         case None => lm
       }
     }
@@ -388,7 +389,7 @@ trait RootMacro extends HListHelpers with WhiteboxToolbelt {
         symbol <- baseClass.typeSignature.members.sorted
         if symbol.typeSignature <:< typeOf[Filter]
       } yield symbol
-    )(collection.breakOut) distinct
+    ).distinct
   }
 
   def filterMembers[T : WeakTypeTag, Filter : TypeTag](

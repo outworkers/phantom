@@ -597,7 +597,7 @@ object Primitive {
 
                 m += (kp.deserialize(kbb, version) -> vp.deserialize(vbb, version))
               }
-              m result()
+              m.result()
             } catch {
               case e: BufferUnderflowException =>
                 throw new InvalidTypeException("Not enough bytes to deserialize a map", e)

@@ -23,30 +23,31 @@ import com.outworkers.phantom.builder.query.prepared.PrepareMark
 import com.outworkers.phantom.connectors.KeySpace
 import shapeless.{::, HNil}
 
+import scala.collection.BuildFrom
 import scala.collection.generic.CanBuildFrom
 import scala.util.Try
 
 abstract class AbstractColColumn[
   Owner <: CassandraTable[Owner, Record],
   Record,
-  M[X] <: TraversableOnce[X],
+  M[X] <: IterableOnce[X],
   RR
 ](table: CassandraTable[Owner, Record])(
-  implicit cbf: CanBuildFrom[Nothing, RR, M[RR]]
+  implicit cbf: BuildFrom[List[RR], RR, M[RR]]
 ) extends Column[Owner, Record, M[RR]](table) with CollectionValueDefinition[RR] {
 
-  override def apply(r: Row): M[RR] = parse(r).getOrElse(cbf().result())
+  override def apply(r: Row): M[RR] = parse(r).getOrElse(cbf(List.empty[RR]).result())
 }
 
 class CollectionColumn[
   Owner <: CassandraTable[Owner, Record],
   Record,
-  M[X] <: TraversableOnce[X],
+  M[X] <: IterableOnce[X],
   RR
 ](table: CassandraTable[Owner, Record], collection: String)(
   implicit vp: Primitive[RR],
   ev: Primitive[M[RR]],
-  cbf: CanBuildFrom[Nothing, RR, M[RR]]
+  cbf: BuildFrom[Nothing, RR, M[RR]]
 ) extends AbstractColColumn[Owner, Record, M, RR](table) {
 
   override def asCql(v: M[RR]): String = ev.asCql(v)
