@@ -23,7 +23,6 @@ import com.outworkers.phantom.connectors.SessionAugmenterImplicits
 import org.joda.time.DateTime
 
 import scala.annotation.implicitNotFound
-import scala.collection.BuildFrom
 import scala.collection.generic.CanBuildFrom
 
 case class BatchWithQuery(
@@ -94,11 +93,11 @@ sealed case class BatchQuery[Status <: ConsistencyBound](
     }
   }
 
-  def add[M[X] <: IterableOnce[X], Y <: Batchable](queries: M[Y])(
-    implicit cbf: BuildFrom[List[Y], Batchable, Iterator[Batchable]]
+  def add[M[X] <: TraversableOnce[X], Y <: Batchable](queries: M[Y])(
+    implicit cbf: CanBuildFrom[Nothing, Batchable, Iterator[Batchable]]
   ): BatchQuery[Status] = {
-    val builder = cbf.newBuilder(List.empty[Y])
-    queries.iterator.foreach(builder +=)
+    val builder = cbf()
+    queries.foreach(builder +=)
     copy(iterator = iterator ++ builder.result())
   }
 

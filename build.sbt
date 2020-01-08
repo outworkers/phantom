@@ -64,6 +64,7 @@ val excludeFrom213 = Seq (
 )
 
 val Scala212Options = Seq(
+  "-Yrangepos",
   "-Xlint:infer-any", // Warn when a type argument is inferred to be `Any`.
   //"-Ypartial-unification", // Enable partial unification in type constructor inference,
   "-Ywarn-extra-implicit", // Warn when more than one implicit parameter section is defined.
@@ -118,6 +119,7 @@ lazy val Versions = new {
   val scala213 = "2.13.1"
   val monix = "3.1.0-2156c0e"
   val macroCompat = "1.1.1"
+  val collectionCompat = "2.1.3"
 
   val kindProjector = "0.11.0"
   val paradise = "2.1.1"
@@ -241,6 +243,10 @@ Global / scalaVersion := Versions.scala213
 
 lazy val defaultConcurrency = 4
 
+addCompilerPlugin(scalafixSemanticdb)
+
+scalacOptions += "-Yrangepos"
+
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   organization := "com.outworkers",
   scalaVersion := Versions.scala212,
@@ -252,11 +258,12 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     Resolver.sonatypeRepo("releases"),
     Resolver.jcenterRepo
   ),
-
+  scalafixDependencies in ThisBuild += "org.scala-lang.modules" %% "scala-collection-migrations" % Versions.collectionCompat,
   Global / logLevel := { if (Publishing.runningUnderCi) Level.Error else Level.Info },
   Compile  / logLevel := { if (Publishing.runningUnderCi) Level.Error else Level.Info },
   Test / logLevel := { if (Publishing.runningUnderCi) Level.Error else Level.Info },
   libraryDependencies ++= Seq(
+    "org.scala-lang.modules" %% "scala-collection-compat" % Versions.collectionCompat,
     "ch.qos.logback" % "logback-classic" % Versions.logback % Test,
     "org.slf4j" % "log4j-over-slf4j" % Versions.slf4j,
     "org.scalatest" %% "scalatest" % Versions.scalatest % Test
@@ -327,6 +334,7 @@ lazy val phantomDsl = (project in file("phantom-dsl"))
     concurrentRestrictions in Test := Seq(
       Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
     ),
+    scalacOptions += "-P:semanticdb:synthetics:on",
     libraryDependencies ++= Seq(
       Versions.macroCompatVersion(scalaVersion.value),
       "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
@@ -366,6 +374,7 @@ lazy val phantomFinagle = (project in file("phantom-finagle"))
     name := "phantom-finagle",
     moduleName := "phantom-finagle",
     crossScalaVersions := Versions.scala.all,
+    scalacOptions += "-P:semanticdb:synthetics:on",
     testFrameworks in Test ++= Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
     libraryDependencies ++= Seq(
       "com.twitter"                  %% "util-core"                         % Versions.twitterUtil(scalaVersion.value),
@@ -461,6 +470,7 @@ lazy val phantomExample = (project in file("phantom-example"))
       name := "phantom-monix",
       crossScalaVersions := Versions.scala.all,
       moduleName := "phantom-monix",
+      scalacOptions += "-P:semanticdb:synthetics:on",
       libraryDependencies ++= Seq(
         "com.outworkers" %% "util-samplers" % Versions.util % Test,
         "org.scalatest" %% "scalatest" % Versions.scalatest % Test,

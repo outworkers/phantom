@@ -28,6 +28,7 @@ lazy val isCi = sys.env.get("CI").exists("true" == )
 
 lazy val Versions = new {
   val scrooge = if (isCi && isScala210) "19.1.0" else "19.10.0"
+  val scalaFix = "0.9.11"
 }
 
 addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "1.6.0")
@@ -44,6 +45,7 @@ addSbtPlugin("com.timushev.sbt" % "sbt-updates" % "0.5.0")
 
 addSbtPlugin("com.twitter" % "scrooge-sbt-plugin" % Versions.scrooge)
 
+addSbtPlugin("ch.epfl.scala" % "sbt-scalafix" % Versions.scalaFix)
 
 addSbtPlugin("org.tpolecat" % "tut-plugin" % "0.6.13")
 

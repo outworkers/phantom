@@ -21,7 +21,7 @@ import com.datastax.driver.core._
 import com.datastax.driver.core.exceptions.{DriverInternalError, InvalidTypeException}
 import com.outworkers.phantom.builder.QueryBuilder
 
-import scala.collection.BuildFrom
+import scala.collection.generic.CanBuildFrom
 
 object Utils {
   private[phantom] def unsupported(version: ProtocolVersion): DriverInternalError = {
@@ -111,12 +111,12 @@ object Primitives {
 
   private[phantom] def emptyCollection: ByteBuffer = ByteBuffer.allocate(0)
 
-  private[this] def collectionPrimitive[M[X] <: IterableOnce[X], RR](
+  private[this] def collectionPrimitive[M[X] <: TraversableOnce[X], RR](
     cType: String,
     converter: M[RR] => String
   )(
     implicit ev: Primitive[RR],
-    cbf: BuildFrom[List[RR], RR, M[RR]]
+    cbf: CanBuildFrom[Nothing, RR, M[RR]]
   ): Primitive[M[RR]] = new Primitive[M[RR]] {
     override def frozen: Boolean = true
 
@@ -142,12 +142,12 @@ object Primitives {
 
     override def deserialize(bytes: ByteBuffer, version: ProtocolVersion): M[RR] = {
       if (bytes == Primitive.nullValue || bytes.remaining() == 0) {
-        cbf(List.empty[RR]).result()
+        cbf().result()
       } else {
         try {
           val input = bytes.duplicate()
           val size = CodecUtils.readSize(input, version)
-          val coll = cbf(List.empty[RR])
+          val coll = cbf()
           coll.sizeHint(size)
 
           for (_ <- 0 until size) {
