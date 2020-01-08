@@ -37,7 +37,9 @@ abstract class OptionalPrimitivesJdk8 extends Table[
 
   object pkey extends StringColumn with PartitionKey
 
-  object offsetDateTime extends OptionalCol[OffsetDateTime]
+  implicit val tpPrimitive = OffsetDateTimeIsPrimitive()
+
+  object offsetDateTime extends OptionalCol[OffsetDateTime]()
 
   object zonedDateTime extends OptionalCol[ZonedDateTime]
 
