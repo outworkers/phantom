@@ -87,7 +87,7 @@ val YWarnOptions = Seq(
 
 val scalacOptionsFn: String => Seq[String] = { s =>
   CrossVersion.partialVersion(s) match {
-    case Some((_, minor)) if minor >= 12 => ScalacOptions ++ YWarnOptions ++ Scala212Options
+    case Some((_, minor)) if minor >= 12 => ScalacOptions ++ YWarnOptions// ++ Scala212Options
     case _ => ScalacOptions ++ YWarnOptions
   }
 }
@@ -252,8 +252,6 @@ Global / scalaVersion := Versions.scala213
 
 lazy val defaultConcurrency = 4
 
-addCompilerPlugin(scalafixSemanticdb)
-
 scalacOptions += "-Yrangepos"
 
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
@@ -343,7 +341,6 @@ lazy val phantomDsl = (project in file("phantom-dsl"))
     concurrentRestrictions in Test := Seq(
       Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
     ),
-    scalacOptions += "-P:semanticdb:synthetics:on",
     libraryDependencies ++= Seq(
       Versions.macroCompatVersion(scalaVersion.value),
       "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
@@ -383,7 +380,6 @@ lazy val phantomFinagle = (project in file("phantom-finagle"))
     name := "phantom-finagle",
     moduleName := "phantom-finagle",
     crossScalaVersions := Versions.scala.all,
-    scalacOptions += "-P:semanticdb:synthetics:on",
     testFrameworks in Test ++= Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
     libraryDependencies ++= Seq(
       "com.twitter"                  %% "util-core"                         % Versions.twitterUtil(scalaVersion.value),
@@ -479,7 +475,6 @@ lazy val phantomExample = (project in file("phantom-example"))
       name := "phantom-monix",
       crossScalaVersions := Versions.scala.all,
       moduleName := "phantom-monix",
-      scalacOptions += "-P:semanticdb:synthetics:on",
       libraryDependencies ++= Seq(
         "com.outworkers" %% "util-samplers" % Versions.util % Test,
         "org.scalatest" %% "scalatest" % Versions.scalatest % Test,
