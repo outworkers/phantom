@@ -35,7 +35,7 @@ abstract class AbstractColColumn[
   implicit cbf: Factory[RR, M[RR]]
 ) extends Column[Owner, Record, M[RR]](table) with CollectionValueDefinition[RR] {
 
-  override def apply(r: Row): M[RR] = parse(r).getOrElse(cbf().newBuildercbf.newBuilder)
+  override def apply(r: Row): M[RR] = parse(r).getOrElse(cbf().result())
 }
 
 class CollectionColumn[

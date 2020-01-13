@@ -21,7 +21,6 @@ import com.datastax.driver.core._
 import com.datastax.driver.core.exceptions.{DriverInternalError, InvalidTypeException}
 import com.outworkers.phantom.builder.QueryBuilder
 
-import scala.Iterable
 import scala.collection.compat._
 
 object Utils {
@@ -143,7 +142,7 @@ object Primitives {
 
     override def deserialize(bytes: ByteBuffer, version: ProtocolVersion): M[RR] = {
       if (bytes == Primitive.nullValue || bytes.remaining() == 0) {
-        cbf().newBuildercbf.newBuilder
+        cbf.apply().result()
       } else {
         try {
           val input = bytes.duplicate()

@@ -63,11 +63,11 @@ object ExecutionHelper {
     A,
     B
   ](in: M[A])(fn: A => F[B])(
-    implicit cbf: CanBuildFrom[M[A], B, M[B]],
+    implicit cbf: BuildFrom[M[A], B, M[B]],
     ctx: ExecutionContextExecutor,
     fMonad: FutureMonad[F]
   ): F[M[B]] = {
-    in.foldLeft(fMonad.pure(cbf())) { (fr, a) =>
+    in.foldLeft(fMonad.pure(cbf(null.asInstanceOf[M[A]]))) { (fr, a) =>
       for (r <- fr; b <- fn(a)) yield r += b
     }.map(_.result())
   }
@@ -84,11 +84,13 @@ object ExecutionHelper {
     F[_],
     M[X] <: IterableOnce[X],
     A](in: M[F[A]])(
-    implicit cbf: CanBuildFrom[M[F[A]], A, M[A]],
+    implicit cbf: Factory[A, M[A]],
     fMonad: FutureMonad[F],
     ctx: ExecutionContextExecutor
   ): F[M[A]] = {
-    in.foldLeft(fMonad.pure(cbf())) { (fr, fa) => fr.zipWith(fa)(_ += _) }.map(_.result())
+    in.foldLeft(fMonad.pure(cbf.apply())) {
+      (fr, fa) => fr.zipWith(fa)(_ += _)
+    } map(_.result())
   }
 }
 
@@ -102,7 +104,7 @@ class ExecutableStatements[
 
   /**
     * Method that will execute the queries in the underlying collection in parallel.
-    * The queries will be constructed sequentally by the results asynchronous queries to be executed
+    * The queries will be constructed sequentially by the results asynchronous queries to be executed
     * will be executed in parallel by default using this method.
     *
     * @param session The cassandra session to execute the query collection against.
@@ -114,8 +116,8 @@ class ExecutableStatements[
   def future()(
     implicit session: Session,
     ec: ExecutionContextExecutor,
-    fbf: CanBuildFrom[M[F[ResultSet]], F[ResultSet], M[F[ResultSet]]],
-    ebf: BuildFrom[M[F[ResultSet]], ResultSet, M[ResultSet]]
+    fbf: Factory[F[ResultSet], M[F[ResultSet]]],
+    ebf: Factory[ResultSet, M[ResultSet]]
   ): F[M[ResultSet]] = {
 
     val builder = fbf()

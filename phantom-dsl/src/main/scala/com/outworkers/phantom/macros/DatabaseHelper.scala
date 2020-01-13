@@ -22,6 +22,7 @@ import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.macros.toolbelt.WhiteboxToolbelt
 
 import scala.reflect.macros.whitebox
+import scala.collection.Seq
 
 trait DatabaseHelper[T <: Database[T]] {
   def tables(db: T): scala.collection.Seq[CassandraTable[_ ,_]]

@@ -228,8 +228,8 @@ package object finagle extends TwitterQueryContext with DefaultImports {
 
     def future()(
       implicit session: Session,
-      fbf: BuildFrom[M[Future[ResultSet]], Future[ResultSet], M[Future[ResultSet]]],
-      ebf: BuildFrom[M[Future[ResultSet]], ResultSet, M[ResultSet]]
+      fbf: Factory[Future[ResultSet], M[Future[ResultSet]]],
+      ebf: Factory[ResultSet, M[ResultSet]]
     ): Future[M[ResultSet]] = executable().future()
   }
 }

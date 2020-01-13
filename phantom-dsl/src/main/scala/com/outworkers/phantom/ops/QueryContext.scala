@@ -314,28 +314,28 @@ abstract class QueryContext[P[_], F[_], Timeout](
       ev: Out ==:== Repr
     ): F[ResultSet] = promiseInterface.adapter.fromGuava(table.store(input).executableQuery)
 
-    def storeRecords[
-      M[X] <: IterableOnce[X],
-      V1,
-      Repr <: HList,
-      HL <: HList,
-      Out <: HList
-    ](inputs: M[V1])(
-      implicit keySpace: KeySpace,
-      session: Session,
-      thl: TableHelper.Aux[T, R, Repr],
-      gen: Generic.Aux[V1, HL],
-      sg: SingleGeneric.Aux[V1, Repr, HL, Out],
-      ev: Out ==:== Repr,
-      ctx: ExecutionContextExecutor,
-      cbfB: CanBuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]],
-      fbf: BuildFrom[M[F[ResultSet]], F[ResultSet], M[F[ResultSet]]],
-      fbf2: BuildFrom[M[F[ResultSet]], ResultSet, M[ResultSet]]
-    ): F[M[ResultSet]] = {
-      val queries = inputs.foldLeft(cbfB()) { (acc, el) => acc += table.store(el).executableQuery }
-
-      executeStatements[M](new QueryCollection[M](queries.result())).future()(session, ctx, fbf, fbf2)
-    }
+//    def storeRecords[
+//      M[X] <: IterableOnce[X],
+//      V1,
+//      Repr <: HList,
+//      HL <: HList,
+//      Out <: HList
+//    ](inputs: M[V1])(
+//      implicit keySpace: KeySpace,
+//      session: Session,
+//      thl: TableHelper.Aux[T, R, Repr],
+//      gen: Generic.Aux[V1, HL],
+//      sg: SingleGeneric.Aux[V1, Repr, HL, Out],
+//      ev: Out ==:== Repr,
+//      ctx: ExecutionContextExecutor,
+//      cbfB: BuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]],
+//      fbf: BuildFrom[M[F[ResultSet]], F[ResultSet], M[F[ResultSet]]],
+//      fbf2: Factory[ResultSet, M[ResultSet]]
+//    ): F[M[ResultSet]] = {
+//      val queries = inputs.foldLeft(cbfB()) { (acc, el) => acc += table.store(el).executableQuery }
+//
+//      executeStatements[M](new QueryCollection[M](queries.result())).future()(session, ctx, fbf, fbf2)
+//    }
   }
 
   implicit class QueryCollectionOps[M[X] <: IterableOnce[X]](val col: QueryCollection[M]) {
@@ -343,8 +343,8 @@ abstract class QueryContext[P[_], F[_], Timeout](
     def future()(
       implicit session: Session,
       ec: ExecutionContextExecutor,
-      fbf: BuildFrom[M[F[ResultSet]], F[ResultSet], M[F[ResultSet]]],
-      ebf: BuildFrom[M[F[ResultSet]], ResultSet, M[ResultSet]]
+      fbf: Factory[F[ResultSet], M[F[ResultSet]]],
+      ebf: Factory[ResultSet, M[ResultSet]]
     ): F[M[ResultSet]] = executeStatements(col).future()
 
     def sequence()(

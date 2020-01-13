@@ -33,8 +33,8 @@ package object monix extends MonixQueryContext with DefaultImports {
     }
 
     def future()(implicit session: Session,
-      fbf: BuildFrom[M[Task[ResultSet]], Task[ResultSet], M[Task[ResultSet]]],
-      ebf: BuildFrom[M[Task[ResultSet]], ResultSet, M[ResultSet]]
+      fbf: Factory[Task[ResultSet], M[Task[ResultSet]]],
+      ebf: Factory[ResultSet, M[ResultSet]]
     ): Task[M[ResultSet]] = executable().future()
   }
 

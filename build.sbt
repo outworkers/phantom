@@ -256,7 +256,7 @@ scalacOptions += "-Yrangepos"
 
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   organization := "com.outworkers",
-  scalaVersion := Versions.scala212,
+  scalaVersion := Versions.scala213,
   credentials ++= Publishing.defaultCredentials,
   updateOptions := updateOptions.value.withCachedResolution(true),
   resolvers ++= Seq(

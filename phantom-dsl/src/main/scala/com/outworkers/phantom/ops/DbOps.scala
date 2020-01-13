@@ -19,9 +19,9 @@ import com.outworkers.phantom.ResultSet
 import com.outworkers.phantom.builder.query.execution._
 import com.outworkers.phantom.database.Database
 
-import scala.collection.generic.CanBuildFrom
 import scala.concurrent.ExecutionContextExecutor
 import scala.collection.compat._
+import scala.collection.Seq
 
 abstract class DbOps[
   P[_],
@@ -33,7 +33,7 @@ abstract class DbOps[
   import db._
 
   def execute[M[X] <: IterableOnce[X]](col: QueryCollection[M])(
-    implicit cbf: CanBuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]]
+    implicit cbf: BuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]]
   ): ExecutableStatements[F, M]
 
   def defaultTimeout: Timeout
