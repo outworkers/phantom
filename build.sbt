@@ -163,6 +163,15 @@ lazy val Versions = new {
     }
   }
 
+  val circeVersion: String => String = {
+    s => CrossVersion.partialVersion(s) match {
+      case Some((_, minor)) if minor >= 12 => "0.12.3"
+      case Some((_, minor)) if minor == 11 => "0.12.0-M3"
+      case _ => "0.9.3"
+    }
+  }
+
+
   val twitterUtil: String => String = {
     s => CrossVersion.partialVersion(s) match {
       case Some((_, minor)) if minor >= 13 => "19.10.0"
@@ -312,8 +321,8 @@ lazy val readme = (project in file("readme"))
       Versions.macroCompatVersion(scalaVersion.value),
       "org.scala-lang" % "scala-compiler" % scalaVersion.value,
       "com.outworkers" %% "util-samplers" % Versions.util,
-      "io.circe" %% "circe-parser" % Versions.circe,
-      "io.circe" %% "circe-generic" % Versions.circe,
+      "io.circe" %% "circe-parser" % Versions.circeVersion(scalaVersion.value),
+      "io.circe" %% "circe-generic" % Versions.circeVersion(scalaVersion.value),
       "org.scalatest" %% "scalatest" % Versions.scalatest
     ) ++ Versions.paradiseVersion(scalaVersion.value)
   ).dependsOn(
@@ -343,8 +352,8 @@ lazy val phantomDsl = (project in file("phantom-dsl"))
       "org.joda"                     %  "joda-convert"                      % Versions.jodaConvert,
       "com.datastax.cassandra"       %  "cassandra-driver-core"             % Versions.datastax,
       "org.json4s"                   %% "json4s-native"                     % Versions.json4s % Test,
-      "io.circe"                     %% "circe-parser"                      % Versions.circe % Test,
-      "io.circe"                     %% "circe-generic"                     % Versions.circe % Test,
+      "io.circe"                     %% "circe-parser"                      % Versions.circeVersion(scalaVersion.value) % Test,
+      "io.circe"                     %% "circe-generic"                     % Versions.circeVersion(scalaVersion.value) % Test,
       "org.scalamock"                %% "scalamock"                         % Versions.scalamock % Test,
       "org.scalacheck"               %% "scalacheck"                        % Versions.scalacheck % Test,
       "com.outworkers"               %% "util-samplers"                     % Versions.util % Test,
