@@ -20,6 +20,7 @@ import shapeless.{HList, HNil}
 import scala.annotation.tailrec
 import scala.reflect.macros.whitebox
 import scala.util.control.NonFatal
+import scala.collection.compat._
 
 @macrocompat.bundle
 trait HListHelpers {
@@ -34,7 +35,7 @@ trait HListHelpers {
   def printType(tpe: Type): String = showCode(tq"${tpe.dealias}")
 
   def showCollection[
-    M[X] <: TraversableOnce[X]
+    M[X] <: IterableOnce[X]
   ](traversable: M[Type], sep: String = ", "): String = {
     traversable map printType mkString sep
   }

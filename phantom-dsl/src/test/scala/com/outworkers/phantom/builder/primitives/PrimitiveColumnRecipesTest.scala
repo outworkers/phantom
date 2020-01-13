@@ -67,6 +67,7 @@ class PrimitiveColumnRecipesTest extends PhantomSuite {
   }
 
   it should "retrieve an empty ingredients set" in {
+    import com.outworkers.util.macros.debug.Options.ShowTrees
     val sample = gen[NpeRecipe]
 
     val chain = for {

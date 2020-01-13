@@ -37,6 +37,7 @@ import org.joda.time.DateTimeZone
 import shapeless.{ HNil, :: }
 
 import scala.concurrent.ExecutionContextExecutor
+import scala.Iterable
 
 trait DefaultImports extends ImplicitMechanism
   with CreateImplicits
@@ -459,7 +460,7 @@ trait DefaultImports extends ImplicitMechanism
       )
     }
 
-    def putAll[L](values: L)(implicit ev1: L => Traversable[(A, B)]): UpdateClause.Default = {
+    def putAll[L](values: L)(implicit ev1: L => Iterable[(A, B)]): UpdateClause.Default = {
       new UpdateClause.Default(
         QueryBuilder.Collections.put(col.name, values.map { case (key, value) =>
           col.keyAsCql(key) -> col.valueAsCql(value)

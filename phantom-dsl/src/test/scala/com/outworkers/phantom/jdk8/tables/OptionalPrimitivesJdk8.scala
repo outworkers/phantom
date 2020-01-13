@@ -30,14 +30,20 @@ case class OptionalJdk8Row(
   localDateTime: Option[JdkLocalDateTime]
 )
 
+object Bla {
+
+  implicit val tpPrimitive: Primitive[OffsetDateTime] = OffsetDateTimeIsPrimitive()(Primitive[(Long, String)]())
+  implicit val zonedDt: Primitive[ZonedDateTime] = zonedDateTimePrimitive()(Primitive[(Long, String)]())
+}
+
+import Bla._
+
 abstract class OptionalPrimitivesJdk8 extends Table[
   OptionalPrimitivesJdk8,
   OptionalJdk8Row
 ] {
 
   object pkey extends StringColumn with PartitionKey
-
-  implicit val tpPrimitive = OffsetDateTimeIsPrimitive()
 
   object offsetDateTime extends OptionalCol[OffsetDateTime]()
 

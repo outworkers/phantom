@@ -86,7 +86,7 @@ case class InsertQuery[
   }
 
   def values[RR](insertions: (CQLQuery, CQLQuery)*): InsertQuery[Table, Record, Status, PS] = {
-    val (appendedCols, appendedVals) = (insertions :\ columnsPart -> valuePart) {
+    val (appendedCols, appendedVals) = insertions.foldRight(columnsPart -> valuePart) {
       case ((columnRef, valueRef), cvs@(cols, vals)) =>
         Option(valueRef.toString) match {
           case Some(_) => Tuple2(cols append columnRef, vals append valueRef)

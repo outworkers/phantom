@@ -18,8 +18,8 @@ package com.outworkers.phantom.builder.query.execution
 import com.datastax.driver.core.{PagingState, Session, Statement}
 import com.outworkers.phantom.builder.{LimitBound, Unlimited}
 import com.outworkers.phantom.{CassandraTable, ResultSet, Row}
-import scala.collection.generic.CanBuildFrom
 import scala.concurrent.ExecutionContextExecutor
+import scala.collection.compat._
 
 abstract class ResultQueryInterface[
   F[_],
@@ -67,10 +67,10 @@ abstract class ResultQueryInterface[
     * @tparam Col The higher kinded type used to abstract over the implementation of the resulting collection.
     * @return A tuple of the mapped collection and the original [[ResultSet]].
     */
-  private[phantom] def pagination[Col[X] <: TraversableOnce[X]](res: ResultSet)(
-    implicit cbf: CanBuildFrom[Nothing, R, Col[R]]
+  private[phantom] def pagination[Col[X] <: IterableOnce[X]](res: ResultSet)(
+    implicit cbf: Factory[R, Col[R]]
   ): (Col[R], ResultSet) = {
-    val builder = cbf()
+    val builder = cbf.newBuilder
     val count = res.getAvailableWithoutFetching
     builder.sizeHint(count)
     var i = 0
@@ -82,7 +82,7 @@ abstract class ResultQueryInterface[
   }
 
   private[phantom] def paginate(res: ResultSet)(
-    implicit cbf: CanBuildFrom[Nothing, R, List[R]]
+    implicit cbf: Factory[R, List[R]]
   ): ListResult[R] = {
     val (pag, set) = pagination[List](res)
     ListResult(pag, set)
@@ -179,7 +179,7 @@ abstract class ResultQueryInterface[
   def paginateRecord()(
     implicit session: Session,
     ec: ExecutionContextExecutor,
-    cbf: CanBuildFrom[Nothing, R, List[R]]
+    cbf: Factory[R, List[R]]
   ): F[ListResult[R]] = future() map paginate
 
   /**
@@ -197,7 +197,7 @@ abstract class ResultQueryInterface[
   def paginateRecord(state: PagingState)(
     implicit session: Session,
     ec: ExecutionContextExecutor,
-    cbf: CanBuildFrom[Nothing, R, Iterator[R]]
+    cbf: Factory[R, Iterator[R]]
   ): F[ListResult[R]] = future(_.setPagingState(state)) map paginate
 
   /**
@@ -211,7 +211,7 @@ abstract class ResultQueryInterface[
   def paginateRecord(state: Option[PagingState])(
     implicit session: Session,
     ec: ExecutionContextExecutor,
-    cbf: CanBuildFrom[Nothing, R, List[R]]
+    cbf: Factory[R, List[R]]
   ): F[ListResult[R]] = state match {
     case None => paginateRecord()
     case Some(defined) => paginateRecord(defined)
@@ -232,7 +232,7 @@ abstract class ResultQueryInterface[
   def paginateRecord(modifier: Statement => Statement)(
     implicit session: Session,
     ec: ExecutionContextExecutor,
-    cbf: CanBuildFrom[Nothing, R, List[R]]
+    cbf: Factory[R, List[R]]
   ): F[ListResult[R]] = future(modifier) map paginate
 
   /**

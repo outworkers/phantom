@@ -16,10 +16,11 @@
 package com.outworkers.phantom.builder.query.execution
 
 import com.outworkers.phantom.ResultSet
+import scala.collection.compat._
 
 
 trait ExecutionEngine[F[_]] {
 
-  def future[M[X] <: TraversableOnce[X]](col: QueryCollection[M]): F[M[ResultSet]]
+  def future[M[X] <: IterableOnce[X]](col: QueryCollection[M]): F[M[ResultSet]]
 
 }

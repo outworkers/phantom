@@ -28,8 +28,8 @@ import com.outworkers.phantom.macros.{==:==, SingleGeneric, TableHelper}
 import com.outworkers.phantom.{CassandraTable, ResultSet, Row}
 import shapeless.{Generic, HList}
 
-import scala.collection.generic.CanBuildFrom
 import scala.concurrent.ExecutionContextExecutor
+import scala.collection.compat._
 
 abstract class QueryContext[P[_], F[_], Timeout](
   defaultTimeout: Timeout
@@ -49,7 +49,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
 
   implicit val adapter: GuavaAdapter[F] = promiseInterface.adapter
 
-  def executeStatements[M[X] <: TraversableOnce[X]](
+  def executeStatements[M[X] <: IterableOnce[X]](
     col: QueryCollection[M]
   ): ExecutableStatements[F, M] = {
     new ExecutableStatements[F, M](col)
@@ -165,8 +165,8 @@ abstract class QueryContext[P[_], F[_], Timeout](
   implicit class DatabaseOperation[DB <: Database[DB]](
     override val db: Database[DB]
   ) extends DbOps[P, F, DB, Timeout](db) {
-    override def execute[M[X] <: TraversableOnce[X]](col: QueryCollection[M])(
-      implicit cbf: CanBuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]]
+    override def execute[M[X] <: IterableOnce[X]](col: QueryCollection[M])(
+      implicit cbf: BuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]]
     ): ExecutableStatements[F, M] = {
       executeStatements(col)
     }
@@ -315,7 +315,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
     ): F[ResultSet] = promiseInterface.adapter.fromGuava(table.store(input).executableQuery)
 
     def storeRecords[
-      M[X] <: TraversableOnce[X],
+      M[X] <: IterableOnce[X],
       V1,
       Repr <: HList,
       HL <: HList,
@@ -329,8 +329,8 @@ abstract class QueryContext[P[_], F[_], Timeout](
       ev: Out ==:== Repr,
       ctx: ExecutionContextExecutor,
       cbfB: CanBuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]],
-      fbf: CanBuildFrom[M[F[ResultSet]], F[ResultSet], M[F[ResultSet]]],
-      fbf2: CanBuildFrom[M[F[ResultSet]], ResultSet, M[ResultSet]]
+      fbf: BuildFrom[M[F[ResultSet]], F[ResultSet], M[F[ResultSet]]],
+      fbf2: BuildFrom[M[F[ResultSet]], ResultSet, M[ResultSet]]
     ): F[M[ResultSet]] = {
       val queries = inputs.foldLeft(cbfB()) { (acc, el) => acc += table.store(el).executableQuery }
 
@@ -338,19 +338,19 @@ abstract class QueryContext[P[_], F[_], Timeout](
     }
   }
 
-  implicit class QueryCollectionOps[M[X] <: TraversableOnce[X]](val col: QueryCollection[M]) {
+  implicit class QueryCollectionOps[M[X] <: IterableOnce[X]](val col: QueryCollection[M]) {
 
     def future()(
       implicit session: Session,
       ec: ExecutionContextExecutor,
-      fbf: CanBuildFrom[M[F[ResultSet]], F[ResultSet], M[F[ResultSet]]],
-      ebf: CanBuildFrom[M[F[ResultSet]], ResultSet, M[ResultSet]]
+      fbf: BuildFrom[M[F[ResultSet]], F[ResultSet], M[F[ResultSet]]],
+      ebf: BuildFrom[M[F[ResultSet]], ResultSet, M[ResultSet]]
     ): F[M[ResultSet]] = executeStatements(col).future()
 
     def sequence()(
       implicit session: Session,
       ec: ExecutionContextExecutor,
-      cbf: CanBuildFrom[M[ExecutableCqlQuery], ResultSet, M[ResultSet]]
+      cbf: BuildFrom[M[ExecutableCqlQuery], ResultSet, M[ResultSet]]
     ): F[M[ResultSet]] = executeStatements(col).sequence()
   }
 

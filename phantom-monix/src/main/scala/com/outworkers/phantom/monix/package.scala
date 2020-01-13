@@ -23,18 +23,18 @@ import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, Execu
 import com.outworkers.phantom.monix.execution.MonixImplicits.taskMonad
 import com.outworkers.phantom.monix.execution.MonixQueryContext
 
-import scala.collection.generic.CanBuildFrom
+import scala.collection.compat._
 
 package object monix extends MonixQueryContext with DefaultImports {
 
-  implicit class ExecuteQueries[M[X] <: TraversableOnce[X]](val qc: QueryCollection[M]) extends AnyVal {
+  implicit class ExecuteQueries[M[X] <: IterableOnce[X]](val qc: QueryCollection[M]) extends AnyVal {
     def executable(): ExecutableStatements[Task, M] = {
       new ExecutableStatements[Task, M](qc)
     }
 
     def future()(implicit session: Session,
-      fbf: CanBuildFrom[M[Task[ResultSet]], Task[ResultSet], M[Task[ResultSet]]],
-      ebf: CanBuildFrom[M[Task[ResultSet]], ResultSet, M[ResultSet]]
+      fbf: BuildFrom[M[Task[ResultSet]], Task[ResultSet], M[Task[ResultSet]]],
+      ebf: BuildFrom[M[Task[ResultSet]], ResultSet, M[ResultSet]]
     ): Task[M[ResultSet]] = executable().future()
   }
 

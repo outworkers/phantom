@@ -23,9 +23,9 @@ import com.outworkers.phantom.macros.toolbelt.{HListHelpers, WhiteboxToolbelt}
 import com.outworkers.phantom.{CassandraTable, SelectTable}
 
 import scala.collection.compat._
-import scala.collection.generic.CanBuildFrom
 import scala.collection.immutable.ListMap
 import scala.reflect.macros.whitebox
+import scala.Iterable
 
 @macrocompat.bundle
 trait RootMacro extends HListHelpers with WhiteboxToolbelt {
@@ -117,9 +117,9 @@ trait RootMacro extends HListHelpers with WhiteboxToolbelt {
     def record: Record.Field = left
   }
 
-  implicit class ListMapOps[K, V, M[X] <: Traversable[X]](
+  implicit class ListMapOps[K, V, M[X] <: Iterable[X]](
     val lm: ListMap[K, M[V]]
-  )(implicit cbf: CanBuildFrom[Nothing, V, M[V]]) {
+  )(implicit cbf: Factory[V, M[V]]) {
 
     /**
       * Every entry in this ordered map is a traversable of type [[M]].
@@ -129,7 +129,7 @@ trait RootMacro extends HListHelpers with WhiteboxToolbelt {
       */
     def remove(key: K, elem: V): ListMap[K, M[V]] = {
       lm.get(key) match {
-        case Some(col) => lm + (key -> col.filterNot(elem ==).to[M])
+        case Some(col) => lm + (key -> col.filterNot(elem ==).to(M))
         case None => lm
       }
     }

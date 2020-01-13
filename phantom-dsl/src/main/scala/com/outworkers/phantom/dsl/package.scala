@@ -19,21 +19,21 @@ import com.outworkers.phantom.builder.query.QueryOptions
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.execution._
 
-import scala.collection.generic.CanBuildFrom
 import scala.concurrent.Future
+import scala.collection.compat._
 
 package object dsl extends ScalaQueryContext with DefaultImports {
 
   implicit val futureMonad: FutureMonad[Future] = ScalaFutureImplicits.monadInstance
 
-  implicit class ExecuteQueries[M[X] <: TraversableOnce[X]](val qc: QueryCollection[M]) extends AnyVal {
+  implicit class ExecuteQueries[M[X] <: IterableOnce[X]](val qc: QueryCollection[M]) extends AnyVal {
     def executable(): ExecutableStatements[Future, M] = {
       new ExecutableStatements[Future, M](qc)(futureMonad, promiseInterface.adapter)
     }
 
     def future()(implicit session: Session,
-      fbf: CanBuildFrom[M[Future[ResultSet]], Future[ResultSet], M[Future[ResultSet]]],
-      ebf: CanBuildFrom[M[Future[ResultSet]], ResultSet, M[ResultSet]]
+      fbf: BuildFrom[M[Future[ResultSet]], Future[ResultSet], M[Future[ResultSet]]],
+      ebf: BuildFrom[M[Future[ResultSet]], ResultSet, M[ResultSet]]
     ): Future[M[ResultSet]] = executable().future()
   }
 

@@ -19,8 +19,9 @@ import com.datastax.driver.core.{Session, Statement}
 import com.outworkers.phantom.ResultSet
 
 import scala.concurrent.ExecutionContextExecutor
+import scala.collection.compat._
 
-trait MultiQueryInterface[M[X] <: TraversableOnce[X], F[_]] {
+trait MultiQueryInterface[M[X] <: IterableOnce[X], F[_]] {
 
   def future()(
     implicit session: Session,

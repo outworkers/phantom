@@ -21,7 +21,8 @@ import com.datastax.driver.core._
 import com.datastax.driver.core.exceptions.{DriverInternalError, InvalidTypeException}
 import com.outworkers.phantom.builder.QueryBuilder
 
-import scala.collection.generic.CanBuildFrom
+import scala.Iterable
+import scala.collection.compat._
 
 object Utils {
   private[phantom] def unsupported(version: ProtocolVersion): DriverInternalError = {
@@ -91,7 +92,7 @@ object Utils {
     * @param version  the protocol version to use
     * @return The serialized collection
     */
-  def pack[M[X] <: Traversable[X]](
+  def pack[M[X] <: Iterable[X]](
     buffers: M[ByteBuffer],
     elements: Int,
     version: ProtocolVersion
@@ -111,12 +112,12 @@ object Primitives {
 
   private[phantom] def emptyCollection: ByteBuffer = ByteBuffer.allocate(0)
 
-  private[this] def collectionPrimitive[M[X] <: TraversableOnce[X], RR](
+  private[this] def collectionPrimitive[M[X] <: IterableOnce[X], RR](
     cType: String,
     converter: M[RR] => String
   )(
     implicit ev: Primitive[RR],
-    cbf: CanBuildFrom[Nothing, RR, M[RR]]
+    cbf: Factory[RR, M[RR]]
   ): Primitive[M[RR]] = new Primitive[M[RR]] {
     override def frozen: Boolean = true
 
@@ -142,12 +143,12 @@ object Primitives {
 
     override def deserialize(bytes: ByteBuffer, version: ProtocolVersion): M[RR] = {
       if (bytes == Primitive.nullValue || bytes.remaining() == 0) {
-        cbf().result()
+        cbf().newBuildercbf.newBuilder
       } else {
         try {
           val input = bytes.duplicate()
           val size = CodecUtils.readSize(input, version)
-          val coll = cbf()
+          val coll = cbf.newBuilder
           coll.sizeHint(size)
 
           for (_ <- 0 until size) {

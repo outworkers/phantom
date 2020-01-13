@@ -21,8 +21,8 @@ import com.outworkers.phantom.{Manager, ResultSet}
 import com.outworkers.phantom.builder.batch.BatchWithQuery
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 
-import scala.collection.generic.CanBuildFrom
 import scala.concurrent.ExecutionContextExecutor
+import scala.collection.compat._
 
 trait GuavaAdapter[F[_]] {
 
@@ -59,7 +59,7 @@ trait GuavaAdapter[F[_]] {
 object ExecutionHelper {
   def sequencedTraverse[
     F[_],
-    M[X] <: TraversableOnce[X],
+    M[X] <: IterableOnce[X],
     A,
     B
   ](in: M[A])(fn: A => F[B])(
@@ -82,19 +82,19 @@ object ExecutionHelper {
     */
   def parallel[
     F[_],
-    M[X] <: TraversableOnce[X],
+    M[X] <: IterableOnce[X],
     A](in: M[F[A]])(
     implicit cbf: CanBuildFrom[M[F[A]], A, M[A]],
     fMonad: FutureMonad[F],
     ctx: ExecutionContextExecutor
   ): F[M[A]] = {
-    (fMonad.pure(cbf()) /: in) { (fr, fa) => fr.zipWith(fa)(_ += _) }.map(_.result())
+    in.foldLeft(fMonad.pure(cbf())) { (fr, fa) => fr.zipWith(fa)(_ += _) }.map(_.result())
   }
 }
 
 class ExecutableStatements[
   F[_],
-  M[X] <: TraversableOnce[X]
+  M[X] <: IterableOnce[X]
 ](val queryCol: QueryCollection[M])(
   implicit fMonad: FutureMonad[F],
   adapter: GuavaAdapter[F]
@@ -115,7 +115,7 @@ class ExecutableStatements[
     implicit session: Session,
     ec: ExecutionContextExecutor,
     fbf: CanBuildFrom[M[F[ResultSet]], F[ResultSet], M[F[ResultSet]]],
-    ebf: CanBuildFrom[M[F[ResultSet]], ResultSet, M[ResultSet]]
+    ebf: BuildFrom[M[F[ResultSet]], ResultSet, M[ResultSet]]
   ): F[M[ResultSet]] = {
 
     val builder = fbf()
@@ -131,7 +131,7 @@ class ExecutableStatements[
   def sequence()(
     implicit session: Session,
     ec: ExecutionContextExecutor,
-    cbf: CanBuildFrom[M[ExecutableCqlQuery], ResultSet, M[ResultSet]]
+    cbf: BuildFrom[M[ExecutableCqlQuery], ResultSet, M[ResultSet]]
   ): F[M[ResultSet]] = {
     ExecutionHelper.sequencedTraverse(queryCol.queries) { query =>
       Manager.logger.info(s"Executing query: ${query.qb.queryString}")

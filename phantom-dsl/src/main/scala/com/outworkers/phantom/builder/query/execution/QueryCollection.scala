@@ -15,10 +15,10 @@
  */
 package com.outworkers.phantom.builder.query.execution
 
-import scala.collection.generic.CanBuildFrom
+import scala.collection.compat._
 
-class QueryCollection[M[X] <: TraversableOnce[X]](val queries: M[ExecutableCqlQuery])(
-  implicit cbf: CanBuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]]
+class QueryCollection[M[X] <: IterableOnce[X]](val queries: M[ExecutableCqlQuery])(
+  implicit cbf: BuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]]
 ) {
 
   def isEmpty: Boolean = queries.isEmpty
@@ -26,7 +26,7 @@ class QueryCollection[M[X] <: TraversableOnce[X]](val queries: M[ExecutableCqlQu
   def size: Int = queries.size
 
   def appendAll(appendable: M[ExecutableCqlQuery]): QueryCollection[M] = {
-    val builder = cbf(queries)
+    val builder = cbf.newBuilder(queries)
 
     for (q <- queries) builder += q
     for (q <- appendable) builder += q
