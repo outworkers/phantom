@@ -30,6 +30,7 @@ import shapeless.{Generic, HList}
 
 import scala.concurrent.ExecutionContextExecutor
 import scala.collection.compat._
+import scala.collection.Seq
 
 abstract class QueryContext[P[_], F[_], Timeout](
   defaultTimeout: Timeout
