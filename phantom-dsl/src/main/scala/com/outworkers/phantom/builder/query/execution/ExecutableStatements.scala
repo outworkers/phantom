@@ -63,11 +63,11 @@ object ExecutionHelper {
     A,
     B
   ](in: M[A])(fn: A => F[B])(
-    implicit cbf: BuildFrom[M[A], B, M[B]],
+    implicit cbf: Factory[B, M[B]],
     ctx: ExecutionContextExecutor,
     fMonad: FutureMonad[F]
   ): F[M[B]] = {
-    in.foldLeft(fMonad.pure(cbf(null.asInstanceOf[M[A]]))) { (fr, a) =>
+    in.foldLeft(fMonad.pure(cbf())) { (fr, a) =>
       for (r <- fr; b <- fn(a)) yield r += b
     }.map(_.result())
   }
@@ -133,7 +133,7 @@ class ExecutableStatements[
   def sequence()(
     implicit session: Session,
     ec: ExecutionContextExecutor,
-    cbf: BuildFrom[M[ExecutableCqlQuery], ResultSet, M[ResultSet]]
+    cbf: Factory[ResultSet, M[ResultSet]]
   ): F[M[ResultSet]] = {
     ExecutionHelper.sequencedTraverse(queryCol.queries) { query =>
       Manager.logger.info(s"Executing query: ${query.qb.queryString}")

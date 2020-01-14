@@ -352,7 +352,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
     def sequence()(
       implicit session: Session,
       ec: ExecutionContextExecutor,
-      cbf: BuildFrom[M[ExecutableCqlQuery], ResultSet, M[ResultSet]]
+      cbf: Factory[ResultSet, M[ResultSet]]
     ): F[M[ResultSet]] = executeStatements(col).sequence()
   }
 
