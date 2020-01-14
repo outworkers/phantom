@@ -145,7 +145,7 @@ class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPrope
     forAll(protocolGen, listGen) { (version: ProtocolVersion, sample: M[T]) =>
       val phantom = ev2.serialize(sample, version)
 
-      val javaCol = asJv(sample.map(conv).asInstanceOf[M[JavaType]])
+      val javaCol = asJv(cbf2.fromSpecific(sample.map(conv)))
       val datastax = codec.serialize(javaCol, version)
 
       if (!java.util.Arrays.equals(phantom.array(), datastax.array())) {

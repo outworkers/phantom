@@ -398,7 +398,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
       { for (x1 <- x; y1 <- y) yield ev.compare(x1, y1) } getOrElse 0
     }
 
-    override def parseString(str: String): Option[Option[T]] = ???
+    def parseString(str: String): Option[Option[T]] = ???
   }
 }
 
