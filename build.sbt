@@ -150,7 +150,6 @@ lazy val Versions = new {
     s => CrossVersion.partialVersion(s) match {
       case Some((_, minor)) if minor >= 13 => "org.typelevel" % "macro-compat_2.13.0-RC2" % "1.1.1"
       case Some((_, minor)) if minor < 13 => "org.typelevel" %% "macro-compat" % macroCompat
-
     }
   }
 
