@@ -28,7 +28,7 @@ trait MonixSuite extends PhantomSuite {
     private[this] val source = f.memoize
 
     override def eitherValue: Option[Either[Throwable, T]] = {
-      source.runAsync.value match {
+      source.runToFuture.value match {
         case Some(Success(ret)) => Some(Right(ret))
         case Some(Failure(err)) => Some(Left(err))
         case None => None
