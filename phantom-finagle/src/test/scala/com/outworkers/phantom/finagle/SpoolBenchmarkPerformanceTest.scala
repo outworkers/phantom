@@ -20,7 +20,7 @@ import com.outworkers.util.samplers._
 import com.twitter.util.{ Await, Future }
 import org.joda.time.{DateTime, DateTimeZone}
 import org.scalameter.api.{Gen => MeterGen, gen => _, _}
-import com.twitter.conversions.time._
+import com.twitter.conversions.DurationOps._
 
 class SpoolBenchmarkPerformanceTest extends Bench.LocalTime with TestDatabase.connector.Connector {
 

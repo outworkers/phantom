@@ -17,7 +17,7 @@ package com.outworkers.phantom.finagle.execution
 
 import com.outworkers.phantom.builder.query.execution.{FutureMonad, PromiseInterface}
 import com.outworkers.phantom.ops.QueryContext
-import com.twitter.conversions.time._
+import com.twitter.conversions.DurationOps._
 import com.twitter.util.{Await, Duration, Future, Promise}
 
 import scala.concurrent.ExecutionContextExecutor
