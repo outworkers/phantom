@@ -129,7 +129,7 @@ trait RootMacro extends HListHelpers with WhiteboxToolbelt {
       */
     def remove(key: K, elem: V): ListMap[K, M[V]] = {
       lm.get(key) match {
-        case Some(col) => lm + (key -> col.filterNot(elem ==).asInstanceOf[M[V]])
+        case Some(col) => lm + (key -> cbf.fromSpecific(col.filterNot(elem ==)))
         case None => lm
       }
     }
