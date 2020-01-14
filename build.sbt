@@ -96,7 +96,7 @@ scalacOptions in ThisBuild ++= scalacOptionsFn(scalaVersion.value)
 
 lazy val Versions = new {
   val logback = "1.2.3"
-  val util = "0.54.0"
+  val util = "0.53.0"
   val json4s = "3.6.7"
   val datastax = "3.6.0"
   val scalatest = "3.0.8"
@@ -115,7 +115,7 @@ lazy val Versions = new {
   val macroParadise = "2.1.1"
   val circe = "0.12.3"
   val scala211 = "2.11.12"
-  val scala212 = "2.12.8"
+  val scala212 = "2.12.10"
   val scala213 = "2.13.1"
   val monix = "3.1.0-2156c0e"
   val macroCompat = "1.1.1"
