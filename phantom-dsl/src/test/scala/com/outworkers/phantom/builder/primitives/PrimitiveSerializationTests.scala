@@ -29,7 +29,7 @@ import org.scalatest.Assertion
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 
 import scala.collection.JavaConverters._
-import scala.collection.generic.CanBuildFrom
+import scala.collection.compat._
 
 /**
   * A more extensive ScalaCheck based parity check of binary serialization in between
@@ -90,10 +90,10 @@ class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPrope
   )(
     implicit ev: Primitive[T],
     ev2: Primitive[M[T]],
-    cbf: CanBuildFrom[Nothing, T, M[T]]
+    cbf: Factory[T, M[T]]
   ): Assertion = {
     val codec: TypeCodec[JType[T]] = registry.codecFor(DataType.list(dataType))
-    val empty = cbf().result()
+    val empty = cbf.newBuilder.result()
 
     forAll(protocolGen) { version =>
       val phantom = ev2.serialize(empty, version)
@@ -136,8 +136,8 @@ class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPrope
   )(
     implicit ev: Primitive[T],
     ev2: Primitive[M[T]],
-    cbf: CanBuildFrom[Nothing, T, M[T]],
-    cbf2: CanBuildFrom[Nothing, JavaType, M[JavaType]]
+    cbf: Factory[T, M[T]],
+    cbf2: Factory[JavaType, M[JavaType]]
   ): Assertion = {
     val listGen = Gen.buildableOf[M[T], T](gen)
     val codec: TypeCodec[JType[JavaType]] = registry.codecFor(DataType.list(dataType))
@@ -145,7 +145,7 @@ class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPrope
     forAll(protocolGen, listGen) { (version: ProtocolVersion, sample: M[T]) =>
       val phantom = ev2.serialize(sample, version)
 
-      val javaCol = asJv(sample.map(conv).to[M](cbf2))
+      val javaCol = asJv(sample.map(conv).asInstanceOf[M[JavaType]])
       val datastax = codec.serialize(javaCol, version)
 
       if (!java.util.Arrays.equals(phantom.array(), datastax.array())) {
@@ -165,7 +165,7 @@ class PrimitiveSerializationTests extends PhantomSuite with GeneratorDrivenPrope
   )(
     implicit ev: Primitive[T],
     ev2: Primitive[M[T]],
-    cbf: CanBuildFrom[Nothing, T, M[T]]
+    cbf: Factory[T, M[T]]
   ): Assertion = {
     val listGen = Gen.buildableOf[M[T], T](gen)
     val codec: TypeCodec[JType[T]] = registry.codecFor(DataType.list(dataType))

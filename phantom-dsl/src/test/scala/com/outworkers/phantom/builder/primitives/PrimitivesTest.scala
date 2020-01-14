@@ -28,7 +28,8 @@ import com.outworkers.util.samplers._
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 
-import scala.collection.generic.CanBuildFrom
+import scala.collection.compat.Factory
+
 
 /**
   * Test suite to check for some special edge cases in primitive generation and serialization.
@@ -46,7 +47,7 @@ class PrimitivesTest extends FlatSpec with Matchers with GeneratorDrivenProperty
     implicit arb: Arbitrary[T],
     ev: Primitive[T],
     ev2: Primitive[M[T]],
-    cbf: CanBuildFrom[Nothing, T, M[T]]
+    cbf: Factory[T, M[T]]
   ): Assertion = {
     val colGen = Gen.buildableOf[M[T], T](arb)
     forAll(colGen) { (col: M[T]) =>
