@@ -265,7 +265,6 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     Resolver.sonatypeRepo("releases"),
     Resolver.jcenterRepo
   ),
-  scalafixDependencies in ThisBuild += "org.scala-lang.modules" %% "scala-collection-migrations" % Versions.collectionCompat,
   Global / logLevel := { if (Publishing.runningUnderCi) Level.Error else Level.Info },
   Compile  / logLevel := { if (Publishing.runningUnderCi) Level.Error else Level.Info },
   Test / logLevel := { if (Publishing.runningUnderCi) Level.Error else Level.Info },
@@ -304,7 +303,6 @@ lazy val phantom = (project in file("."))
     phantomConnectors,
     phantomFinagle,
     //phantomStreams,
-    phantomSbtPlugin,
     phantomMonix,
     readme
   )
@@ -409,25 +407,6 @@ lazy val phantomThrift = (project in file("phantom-thrift"))
   ).dependsOn(
     phantomDsl % "compile->compile;test->test;",
     phantomFinagle
-  )
-
-lazy val phantomSbtPlugin = (project in file("phantom-sbt"))
-  .settings(
-    sharedSettings: _*
-  ).settings(
-    name := "phantom-sbt",
-    moduleName := "phantom-sbt",
-    crossScalaVersions := Seq(Versions.scala212),
-    publishMavenStyle := false,
-    sbtPlugin := true,
-    publishArtifact := scalaVersion.value.startsWith("2.12"),
-    libraryDependencies ++= Seq(
-      "com.datastax.cassandra" % "cassandra-driver-core" % Versions.datastax,
-      "org.cassandraunit" % "cassandra-unit"  % Versions.cassandraUnit excludeAll (
-        ExclusionRule("org.slf4j", "slf4j-log4j12"),
-        ExclusionRule("org.slf4j", "slf4j-jdk14")
-      )
-    )
   )
 
 //lazy val phantomStreams = (project in file("phantom-streams"))

@@ -45,8 +45,6 @@ addSbtPlugin("com.timushev.sbt" % "sbt-updates" % "0.5.0")
 
 addSbtPlugin("com.twitter" % "scrooge-sbt-plugin" % Versions.scrooge)
 
-addSbtPlugin("ch.epfl.scala" % "sbt-scalafix" % Versions.scalaFix)
-
 addSbtPlugin("org.tpolecat" % "tut-plugin" % "0.6.13")
 
 libraryDependencies += "org.slf4j" % "slf4j-nop" % "1.7.22"

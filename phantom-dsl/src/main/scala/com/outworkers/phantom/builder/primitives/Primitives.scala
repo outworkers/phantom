@@ -142,7 +142,7 @@ object Primitives {
 
     override def deserialize(bytes: ByteBuffer, version: ProtocolVersion): M[RR] = {
       if (bytes == Primitive.nullValue || bytes.remaining() == 0) {
-        cbf.apply().result()
+        cbf.newBuilder.result()
       } else {
         try {
           val input = bytes.duplicate()

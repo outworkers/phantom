@@ -67,7 +67,7 @@ object ExecutionHelper {
     ctx: ExecutionContextExecutor,
     fMonad: FutureMonad[F]
   ): F[M[B]] = {
-    in.foldLeft(fMonad.pure(cbf())) { (fr, a) =>
+    in.iterator.foldLeft(fMonad.pure(cbf.newBuilder)) { (fr, a) =>
       for (r <- fr; b <- fn(a)) yield r += b
     }.map(_.result())
   }
@@ -88,7 +88,7 @@ object ExecutionHelper {
     fMonad: FutureMonad[F],
     ctx: ExecutionContextExecutor
   ): F[M[A]] = {
-    in.foldLeft(fMonad.pure(cbf.apply())) {
+    in.iterator.foldLeft(fMonad.pure(cbf.newBuilder)) {
       (fr, fa) => fr.zipWith(fa)(_ += _)
     } map(_.result())
   }
@@ -120,9 +120,9 @@ class ExecutableStatements[
     ebf: Factory[ResultSet, M[ResultSet]]
   ): F[M[ResultSet]] = {
 
-    val builder = fbf()
+    val builder = fbf.newBuilder
 
-    for (q <- queryCol.queries) {
+    for (q <- queryCol.queries.iterator) {
       Manager.logger.info(s"Executing query: ${q.qb.queryString}")
       builder += adapter.fromGuava(q)
     }

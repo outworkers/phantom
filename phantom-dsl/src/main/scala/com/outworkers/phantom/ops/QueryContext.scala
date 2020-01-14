@@ -334,7 +334,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
       fbf: Factory[F[ResultSet], M[F[ResultSet]]],
       fbf2: Factory[ResultSet, M[ResultSet]]
     ): F[M[ResultSet]] = {
-      val queries = inputs.foldLeft(cbfEntry()) { (acc, el) => acc += table.store(el).executableQuery }
+      val queries = inputs.iterator.foldLeft(cbfEntry.newBuilder) { (acc, el) => acc += table.store(el).executableQuery }
 
       executeStatements[M](new QueryCollection[M](queries.result())).future()(session, ctx, fbf, fbf2)
     }
@@ -397,6 +397,8 @@ abstract class QueryContext[P[_], F[_], Timeout](
     override def compare(x: Option[T], y: Option[T]): Int = {
       { for (x1 <- x; y1 <- y) yield ev.compare(x1, y1) } getOrElse 0
     }
+
+    override def parseString(str: String): Option[Option[T]] = ???
   }
 }
 
