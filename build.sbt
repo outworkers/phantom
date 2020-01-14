@@ -174,9 +174,9 @@ lazy val Versions = new {
 
   val twitterUtil: String => String = {
     s => CrossVersion.partialVersion(s) match {
-      case Some((_, minor)) if minor >= 13 => "19.10.0"
-      case Some((_, minor)) if minor == 12 => "19.1.0"
-      case _ => "6.34.0"
+      case Some((_, minor)) if minor >= 13 => "19.12.0"
+      case Some((_, minor)) if minor == 12 => "19.12.0"
+      case _ => "19.12.0"
     }
   }
 

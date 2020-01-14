@@ -25,11 +25,11 @@ import scala.concurrent.ExecutionContextExecutor
 object TwitterFutureImplicits {
 
   val monadInstance: FutureMonad[Future] = new FutureMonad[Future] {
-    override def flatMap[A, B](fa: Future[A])(f: (A) => Future[B])(
+    override def flatMap[A, B](fa: Future[A])(f: A => Future[B])(
       implicit ctx: ExecutionContextExecutor
     ): Future[B] = fa flatMap f
 
-    override def map[A, B](source: Future[A])(f: (A) => B)(
+    override def map[A, B](source: Future[A])(f: A => B)(
       implicit ctx: ExecutionContextExecutor
     ): Future[B] = source map f
 
