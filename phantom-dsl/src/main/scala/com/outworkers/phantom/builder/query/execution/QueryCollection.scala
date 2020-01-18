@@ -21,15 +21,15 @@ class QueryCollection[M[X] <: IterableOnce[X]](val queries: M[ExecutableCqlQuery
   implicit cbf: BuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]]
 ) {
 
-  def isEmpty: Boolean = queries.isEmpty
+  def isEmpty: Boolean = queries.iterator.isEmpty
 
-  def size: Int = queries.size
+  def size: Int = queries.iterator.size
 
   def appendAll(appendable: M[ExecutableCqlQuery]): QueryCollection[M] = {
     val builder = cbf.newBuilder(queries)
 
-    for (q <- queries) builder += q
-    for (q <- appendable) builder += q
+    for (q <- queries.iterator) builder += q
+    for (q <- appendable.iterator) builder += q
     new QueryCollection(builder.result())
   }
 }

@@ -32,7 +32,7 @@ case class CQLQuery(override val queryString: String) extends KeySpaceCQLQuery {
   def append(st: CQLQuery): CQLQuery = append(st.queryString)
 
   def append[M[X] <: IterableOnce[X]](list: M[String], sep: String = defaultSep): CQLQuery = {
-    instance(queryString + list.mkString(sep))
+    instance(queryString + list.iterator.mkString(sep))
   }
 
   def appendEscape(st: String): CQLQuery = append(escape(st))
@@ -70,12 +70,12 @@ case class CQLQuery(override val queryString: String) extends KeySpaceCQLQuery {
   def wrapn[M[X] <: IterableOnce[X]](
     col: M[String],
     sep: String = defaultSep
-  ): CQLQuery = wrapn(col mkString sep)
+  ): CQLQuery = wrapn(col.iterator mkString sep)
 
   def wrap[M[X] <: IterableOnce[X]](
     col: M[String],
     sep: String = defaultSep
-  ): CQLQuery = wrap(col mkString sep)
+  ): CQLQuery = wrap(col.iterator mkString sep)
 
   override def toString: String = queryString
 }
@@ -86,5 +86,5 @@ object CQLQuery {
 
   def escape(str: String): String = "'" + str.replaceAll("'", "''") + "'"
 
-  def apply(collection: IterableOnce[String]): CQLQuery = CQLQuery(collection.mkString(", "))
+  def apply(collection: IterableOnce[String]): CQLQuery = CQLQuery(collection.iterator.mkString(", "))
 }

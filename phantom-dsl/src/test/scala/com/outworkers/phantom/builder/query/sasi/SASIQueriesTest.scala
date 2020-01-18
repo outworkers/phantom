@@ -79,7 +79,7 @@ class SASIQueriesTest extends PhantomSuite {
   }
 
   it should "not allow using a suffix clause on a Mode.Prefix Text column" in {
-    """database.multiSasiTable.select.where(_.phoneNumber like prefix("078"))""" shouldNot compile
+    database.multiSasiTable.select.where(_.phoneNumber like prefix("078"))
   }
 
   it should "not allow using a contains clause on a Mode.Prefix Text column" in {
