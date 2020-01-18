@@ -97,7 +97,7 @@ sealed case class BatchQuery[Status <: ConsistencyBound](
     implicit cbf: Factory[Batchable, Iterator[Batchable]]
   ): BatchQuery[Status] = {
     val builder = cbf.newBuilder
-    queries.foreach(builder +=)
+    queries.iterator.foreach(builder +=)
     copy(iterator = iterator ++ builder.result())
   }
 

@@ -47,7 +47,7 @@ private[builder] trait Utils {
   }
 
   def join(list: IterableOnce[String]): CQLQuery = {
-    CQLQuery(CQLSyntax.Symbols.`(`).append(list.mkString(", ")).append(CQLSyntax.Symbols.`)`)
+    CQLQuery(CQLSyntax.Symbols.`(`).append(list.iterator.mkString(", ")).append(CQLSyntax.Symbols.`)`)
   }
 
   def join(qbs: CQLQuery*): CQLQuery = {
@@ -60,7 +60,7 @@ private[builder] trait Utils {
 
   def map(list: IterableOnce[(String, String)]): CQLQuery = {
     CQLQuery(CQLSyntax.Symbols.`{`)
-      .append(list.map { case (key, value) => s"$key : $value" }.mkString(", "))
+      .append(list.iterator.map { case (key, value) => s"$key : $value" }.iterator.mkString(", "))
       .append(CQLSyntax.Symbols.`}`)
   }
 

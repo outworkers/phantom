@@ -37,7 +37,7 @@ trait HListHelpers {
   def showCollection[
     M[X] <: IterableOnce[X]
   ](traversable: M[Type], sep: String = ", "): String = {
-    traversable map printType mkString sep
+    traversable.iterator map printType mkString sep
   }
 
   def isVararg(tpe: Type): Boolean =

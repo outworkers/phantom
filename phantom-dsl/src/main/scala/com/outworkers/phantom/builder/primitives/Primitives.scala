@@ -129,14 +129,14 @@ object Primitives {
     override def serialize(coll: M[RR], version: ProtocolVersion): ByteBuffer = {
       coll match {
         case Primitive.nullValue => Primitive.nullValue
-        case c if c.isEmpty => Utils.pack(new Array[ByteBuffer](coll.size), coll.size, version)
+        case c if c.iterator.isEmpty => Utils.pack(new Array[ByteBuffer](coll.size), coll.size, version)
         case _ =>
-          val bbs = coll.foldLeft(Seq.empty[ByteBuffer]) { (acc, elt) =>
+          val bbs = coll.iterator.foldLeft(Seq.empty[ByteBuffer]) { (acc, elt) =>
             notNull(elt, "Collection elements cannot be null")
             acc :+ ev.serialize(elt, version)
           }
 
-          Utils.pack(bbs, coll.size, version)
+          Utils.pack(bbs, coll.iterator.size, version)
       }
     }
 
