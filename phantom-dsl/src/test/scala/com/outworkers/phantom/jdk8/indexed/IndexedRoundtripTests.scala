@@ -22,8 +22,9 @@ import com.outworkers.phantom.jdk8.tables._
 import org.scalacheck.Gen
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatest.{Assertion, FlatSpec, Matchers}
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 
-class IndexedRoundtripTests extends FlatSpec with Matchers with GeneratorDrivenPropertyChecks {
+class IndexedRoundtripTests extends FlatSpec with Matchers with ScalaCheckDrivenPropertyChecks {
 
   private[this] val genLower: Int = -100000
   private[this] val genHigher: Int = -genLower

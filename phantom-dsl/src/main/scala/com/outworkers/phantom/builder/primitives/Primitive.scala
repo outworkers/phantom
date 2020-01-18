@@ -637,7 +637,7 @@ object Primitive {
 
     new Primitive[Target] {
 
-      override def frozen = primitive.frozen
+      override def frozen: Boolean = primitive.frozen
 
       override def asCql(value: Target): String = primitive.asCql(to(value))
 
