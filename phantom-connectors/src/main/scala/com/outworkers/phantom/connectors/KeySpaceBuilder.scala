@@ -15,7 +15,6 @@
  */
 package com.outworkers.phantom.connectors
 
-import com.datastax.driver.core.PoolingOptions
 
 /**
  * A builder for KeySpace instances.
@@ -41,7 +40,7 @@ class KeySpaceBuilder(clusterBuilder: ClusterBuilder) {
     */
   def noHeartbeat(): KeySpaceBuilder = {
     new KeySpaceBuilder(clusterBuilder andThen (
-      _.withPoolingOptions(new PoolingOptions().setHeartbeatIntervalSeconds(0)))
+      _.(new PoolingOptions().setHeartbeatIntervalSeconds(0)))
     )
   }
 

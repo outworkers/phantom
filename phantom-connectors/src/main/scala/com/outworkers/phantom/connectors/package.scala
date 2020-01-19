@@ -15,13 +15,14 @@
  */
 package com.outworkers.phantom
 
-import com.datastax.driver.core.Cluster
+import com.datastax.oss.driver.api.core.CqlSessionBuilder
+
 
 package object connectors {
 
-  type ClusterBuilder = (Cluster.Builder => Cluster.Builder)
+  type ClusterBuilder = CqlSessionBuilder => CqlSessionBuilder
 
-  type VersionNumber = com.datastax.driver.core.VersionNumber
+  type VersionNumber = com.datastax.oss.driver.api.core.Version
 
   @deprecated("Renamed to the more descriptive CassandraConnection", "2.0.0")
   type KeySpaceDef = com.outworkers.phantom.connectors.CassandraConnection

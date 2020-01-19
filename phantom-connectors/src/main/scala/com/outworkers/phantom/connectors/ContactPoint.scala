@@ -15,6 +15,9 @@
  */
 package com.outworkers.phantom.connectors
 
+import java.net.InetSocketAddress
+import scala.collection.JavaConverters._
+
 /**
  * Entry point for defining a keySpace based
  * on a single contact point (Cassandra node).
@@ -64,7 +67,7 @@ object ContactPoint {
    * host and port.
    */
   def apply(host: String, port: Int): KeySpaceBuilder =
-    new KeySpaceBuilder(_.addContactPoint(host).withPort(port))
+    new KeySpaceBuilder(_.addContactPoint(InetSocketAddress.createUnresolved(host, port)))
 
 }
 
@@ -90,13 +93,6 @@ object ContactPoints {
    * A keyspace builder based on the specified
    * contact points, all running on the default port.
    */
-  def apply(hosts: Seq[String]): KeySpaceBuilder =
-    new KeySpaceBuilder(_.addContactPoints(hosts:_*))
-
-  /**
-   * A keyspace builder based on the specified
-   * contact points, all running on the specified port.
-   */
-  def apply(hosts: Seq[String], port: Int): KeySpaceBuilder =
-    new KeySpaceBuilder(_.addContactPoints(hosts:_*).withPort(port))
+  def apply(hosts: Seq[InetSocketAddress]): KeySpaceBuilder =
+    new KeySpaceBuilder(_.addContactPoints(hosts.asJavaCollection))
 }

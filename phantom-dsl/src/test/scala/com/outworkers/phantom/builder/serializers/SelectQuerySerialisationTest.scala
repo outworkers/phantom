@@ -17,7 +17,6 @@ package com.outworkers.phantom.builder.serializers
 
 import java.util.Date
 
-import com.datastax.driver.core.utils.UUIDs
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.builder.query.QueryBuilderTest
 import com.outworkers.phantom.dsl._
@@ -221,11 +220,7 @@ class SelectQuerySerialisationTest extends QueryBuilderTest {
           .consistencyLevel_=(ConsistencyLevel.EACH_QUORUM)
           .queryString
 
-        if (session.protocolConsistency) {
-          qb shouldEqual s"SELECT * FROM phantom.articlesByAuthor WHERE TOKEN (author_id) > TOKEN($id);"
-        } else {
-          qb shouldEqual s"SELECT * FROM phantom.articlesByAuthor WHERE TOKEN (author_id) > TOKEN($id) USING CONSISTENCY EACH_QUORUM;"
-        }
+        qb shouldEqual s"SELECT * FROM phantom.articlesByAuthor WHERE TOKEN (author_id) > TOKEN($id);"
       }
 
       "a single dateOf column apply" in {

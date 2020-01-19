@@ -15,7 +15,7 @@
  */
 package com.outworkers.phantom.connectors
 
-import com.datastax.driver.core.{Cluster, Session}
+import com.datastax.oss.driver.api.core.CqlSession
 import org.slf4j.{Logger, LoggerFactory}
 
 /**
@@ -36,13 +36,6 @@ trait SessionProvider {
      """.stripMargin
   }
 
-  /**
-   * The Cassandra driver's Cluster instance
-   * used by this provider to create new
-   * Session instances.
-   */
-  def cluster: Cluster
-
   def space: KeySpace
 
   /**
@@ -55,5 +48,5 @@ trait SessionProvider {
    * a client asks for the same keySpace multiple
    * times.
    */
-  def session: Session
+  def session: CqlSession
 }

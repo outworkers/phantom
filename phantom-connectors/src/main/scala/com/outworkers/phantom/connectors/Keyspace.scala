@@ -15,31 +15,29 @@
  */
 package com.outworkers.phantom.connectors
 
-import com.datastax.driver.core.{ProtocolVersion, Session}
+import com.datastax.oss.driver.api.core.{CqlSession, DefaultProtocolVersion, ProtocolVersion}
 
 import scala.annotation.implicitNotFound
 
 trait SessionAugmenter {
 
-  def session: Session
+  def session: CqlSession
 
   def protocolVersion: ProtocolVersion = {
-    session.getCluster.getConfiguration.getProtocolOptions.getProtocolVersion
+    session.getContext.getProtocolVersion
   }
 
   def isNewerThan(pv: ProtocolVersion): Boolean = {
-    protocolVersion.compareTo(pv) > 0
+    protocolVersion.getCode > pv.getCode
   }
 
-  def v3orNewer: Boolean = isNewerThan(ProtocolVersion.V2)
+  def v3orNewer: Boolean = isNewerThan(DefaultProtocolVersion.V3)
 
-  def protocolConsistency: Boolean = isNewerThan(ProtocolVersion.V1)
-
-  def v4orNewer: Boolean = isNewerThan(ProtocolVersion.V3)
+  def v4orNewer: Boolean = isNewerThan(DefaultProtocolVersion.V3)
 }
 
 trait SessionAugmenterImplicits {
-  implicit class RichSession(val session: Session) extends SessionAugmenter
+  implicit class RichSession(val session: CqlSession) extends SessionAugmenter
 }
 
 @implicitNotFound("You haven't provided a KeySpace in scope. Use a Connector to automatically inject one.")

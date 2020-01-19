@@ -15,11 +15,11 @@
  */
 package com.outworkers.phantom.connectors
 
-import com.datastax.driver.core.Session
+import com.datastax.oss.driver.api.core.CqlSession
 
 trait RootConnector {
 
   implicit def space: KeySpace
 
-  implicit def session: Session
+  implicit def session: CqlSession
 }

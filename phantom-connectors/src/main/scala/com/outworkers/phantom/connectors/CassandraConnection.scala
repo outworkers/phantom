@@ -15,7 +15,7 @@
  */
 package com.outworkers.phantom.connectors
 
-import com.datastax.driver.core.Session
+import com.datastax.oss.driver.api.core.CqlSession
 
 import scala.collection.JavaConverters._
 import scala.util.control.NoStackTrace
@@ -49,12 +49,10 @@ class CassandraConnection(
   /**
    * The Session associated with this keySpace.
    */
-  lazy val session: Session = provider.session
+  lazy val session: CqlSession = provider.session
 
   def cassandraVersions: Set[VersionNumber] = {
-    session.getCluster.getMetadata.getAllHosts
-      .asScala.map(_.getCassandraVersion)
-      .toSet[VersionNumber]
+    session.getContext.getConfig.getDefaultProfile.get
   }
 
   def cassandraVersion: Option[VersionNumber] = {

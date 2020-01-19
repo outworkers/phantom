@@ -15,7 +15,7 @@
  */
 package com.outworkers.phantom.connectors
 
-import com.datastax.driver.core.{VersionNumber => DatastaxVersionNumber}
+import com.datastax.oss.driver.api.core.{ Version => DatastaxVersionNumber}
 
 sealed trait VersionBuilder {
   def apply(major: Int, minor: Int, patch: Int): DatastaxVersionNumber = {
