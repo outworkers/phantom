@@ -19,7 +19,7 @@ import java.time.{LocalDate => _, OffsetDateTime => _, ZonedDateTime => _, _}
 
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.jdk8._
-
+import ExtendedJdk8Primitives._
 import scala.concurrent.Future
 
 case class OptionalJdk8Row(
@@ -30,13 +30,6 @@ case class OptionalJdk8Row(
   localDateTime: Option[JdkLocalDateTime]
 )
 
-object ExtendedJdk8Primitives {
-
-  implicit val tpPrimitive: Primitive[OffsetDateTime] = OffsetDateTimeIsPrimitive()(Primitive[(Long, String)]())
-  implicit val zonedDt: Primitive[ZonedDateTime] = zonedDateTimePrimitive()(Primitive[(Long, String)]())
-}
-
-import ExtendedJdk8Primitives._
 
 abstract class OptionalPrimitivesJdk8 extends Table[
   OptionalPrimitivesJdk8,

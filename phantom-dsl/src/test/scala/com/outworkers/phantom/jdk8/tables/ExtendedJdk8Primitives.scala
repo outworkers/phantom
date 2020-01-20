@@ -15,36 +15,11 @@
  */
 package com.outworkers.phantom.jdk8.tables
 
-import java.time.{LocalDate, LocalDateTime, OffsetDateTime}
-
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.jdk8._
 
-import scala.concurrent.Future
-import ExtendedJdk8Primitives._
+object ExtendedJdk8Primitives {
 
-case class Jdk8Row(
-  pkey: String,
-  offsetDateTime: OffsetDateTime,
-  zonedDateTime: ZonedDateTime,
-  localDate: LocalDate,
-  localDateTime: LocalDateTime
-)
-
-abstract class PrimitivesJdk8 extends Table[PrimitivesJdk8, Jdk8Row] {
-
-  object pkey extends StringColumn with PartitionKey
-
-  object offsetDateTime extends Col[OffsetDateTime]
-
-  object zonedDateTime extends Col[ZonedDateTime]
-
-  object localDate extends Col[LocalDate]
-
-  object localDateTime extends Col[LocalDateTime]
-
-  def findByPkey(pkey: String): Future[Option[Jdk8Row]] = {
-    select.where(_.pkey eqs pkey).one()
-  }
-
+  implicit val tpPrimitive: Primitive[OffsetDateTime] = OffsetDateTimeIsPrimitive()(Primitive[(Long, String)]())
+  implicit val zonedDt: Primitive[ZonedDateTime] = zonedDateTimePrimitive()(Primitive[(Long, String)]())
 }
