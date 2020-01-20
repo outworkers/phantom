@@ -30,13 +30,13 @@ case class OptionalJdk8Row(
   localDateTime: Option[JdkLocalDateTime]
 )
 
-object Bla {
+object ExtendedJdk8Primitives {
 
   implicit val tpPrimitive: Primitive[OffsetDateTime] = OffsetDateTimeIsPrimitive()(Primitive[(Long, String)]())
   implicit val zonedDt: Primitive[ZonedDateTime] = zonedDateTimePrimitive()(Primitive[(Long, String)]())
 }
 
-import Bla._
+import ExtendedJdk8Primitives._
 
 abstract class OptionalPrimitivesJdk8 extends Table[
   OptionalPrimitivesJdk8,

@@ -30,7 +30,7 @@ case class Jdk8Row(
   localDateTime: LocalDateTime
 )
 
-import Bla._
+import ExtendedJdk8Primitives._
 
 abstract class PrimitivesJdk8 extends Table[PrimitivesJdk8, Jdk8Row] {
 
