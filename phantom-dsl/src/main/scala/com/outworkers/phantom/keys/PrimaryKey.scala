@@ -44,7 +44,7 @@ trait PrimaryKey extends Key[PrimaryKey] with Unmodifiable with Indexed with Und
   abstract override def isPrimary: Boolean = true
 }
 
-trait PartitionKey extends Key[PartitionKey] with Unmodifiable with Undroppable {
+trait PartitionKey extends Key[PartitionKey] with Unmodifiable with Undroppable with Indexed {
   self: AbstractColumn[_] =>
   abstract override def isPartitionKey: Boolean = true
   abstract override def isPrimary: Boolean = true

@@ -151,7 +151,9 @@ private[phantom] trait ImplicitMechanism extends ModifyMechanism {
   // implicit lazy val context: ExecutionContextExecutor = Manager.scalaExecutor
 
   @implicitNotFound(msg = "Compare-and-set queries can only be applied to non indexed primitive columns.")
-  implicit final def columnToCasCompareColumn[RR](col: AbstractColumn[RR])(implicit ev: col.type <:!< Indexed): CasConditionalOperators[RR] = {
+  implicit final def columnToCasCompareColumn[RR](
+    col: AbstractColumn[RR]
+  )(implicit ev: col.type <:!< Indexed): CasConditionalOperators[RR] = {
     new CasConditionalOperators[RR](col)
   }
 
