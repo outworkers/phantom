@@ -20,7 +20,6 @@ import java.time.ZoneOffset
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.jdk8.tables._
 import org.scalacheck.Gen
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatest.{Assertion, FlatSpec, Matchers}
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 
