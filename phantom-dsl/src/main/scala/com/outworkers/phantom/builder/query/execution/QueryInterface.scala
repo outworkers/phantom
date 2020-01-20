@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2019 Outworkers Ltd.
+ * Copyright 2013 - 2020 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,9 @@ import com.datastax.driver.core.{Session, Statement}
 import com.outworkers.phantom.ResultSet
 
 import scala.concurrent.ExecutionContextExecutor
+import scala.collection.compat._
 
-trait MultiQueryInterface[M[X] <: TraversableOnce[X], F[_]] {
+trait MultiQueryInterface[M[X] <: IterableOnce[X], F[_]] {
 
   def future()(
     implicit session: Session,

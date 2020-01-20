@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2019 Outworkers Ltd.
+ * Copyright 2013 - 2020 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,11 @@
 package com.outworkers.phantom.builder.query.execution
 
 import com.outworkers.phantom.ResultSet
+import scala.collection.compat._
 
 
 trait ExecutionEngine[F[_]] {
 
-  def future[M[X] <: TraversableOnce[X]](col: QueryCollection[M]): F[M[ResultSet]]
+  def future[M[X] <: IterableOnce[X]](col: QueryCollection[M]): F[M[ResultSet]]
 
 }

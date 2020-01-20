@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2019 Outworkers Ltd.
+ * Copyright 2013 - 2020 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package com.outworkers.phantom.finagle.execution
 
 import com.outworkers.phantom.builder.query.execution.{FutureMonad, PromiseInterface}
 import com.outworkers.phantom.ops.QueryContext
-import com.twitter.conversions.time._
+import com.twitter.conversions.DurationOps._
 import com.twitter.util.{Await, Duration, Future, Promise}
 
 import scala.concurrent.ExecutionContextExecutor
@@ -25,11 +25,11 @@ import scala.concurrent.ExecutionContextExecutor
 object TwitterFutureImplicits {
 
   val monadInstance: FutureMonad[Future] = new FutureMonad[Future] {
-    override def flatMap[A, B](fa: Future[A])(f: (A) => Future[B])(
+    override def flatMap[A, B](fa: Future[A])(f: A => Future[B])(
       implicit ctx: ExecutionContextExecutor
     ): Future[B] = fa flatMap f
 
-    override def map[A, B](source: Future[A])(f: (A) => B)(
+    override def map[A, B](source: Future[A])(f: A => B)(
       implicit ctx: ExecutionContextExecutor
     ): Future[B] = source map f
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2019 Outworkers Ltd.
+ * Copyright 2013 - 2020 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.jdk8._
 
 import scala.concurrent.Future
+import ExtendedJdk8Primitives._
 
 case class Jdk8Row(
   pkey: String,

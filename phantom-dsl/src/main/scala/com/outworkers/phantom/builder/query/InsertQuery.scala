@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2019 Outworkers Ltd.
+ * Copyright 2013 - 2020 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,7 +86,7 @@ case class InsertQuery[
   }
 
   def values[RR](insertions: (CQLQuery, CQLQuery)*): InsertQuery[Table, Record, Status, PS] = {
-    val (appendedCols, appendedVals) = (insertions :\ columnsPart -> valuePart) {
+    val (appendedCols, appendedVals) = insertions.foldRight(columnsPart -> valuePart) {
       case ((columnRef, valueRef), cvs@(cols, vals)) =>
         Option(valueRef.toString) match {
           case Some(_) => Tuple2(cols append columnRef, vals append valueRef)

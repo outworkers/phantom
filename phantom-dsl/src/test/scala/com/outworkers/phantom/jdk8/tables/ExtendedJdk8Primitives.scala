@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2019 Outworkers Ltd.
+ * Copyright 2013 - 2020 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.outworkers.phantom.jdk8
+package com.outworkers.phantom.jdk8.tables
 
-import java.time.Instant
+import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.jdk8._
 
-import com.outworkers.phantom.builder.primitives.Primitive
-import com.outworkers.phantom.builder.syntax.CQLSyntax
+object ExtendedJdk8Primitives {
 
-trait Shared {
-
-  implicit val instantPrimitive: Primitive[Instant] = Primitive.manuallyDerive[Instant, Long](
-    _.toEpochMilli,
-    Instant.ofEpochMilli
-  )(Primitive[Long])(CQLSyntax.Types.Timestamp)
-
+  implicit val tpPrimitive: Primitive[OffsetDateTime] = OffsetDateTimeIsPrimitive()(Primitive[(Long, String)]())
+  implicit val zonedDt: Primitive[ZonedDateTime] = zonedDateTimePrimitive()(Primitive[(Long, String)]())
 }

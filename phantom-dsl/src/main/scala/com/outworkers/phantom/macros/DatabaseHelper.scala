@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2019 Outworkers Ltd.
+ * Copyright 2013 - 2020 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.macros.toolbelt.WhiteboxToolbelt
 
 import scala.reflect.macros.whitebox
+import scala.collection.Seq
 
 trait DatabaseHelper[T <: Database[T]] {
   def tables(db: T): scala.collection.Seq[CassandraTable[_ ,_]]

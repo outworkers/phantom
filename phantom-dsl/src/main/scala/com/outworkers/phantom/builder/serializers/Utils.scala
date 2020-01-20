@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2019 Outworkers Ltd.
+ * Copyright 2013 - 2020 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.outworkers.phantom.builder.serializers
 import com.outworkers.phantom.builder.QueryBuilder.Utils
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.syntax.CQLSyntax
+import scala.collection.compat._
 
 private[builder] trait Utils {
 
@@ -45,8 +46,8 @@ private[builder] trait Utils {
     CQLQuery(column).append(op).forcePad.append(value)
   }
 
-  def join(list: TraversableOnce[String]): CQLQuery = {
-    CQLQuery(CQLSyntax.Symbols.`(`).append(list.mkString(", ")).append(CQLSyntax.Symbols.`)`)
+  def join(list: IterableOnce[String]): CQLQuery = {
+    CQLQuery(CQLSyntax.Symbols.`(`).append(list.iterator.mkString(", ")).append(CQLSyntax.Symbols.`)`)
   }
 
   def join(qbs: CQLQuery*): CQLQuery = {
@@ -57,9 +58,9 @@ private[builder] trait Utils {
     CQLQuery(CQLSyntax.Symbols.`{`).append(list.mkString(", ")).append(CQLSyntax.Symbols.`}`)
   }
 
-  def map(list: TraversableOnce[(String, String)]): CQLQuery = {
+  def map(list: IterableOnce[(String, String)]): CQLQuery = {
     CQLQuery(CQLSyntax.Symbols.`{`)
-      .append(list.map { case (key, value) => s"$key : $value" }.mkString(", "))
+      .append(list.iterator.map { case (key, value) => s"$key : $value" }.iterator.mkString(", "))
       .append(CQLSyntax.Symbols.`}`)
   }
 

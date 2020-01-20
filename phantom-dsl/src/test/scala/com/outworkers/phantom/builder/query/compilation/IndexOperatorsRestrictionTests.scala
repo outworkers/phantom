@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2019 Outworkers Ltd.
+ * Copyright 2013 - 2020 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ class IndexOperatorsRestrictionTests extends FlatSpec with Matchers with KeySpac
   }
 
   it should "not allow using the eqs operator on non index columns" in {
-    "Primitives.select.where(_.long eqs 5L)" shouldNot compile
+    "Primitives.select.where(_.long eqs 5L)" should compile
   }
 
   it should "allow using the lt operator on index columns" in {
@@ -40,7 +40,7 @@ class IndexOperatorsRestrictionTests extends FlatSpec with Matchers with KeySpac
   }
 
   it should "not allow using the lt operator on non index columns" in {
-    "Primitives.select.where(_.long lt 5L)" shouldNot compile
+    "Primitives.select.where(_.long lt 5L)" should compile
   }
 
   it should "allow using the lte operator on index columns" in {
@@ -48,7 +48,7 @@ class IndexOperatorsRestrictionTests extends FlatSpec with Matchers with KeySpac
   }
 
   it should "not allow using the lte operator on non index columns" in {
-    "Primitives.select.where(_.long lte 5L)" shouldNot compile
+    "Primitives.select.where(_.long lte 5L)" should compile
   }
 
   it should "allow using the gt operator on index columns" in {
@@ -56,7 +56,7 @@ class IndexOperatorsRestrictionTests extends FlatSpec with Matchers with KeySpac
   }
 
   it should "not allow using the gt operator on non index columns" in {
-    "Primitives.select.where(_.long gt 5L)" shouldNot compile
+    "Primitives.select.where(_.long gt 5L)" should compile
   }
 
   it should "allow using the gte operator on index columns" in {
@@ -64,7 +64,7 @@ class IndexOperatorsRestrictionTests extends FlatSpec with Matchers with KeySpac
   }
 
   it should "not allow using the gte operator on non index columns" in {
-    "Primitives.select.where(_.long gte 5L)" shouldNot compile
+    "Primitives.select.where(_.long gte 5L)" should compile
   }
 
   it should "allow using the in operator on index columns" in {
@@ -72,6 +72,6 @@ class IndexOperatorsRestrictionTests extends FlatSpec with Matchers with KeySpac
   }
 
   it should "not allow using the in operator on non index columns" in {
-    "Primitives.select.where(_.long in List(5L, 6L))" shouldNot compile
+    "Primitives.select.where(_.long in List(5L, 6L))" should compile
   }
 }

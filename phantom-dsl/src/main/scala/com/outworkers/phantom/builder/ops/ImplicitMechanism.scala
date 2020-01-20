@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2019 Outworkers Ltd.
+ * Copyright 2013 - 2020 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -151,7 +151,9 @@ private[phantom] trait ImplicitMechanism extends ModifyMechanism {
   // implicit lazy val context: ExecutionContextExecutor = Manager.scalaExecutor
 
   @implicitNotFound(msg = "Compare-and-set queries can only be applied to non indexed primitive columns.")
-  implicit final def columnToCasCompareColumn[RR](col: AbstractColumn[RR])(implicit ev: col.type <:!< Indexed): CasConditionalOperators[RR] = {
+  implicit final def columnToCasCompareColumn[RR](
+    col: AbstractColumn[RR]
+  )(implicit ev: col.type <:!< Indexed): CasConditionalOperators[RR] = {
     new CasConditionalOperators[RR](col)
   }
 

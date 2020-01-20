@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2019 Outworkers Ltd.
+ * Copyright 2013 - 2020 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,8 @@ import com.twitter.util.{Duration => TwitterDuration, _}
 import org.joda.time.Seconds
 import shapeless.HList
 
-import scala.collection.generic.CanBuildFrom
 import scala.concurrent.ExecutionContextExecutor
+import scala.collection.compat._
 
 package object finagle extends TwitterQueryContext with DefaultImports {
 
@@ -221,15 +221,15 @@ package object finagle extends TwitterQueryContext with DefaultImports {
     }
   }
 
-  implicit class ExecuteQueries[M[X] <: TraversableOnce[X]](val qc: QueryCollection[M]) extends AnyVal {
+  implicit class ExecuteQueries[M[X] <: IterableOnce[X]](val qc: QueryCollection[M]) extends AnyVal {
     def executable()(
       implicit ctx: ExecutionContextExecutor
     ): ExecutableStatements[Future, M] = new ExecutableStatements[Future, M](qc)
 
     def future()(
       implicit session: Session,
-      fbf: CanBuildFrom[M[Future[ResultSet]], Future[ResultSet], M[Future[ResultSet]]],
-      ebf: CanBuildFrom[M[Future[ResultSet]], ResultSet, M[ResultSet]]
+      fbf: Factory[Future[ResultSet], M[Future[ResultSet]]],
+      ebf: Factory[ResultSet, M[ResultSet]]
     ): Future[M[ResultSet]] = executable().future()
   }
 }

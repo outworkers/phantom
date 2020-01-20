@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2019 Outworkers Ltd.
+ * Copyright 2013 - 2020 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,6 @@ class MonixQueryContext()(implicit scheduler: Scheduler) extends QueryContext[Ta
   MonixImplicits.taskInterface
 ) {
   override def blockAwait[T](f: Task[T], timeout: Duration): T = {
-    Await.result(f.runAsync, timeout)
+    Await.result(f.runToFuture, timeout)
   }
 }

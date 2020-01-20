@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2019 Outworkers Ltd.
+ * Copyright 2013 - 2020 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,8 +29,7 @@ import scala.annotation.implicitNotFound
 import scala.collection.immutable.ListMap
 import scala.reflect.macros.whitebox
 
-@implicitNotFound(
-  """
+@implicitNotFound(msg = """
     | Table ${T} is most likely missing a PartitionKey column.
     | Also check that the fields in your table match types inside ${R}.
   """.stripMargin

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2019 Outworkers Ltd.
+ * Copyright 2013 - 2020 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,9 @@ import com.outworkers.phantom.ResultSet
 import com.outworkers.phantom.builder.query.execution._
 import com.outworkers.phantom.database.Database
 
-import scala.collection.generic.CanBuildFrom
 import scala.concurrent.ExecutionContextExecutor
+import scala.collection.compat._
+import scala.collection.Seq
 
 abstract class DbOps[
   P[_],
@@ -31,8 +32,8 @@ abstract class DbOps[
 
   import db._
 
-  def execute[M[X] <: TraversableOnce[X]](col: QueryCollection[M])(
-    implicit cbf: CanBuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]]
+  def execute[M[X] <: IterableOnce[X]](col: QueryCollection[M])(
+    implicit cbf: BuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]]
   ): ExecutableStatements[F, M]
 
   def defaultTimeout: Timeout

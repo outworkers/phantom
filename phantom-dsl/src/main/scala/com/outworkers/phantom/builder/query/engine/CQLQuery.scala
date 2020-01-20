@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2019 Outworkers Ltd.
+ * Copyright 2013 - 2020 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.outworkers.phantom.builder.query.engine
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.builder.syntax.CQLSyntax.Symbols
 import com.outworkers.phantom.connectors.KeySpaceCQLQuery
+import scala.collection.compat._
 
 case class CQLQuery(override val queryString: String) extends KeySpaceCQLQuery {
 
@@ -30,8 +31,8 @@ case class CQLQuery(override val queryString: String) extends KeySpaceCQLQuery {
   def append(st: String): CQLQuery = instance(queryString + st)
   def append(st: CQLQuery): CQLQuery = append(st.queryString)
 
-  def append[M[X] <: TraversableOnce[X]](list: M[String], sep: String = defaultSep): CQLQuery = {
-    instance(queryString + list.mkString(sep))
+  def append[M[X] <: IterableOnce[X]](list: M[String], sep: String = defaultSep): CQLQuery = {
+    instance(queryString + list.iterator.mkString(sep))
   }
 
   def appendEscape(st: String): CQLQuery = append(escape(st))
@@ -66,15 +67,15 @@ case class CQLQuery(override val queryString: String) extends KeySpaceCQLQuery {
   def wrap(str: String): CQLQuery = pad.wrapn(str)
   def wrap(query: CQLQuery): CQLQuery = wrap(query.queryString)
 
-  def wrapn[M[X] <: TraversableOnce[X]](
+  def wrapn[M[X] <: IterableOnce[X]](
     col: M[String],
     sep: String = defaultSep
-  ): CQLQuery = wrapn(col mkString sep)
+  ): CQLQuery = wrapn(col.iterator mkString sep)
 
-  def wrap[M[X] <: TraversableOnce[X]](
+  def wrap[M[X] <: IterableOnce[X]](
     col: M[String],
     sep: String = defaultSep
-  ): CQLQuery = wrap(col mkString sep)
+  ): CQLQuery = wrap(col.iterator mkString sep)
 
   override def toString: String = queryString
 }
@@ -85,5 +86,5 @@ object CQLQuery {
 
   def escape(str: String): String = "'" + str.replaceAll("'", "''") + "'"
 
-  def apply(collection: TraversableOnce[String]): CQLQuery = CQLQuery(collection.mkString(", "))
+  def apply(collection: IterableOnce[String]): CQLQuery = CQLQuery(collection.iterator.mkString(", "))
 }

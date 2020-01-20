@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2019 Outworkers Ltd.
+ * Copyright 2013 - 2020 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import com.outworkers.phantom.{Manager, ResultSet}
 import com.outworkers.phantom.builder.batch.BatchWithQuery
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 
-import scala.collection.generic.CanBuildFrom
 import scala.concurrent.ExecutionContextExecutor
+import scala.collection.compat._
 
 trait GuavaAdapter[F[_]] {
 
@@ -59,15 +59,15 @@ trait GuavaAdapter[F[_]] {
 object ExecutionHelper {
   def sequencedTraverse[
     F[_],
-    M[X] <: TraversableOnce[X],
+    M[X] <: IterableOnce[X],
     A,
     B
   ](in: M[A])(fn: A => F[B])(
-    implicit cbf: CanBuildFrom[M[A], B, M[B]],
+    implicit cbf: Factory[B, M[B]],
     ctx: ExecutionContextExecutor,
     fMonad: FutureMonad[F]
   ): F[M[B]] = {
-    in.foldLeft(fMonad.pure(cbf())) { (fr, a) =>
+    in.iterator.foldLeft(fMonad.pure(cbf.newBuilder)) { (fr, a) =>
       for (r <- fr; b <- fn(a)) yield r += b
     }.map(_.result())
   }
@@ -82,19 +82,21 @@ object ExecutionHelper {
     */
   def parallel[
     F[_],
-    M[X] <: TraversableOnce[X],
+    M[X] <: IterableOnce[X],
     A](in: M[F[A]])(
-    implicit cbf: CanBuildFrom[M[F[A]], A, M[A]],
+    implicit cbf: Factory[A, M[A]],
     fMonad: FutureMonad[F],
     ctx: ExecutionContextExecutor
   ): F[M[A]] = {
-    (fMonad.pure(cbf()) /: in) { (fr, fa) => fr.zipWith(fa)(_ += _) }.map(_.result())
+    in.iterator.foldLeft(fMonad.pure(cbf.newBuilder)) {
+      (fr, fa) => fr.zipWith(fa)(_ += _)
+    } map(_.result())
   }
 }
 
 class ExecutableStatements[
   F[_],
-  M[X] <: TraversableOnce[X]
+  M[X] <: IterableOnce[X]
 ](val queryCol: QueryCollection[M])(
   implicit fMonad: FutureMonad[F],
   adapter: GuavaAdapter[F]
@@ -102,7 +104,7 @@ class ExecutableStatements[
 
   /**
     * Method that will execute the queries in the underlying collection in parallel.
-    * The queries will be constructed sequentally by the results asynchronous queries to be executed
+    * The queries will be constructed sequentially by the results asynchronous queries to be executed
     * will be executed in parallel by default using this method.
     *
     * @param session The cassandra session to execute the query collection against.
@@ -114,13 +116,13 @@ class ExecutableStatements[
   def future()(
     implicit session: Session,
     ec: ExecutionContextExecutor,
-    fbf: CanBuildFrom[M[F[ResultSet]], F[ResultSet], M[F[ResultSet]]],
-    ebf: CanBuildFrom[M[F[ResultSet]], ResultSet, M[ResultSet]]
+    fbf: Factory[F[ResultSet], M[F[ResultSet]]],
+    ebf: Factory[ResultSet, M[ResultSet]]
   ): F[M[ResultSet]] = {
 
-    val builder = fbf()
+    val builder = fbf.newBuilder
 
-    for (q <- queryCol.queries) {
+    for (q <- queryCol.queries.iterator) {
       Manager.logger.info(s"Executing query: ${q.qb.queryString}")
       builder += adapter.fromGuava(q)
     }
@@ -131,7 +133,7 @@ class ExecutableStatements[
   def sequence()(
     implicit session: Session,
     ec: ExecutionContextExecutor,
-    cbf: CanBuildFrom[M[ExecutableCqlQuery], ResultSet, M[ResultSet]]
+    cbf: Factory[ResultSet, M[ResultSet]]
   ): F[M[ResultSet]] = {
     ExecutionHelper.sequencedTraverse(queryCol.queries) { query =>
       Manager.logger.info(s"Executing query: ${query.qb.queryString}")

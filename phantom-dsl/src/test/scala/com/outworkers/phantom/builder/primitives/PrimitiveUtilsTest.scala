@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2019 Outworkers Ltd.
+ * Copyright 2013 - 2020 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatest.{FlatSpec, Matchers, _}
 
-import scala.collection.generic.CanBuildFrom
+import scala.collection.compat._
 
 /**
   * Test suite to check for serialization parity in between phantom and the java driver.
@@ -42,25 +42,25 @@ class PrimitiveUtilsTest extends FlatSpec
 
   private[this] val protocol = ProtocolVersion.V5
 
-  def serialize[M[X] <: Traversable[X],T](
+  def serialize[M[X] <: Iterable[X],T](
     input: M[T],
     version: ProtocolVersion = ProtocolVersion.V5
   )(
     implicit ev: Primitive[T],
-    cbf: CanBuildFrom[M[T], ByteBuffer, M[ByteBuffer]]
+    cbf: Factory[ByteBuffer, M[ByteBuffer]]
   ): M[ByteBuffer] = {
-    input.foldRight(cbf()) { (elt, acc) =>
+    input.iterator.foldRight(cbf.newBuilder) { (elt, acc) =>
       acc += ev.serialize(elt, version)
-    } result()
+    }.result()
   }
 
   /**
     * We use this test to check that we are maintaining
     * serialization compatibility with the underlying Java driver.
     */
-  def roundtrip[M[X] <: Traversable[X], T](gen: Gen[T])(
+  def roundtrip[M[X] <: Iterable[X], T](gen: Gen[T])(
      implicit ev: Primitive[T],
-     cbf: CanBuildFrom[Nothing, T, M[T]]
+     cbf: Factory[T, M[T]]
   ): Assertion = {
     forAll(Gen.listOf(gen)) { coll =>
       val bbs = serialize(coll, protocol)
@@ -70,10 +70,10 @@ class PrimitiveUtilsTest extends FlatSpec
     }
   }
 
-  def roundtrip[M[X] <: Traversable[X], T]()(
+  def roundtrip[M[X] <: Iterable[X], T]()(
      implicit ev: Primitive[T],
      arb: Arbitrary[T],
-     cbf: CanBuildFrom[Nothing, T, M[T]]
+     cbf: Factory[T, M[T]]
   ): Assertion = roundtrip(arb.arbitrary)(ev, cbf)
 
   it should "serialize a List[String] just like the underlying Java Driver" in {

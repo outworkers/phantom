@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2019 Outworkers Ltd.
+ * Copyright 2013 - 2020 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import shapeless.{HList, HNil}
 import scala.annotation.tailrec
 import scala.reflect.macros.whitebox
 import scala.util.control.NonFatal
+import scala.collection.compat._
 
 @macrocompat.bundle
 trait HListHelpers {
@@ -34,9 +35,9 @@ trait HListHelpers {
   def printType(tpe: Type): String = showCode(tq"${tpe.dealias}")
 
   def showCollection[
-    M[X] <: TraversableOnce[X]
+    M[X] <: IterableOnce[X]
   ](traversable: M[Type], sep: String = ", "): String = {
-    traversable map printType mkString sep
+    traversable.iterator map printType mkString sep
   }
 
   def isVararg(tpe: Type): Boolean =

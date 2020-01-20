@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 resolvers ++= Seq(
-  "jgit-repo" at "http://download.eclipse.org/jgit/maven",
-  "Twitter Repo" at "http://maven.twttr.com/",
+  "jgit-repo" at "https://download.eclipse.org/jgit/maven",
+  "Twitter Repo" at "https://maven.twttr.com/",
   Resolver.sonatypeRepo("releases"),
   Resolver.bintrayIvyRepo("sksamuel", "sbt-plugins"),
   Resolver.bintrayIvyRepo("twittercsl-ivy", "sbt-plugins"),
@@ -27,37 +27,26 @@ def isScala210: Boolean = scalaTravisEnv.exists("2.10.6" ==)
 lazy val isCi = sys.env.get("CI").exists("true" == )
 
 lazy val Versions = new {
-  val scrooge = if (isCi) {
-    if (sys.props("java.specification.version") == "1.8" && !isScala210) "4.18.0" else "4.7.0"
-  } else {
-    if (sys.props("java.specification.version") == "1.8") "4.18.0" else "4.7.0"
-  }
+  val scrooge = if (isCi && isScala210) "19.1.0" else "19.10.0"
+  val scalaFix = "0.9.11"
 }
 
-addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "1.5.0")
+addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "1.6.0")
 
-addSbtPlugin("org.scoverage" %% "sbt-coveralls" % "1.1.0")
-
-addSbtPlugin("io.get-coursier" % "sbt-coursier" % "1.0.3")
+addSbtPlugin("org.scoverage" %% "sbt-coveralls" % "1.2.7")
 
 addSbtPlugin("com.jsuereth" % "sbt-pgp" % "1.1.1")
 
-if (sys.env.get("MAVEN_PUBLISH").exists("true" ==)) {
-  addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "2.3")
-} else {
-  addSbtPlugin("org.foundweekends" % "sbt-bintray" % "0.5.4")
-}
+addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "2.5")
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "0.8.5")
+addSbtPlugin("com.jsuereth" % "sbt-pgp" % "2.0.0")
+
+addSbtPlugin("com.timushev.sbt" % "sbt-updates" % "0.5.0")
 
 addSbtPlugin("com.twitter" % "scrooge-sbt-plugin" % Versions.scrooge)
 
-dependencyOverrides += "org.apache.thrift" % "libthrift" % "0.8.0"
-
-addSbtPlugin("org.tpolecat" % "tut-plugin" % "0.5.6")
-
-addSbtPlugin("com.eed3si9n" % "sbt-doge" % "0.1.5")
+addSbtPlugin("org.tpolecat" % "tut-plugin" % "0.6.13")
 
 libraryDependencies += "org.slf4j" % "slf4j-nop" % "1.7.22"
 
-addSbtPlugin("com.github.gseitz" % "sbt-release" % "1.0.5")
+addSbtPlugin("com.github.gseitz" % "sbt-release" % "1.0.12")

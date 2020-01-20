@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2019 Outworkers Ltd.
+ * Copyright 2013 - 2020 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import java.time.{LocalDate => _, OffsetDateTime => _, ZonedDateTime => _, _}
 
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.jdk8._
-
+import ExtendedJdk8Primitives._
 import scala.concurrent.Future
 
 case class OptionalJdk8Row(
@@ -30,6 +30,7 @@ case class OptionalJdk8Row(
   localDateTime: Option[JdkLocalDateTime]
 )
 
+
 abstract class OptionalPrimitivesJdk8 extends Table[
   OptionalPrimitivesJdk8,
   OptionalJdk8Row
@@ -37,7 +38,7 @@ abstract class OptionalPrimitivesJdk8 extends Table[
 
   object pkey extends StringColumn with PartitionKey
 
-  object offsetDateTime extends OptionalCol[OffsetDateTime]
+  object offsetDateTime extends OptionalCol[OffsetDateTime]()
 
   object zonedDateTime extends OptionalCol[ZonedDateTime]
 

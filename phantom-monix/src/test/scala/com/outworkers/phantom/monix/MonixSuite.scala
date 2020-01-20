@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2019 Outworkers Ltd.
+ * Copyright 2013 - 2020 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ trait MonixSuite extends PhantomSuite {
     private[this] val source = f.memoize
 
     override def eitherValue: Option[Either[Throwable, T]] = {
-      source.runAsync.value match {
+      source.runToFuture.value match {
         case Some(Success(ret)) => Some(Right(ret))
         case Some(Failure(err)) => Some(Left(err))
         case None => None

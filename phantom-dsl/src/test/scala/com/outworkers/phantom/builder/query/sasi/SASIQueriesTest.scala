@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2019 Outworkers Ltd.
+ * Copyright 2013 - 2020 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,7 +79,7 @@ class SASIQueriesTest extends PhantomSuite {
   }
 
   it should "not allow using a suffix clause on a Mode.Prefix Text column" in {
-    """database.multiSasiTable.select.where(_.phoneNumber like prefix("078"))""" shouldNot compile
+    """database.multiSasiTable.select.where(_.phoneNumber like suffix("078"))""" shouldNot compile
   }
 
   it should "not allow using a contains clause on a Mode.Prefix Text column" in {
