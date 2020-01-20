@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2019 Outworkers Ltd.
+ * Copyright 2013 - 2020 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -597,7 +597,7 @@ object Primitive {
 
                 m += (kp.deserialize(kbb, version) -> vp.deserialize(vbb, version))
               }
-              m result()
+              m.result()
             } catch {
               case e: BufferUnderflowException =>
                 throw new InvalidTypeException("Not enough bytes to deserialize a map", e)
@@ -637,7 +637,7 @@ object Primitive {
 
     new Primitive[Target] {
 
-      override def frozen = primitive.frozen
+      override def frozen: Boolean = primitive.frozen
 
       override def asCql(value: Target): String = primitive.asCql(to(value))
 

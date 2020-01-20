@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2019 Outworkers Ltd.
+ * Copyright 2013 - 2020 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,14 +35,15 @@ package object jdk8 extends Shared {
   type JdkLocalDateTime = java.time.LocalDateTime
 
 
-  implicit val OffsetDateTimeIsPrimitive: Primitive[OffsetDateTime] = {
-    val tuplePremitive = implicitly[Primitive[(Long, String)]]
+  implicit def OffsetDateTimeIsPrimitive()(
+    tuplePrimitive: Primitive[(Long, String)]
+  ): Primitive[OffsetDateTime] = {
     Primitive.manuallyDerive[OffsetDateTime, (Long, String)](
       offsetDt => offsetDt.toInstant.toEpochMilli -> offsetDt.getOffset.getId,
       {
         case (timestamp, zone) => OffsetDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneOffset.of(zone))
       }
-    )(tuplePremitive)(
+    )(tuplePrimitive)(
       QueryBuilder.Collections.tupleType(CQLSyntax.Types.Timestamp, CQLSyntax.Types.Text).queryString
     )
   }
@@ -60,14 +61,15 @@ package object jdk8 extends Shared {
 
   )(Primitive[DatastaxLocalDate])(CQLSyntax.Types.Date)
 
-  implicit val zonedDateTimePrimitive: Primitive[ZonedDateTime] = {
-    val tuplePremitive = implicitly[Primitive[(Long, String)]]
+  implicit def zonedDateTimePrimitive()(
+    tuplePrimitive: Primitive[(Long, String)]
+  ): Primitive[ZonedDateTime] = {
     Primitive.manuallyDerive[ZonedDateTime, (Long, String)](
       dt => dt.toInstant.toEpochMilli -> dt.getZone.getId,
       {
         case (timestamp, zone) => ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.of(zone))
       }
-    )(tuplePremitive)(
+    )(tuplePrimitive)(
       QueryBuilder.Collections.tupleType(CQLSyntax.Types.Timestamp, CQLSyntax.Types.Text).queryString
     )
   }

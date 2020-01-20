@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2019 Outworkers Ltd.
+ * Copyright 2013 - 2020 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,9 @@ import com.outworkers.phantom.macros.{==:==, SingleGeneric, TableHelper}
 import com.outworkers.phantom.{CassandraTable, ResultSet, Row}
 import shapeless.{Generic, HList}
 
-import scala.collection.generic.CanBuildFrom
 import scala.concurrent.ExecutionContextExecutor
+import scala.collection.compat._
+import scala.collection.Seq
 
 abstract class QueryContext[P[_], F[_], Timeout](
   defaultTimeout: Timeout
@@ -49,7 +50,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
 
   implicit val adapter: GuavaAdapter[F] = promiseInterface.adapter
 
-  def executeStatements[M[X] <: TraversableOnce[X]](
+  def executeStatements[M[X] <: IterableOnce[X]](
     col: QueryCollection[M]
   ): ExecutableStatements[F, M] = {
     new ExecutableStatements[F, M](col)
@@ -165,8 +166,8 @@ abstract class QueryContext[P[_], F[_], Timeout](
   implicit class DatabaseOperation[DB <: Database[DB]](
     override val db: Database[DB]
   ) extends DbOps[P, F, DB, Timeout](db) {
-    override def execute[M[X] <: TraversableOnce[X]](col: QueryCollection[M])(
-      implicit cbf: CanBuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]]
+    override def execute[M[X] <: IterableOnce[X]](col: QueryCollection[M])(
+      implicit cbf: BuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]]
     ): ExecutableStatements[F, M] = {
       executeStatements(col)
     }
@@ -315,7 +316,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
     ): F[ResultSet] = promiseInterface.adapter.fromGuava(table.store(input).executableQuery)
 
     def storeRecords[
-      M[X] <: TraversableOnce[X],
+      M[X] <: IterableOnce[X],
       V1,
       Repr <: HList,
       HL <: HList,
@@ -328,30 +329,30 @@ abstract class QueryContext[P[_], F[_], Timeout](
       sg: SingleGeneric.Aux[V1, Repr, HL, Out],
       ev: Out ==:== Repr,
       ctx: ExecutionContextExecutor,
-      cbfB: CanBuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]],
-      fbf: CanBuildFrom[M[F[ResultSet]], F[ResultSet], M[F[ResultSet]]],
-      fbf2: CanBuildFrom[M[F[ResultSet]], ResultSet, M[ResultSet]]
+      cbfEntry: Factory[ExecutableCqlQuery, M[ExecutableCqlQuery]],
+      cbfB: BuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]],
+      fbf: Factory[F[ResultSet], M[F[ResultSet]]],
+      fbf2: Factory[ResultSet, M[ResultSet]]
     ): F[M[ResultSet]] = {
-
-      val queries = (cbfB() /: inputs)((acc, el) => acc += table.store(el).executableQuery)
+      val queries = inputs.iterator.foldLeft(cbfEntry.newBuilder) { (acc, el) => acc += table.store(el).executableQuery }
 
       executeStatements[M](new QueryCollection[M](queries.result())).future()(session, ctx, fbf, fbf2)
     }
   }
 
-  implicit class QueryCollectionOps[M[X] <: TraversableOnce[X]](val col: QueryCollection[M]) {
+  implicit class QueryCollectionOps[M[X] <: IterableOnce[X]](val col: QueryCollection[M]) {
 
     def future()(
       implicit session: Session,
       ec: ExecutionContextExecutor,
-      fbf: CanBuildFrom[M[F[ResultSet]], F[ResultSet], M[F[ResultSet]]],
-      ebf: CanBuildFrom[M[F[ResultSet]], ResultSet, M[ResultSet]]
+      fbf: Factory[F[ResultSet], M[F[ResultSet]]],
+      ebf: Factory[ResultSet, M[ResultSet]]
     ): F[M[ResultSet]] = executeStatements(col).future()
 
     def sequence()(
       implicit session: Session,
       ec: ExecutionContextExecutor,
-      cbf: CanBuildFrom[M[ExecutableCqlQuery], ResultSet, M[ResultSet]]
+      cbf: Factory[ResultSet, M[ResultSet]]
     ): F[M[ResultSet]] = executeStatements(col).sequence()
   }
 
@@ -396,6 +397,8 @@ abstract class QueryContext[P[_], F[_], Timeout](
     override def compare(x: Option[T], y: Option[T]): Int = {
       { for (x1 <- x; y1 <- y) yield ev.compare(x1, y1) } getOrElse 0
     }
+
+    def parseString(str: String): Option[Option[T]] = ???
   }
 }
 

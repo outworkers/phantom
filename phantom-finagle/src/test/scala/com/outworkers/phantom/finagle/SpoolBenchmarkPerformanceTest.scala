@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2019 Outworkers Ltd.
+ * Copyright 2013 - 2020 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import com.outworkers.util.samplers._
 import com.twitter.util.{ Await, Future }
 import org.joda.time.{DateTime, DateTimeZone}
 import org.scalameter.api.{Gen => MeterGen, gen => _, _}
-import com.twitter.conversions.time._
+import com.twitter.conversions.DurationOps._
 
 class SpoolBenchmarkPerformanceTest extends Bench.LocalTime with TestDatabase.connector.Connector {
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2019 Outworkers Ltd.
+ * Copyright 2013 - 2020 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ trait PrimaryKey extends Key[PrimaryKey] with Unmodifiable with Indexed with Und
   abstract override def isPrimary: Boolean = true
 }
 
-trait PartitionKey extends Key[PartitionKey] with Unmodifiable with Undroppable {
+trait PartitionKey extends Key[PartitionKey] with Unmodifiable with Undroppable with Indexed {
   self: AbstractColumn[_] =>
   abstract override def isPartitionKey: Boolean = true
   abstract override def isPrimary: Boolean = true

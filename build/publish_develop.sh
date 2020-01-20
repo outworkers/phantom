@@ -42,7 +42,7 @@ function prepare_maven_release {
 function publish_to_bintray {
     export MAVEN_PUBLISH="false"
     echo "Publishing new version to bintray"
-    sbt "such publish"
+    sbt "+publish"
 }
 
 function setup_credentials {
@@ -106,12 +106,6 @@ then
         fix_git
         setup_git_credentials
         prepare_maven_release
-
-        #sbt "project readme" tut
-        #git add docs
-        #git commit -m "Added compiled tut documentation [ci skip]"
-
-        # git status
 
         sbt "release with-defaults"
 

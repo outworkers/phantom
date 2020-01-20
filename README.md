@@ -28,6 +28,14 @@ rather added via implicit augmentation by `QueryContext`. The return type of the
 on which `QueryContext` you use, so that's why importing is required, without it the necessary implicits will not
 be in scope by default, or similarly, in some places new implicits are required to specify things specific to an execution backend.
 
+Scala 2.13 support
+=================================
+
+As of phantom 2.50.0, Scala 2.13 support is officially available, however all support has been dropped for Scala 2.10. To use
+Scala 2.10 with phantom, please use a version of phantom earlier than 2.5.0. No support or ongoing maintenance will be
+offered for 2.10 artifacts, as the codebase has undergone significant change to support newer versions, and the various
+libraries we depend on no longer support this.
+
 Migrating to phantom 2.x.x series
 =================================
 
@@ -45,39 +53,39 @@ This is a table of the available modules for the various Scala versions. Not all
 
 #### Phantom OSS
 
-| Module name           | Scala 2.10.x        | Scala 2.11.x      | Scala 2.12.0      |
-| ------------          | ------------------- | ------------------| ----------------- |
-| phantom-connectors    | <span>yes</span>    | <span>yes</span> | <span>yes</span>   |
-| phantom-dsl           | <span>yes</span>    | <span>yes</span> | <span>yes</span>   |
-| phantom-jdk8          | <span>yes</span>    | <span>yes</span> | <span>yes</span>   |
-| phantom-sbt           | <span>yes</span>    | <span>no</span>  | <span>no</span>    |
-| phantom-example       | <span>yes</span>    | <span>yes</span> | <span>yes</span>   |
-| phantom-thrift        | <span>yes</span>    | <span>yes</span> | <span>yes</span>   |
-| phantom-finagle       | <span>yes</span>    | <span>yes</span> | <span>yes</span>   |
-| phantom-streams       | <span>yes</span>    | <span>yes</span> | <span>yes</span>   |
+| Module name           | Scala 2.11.x      | Scala 2.12.x      | Scala 2.13.x        |
+| ------------          | ------------------| ----------------- | ------------------- |
+| phantom-connectors    | <span>yes</span> | <span>yes</span>   | <span>yes</span>    |
+| phantom-dsl           | <span>yes</span> | <span>yes</span>   | <span>yes</span>    |
+| phantom-jdk8          | <span>yes</span> | <span>yes</span>   | <span>yes</span>    |
+| phantom-sbt           | <span>no</span>  | <span>yes</span>   | <span>no</span>     |
+| phantom-example       | <span>yes</span> | <span>yes</span>   | <span>yes</span>    |
+| phantom-thrift        | <span>yes</span> | <span>yes</span>   | <span>yes</span>    |
+| phantom-finagle       | <span>yes</span> | <span>yes</span>   | <span>yes</span>    |
+| phantom-streams       | <span>yes</span> | <span>yes</span>   | <span>no</span>     |
 
 #### Phantom Pro subscription edition
 
 Modules marked with "x" are still in beta or pre-publishing mode.
 
-| Module name           | Scala 2.10.x        | Scala 2.11.x      | Scala 2.12.x      | Release date   |
-| ------------          | ------------------- | ------------------| ----------------- | -------------- |
-| phantom-dse           | <span>yes</span>    | <span>yes</span>  | <span>yes</span>  | Released       |
-| phantom-udt           | <span>yes</span>    | <span>yes</span>  | <span>yes</span>  | Released       |
-| phantom-autotables    | <span>x</span>      | <span>x</span>    | <span>x</span>    | Released       |
-| phantom-monix         | <span>x</span>      | <span>x</span>    | <span>x</span>    | Released       |
-| phantom-docker        | <span>x</span>      | <span>x</span>    | <span>x</span>    | Released       |
-| phantom-graph         | <span>x</span>      | <span>x</span>    | <span>x</span>    | April 2017     |
-| phantom-spark         | <span>x</span>      | <span>x</span>    | <span>x</span>    | July 2017      |
-| phantom-solr          | <span>x</span>      | <span>x</span>    | <span>x</span>    | July 2017      |
-| phantom-migrations    | <span>x</span>      | <span>x</span>    | <span>x</span>    | September 2017 |
-| phantom-native        | <span>x</span>      | <span>x</span>    | <span>x</span>    | December 2017  |
-| phantom-java-dsl      | <span>x</span>      | <span>x</span>    | <span>x</span>    | December 2017  |
+| Module name           | Scala 2.11.x      | Scala 2.12.x      | Scala 2.13.x        | Release date   |
+| ------------          | ------------------| ----------------- | ------------------- | -------------- |
+| phantom-dse           | <span>yes</span>  | <span>yes</span>  | <span>yes</span>    | Released       |
+| phantom-udt           | <span>yes</span>  | <span>yes</span>  | <span>yes</span>    | Released       |
+| phantom-autotables    | <span>yes</span>  | <span>yes</span>  | <span>yes</span>    | Released       |
+| phantom-monix         | <span>yes</span>  | <span>yes</span>  | <span>yes</span>    | Released       |
+| phantom-docker        | <span>x</span>    | <span>x</span>    | <span>x</span>      | Released       |
+| phantom-migrations    | <span>yes</span>  | <span>yes</span>  | <span>yes</span>    | Released       |
+| phantom-graph         | <span>x</span>    | <span>x</span>    | <span>x</span>      | April 2020     |
+| phantom-spark         | <span>x</span>    | <span>x</span>    | <span>x</span>      | July 2020      |
+| phantom-solr          | <span>x</span>    | <span>x</span>    | <span>x</span>      | July 2020      |
+| phantom-native        | <span>x</span>    | <span>x</span>    | <span>x</span>      | December 2020  |
+| phantom-java-dsl      | <span>x</span>    | <span>x</span>    | <span>x</span>      | December 2020  |
 
 Using phantom
 =============
 
-### Scala 2.10, 2.11 and 2.12 releases ###
+### Scala 2.11, 2.12 and 2.13 releases ###
 
 We publish phantom in 2 formats, stable releases and bleeding edge.
 
@@ -93,7 +101,7 @@ To compare phantom to similar tools in the Scala/Cassandra category, you can rea
 
 The latest versions are available here. The badges automatically update when a new version is released.
 
-- Latest stable version: [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.11) (Maven Central)
+- Latest stable version: [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.outworkers/phantom-dsl_2.12) (Maven Central)
 - Bleeding edge: [![Bintray](https://api.bintray.com/packages/outworkers/oss-releases/phantom-dsl/images/download.svg)](https://bintray.com/outworkers/oss-releases/phantom-dsl/_latestVersion) (OSS releases on Bintray)
 
 <a id="learning-phantom">Tutorials on phantom and Cassandra</a>

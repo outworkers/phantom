@@ -345,7 +345,6 @@ So the new type of the generated store method will now be:
 The new table definition to store the above is:
 
 ```scala
-
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.builder.query.InsertQuery
 import scala.concurrent.duration._

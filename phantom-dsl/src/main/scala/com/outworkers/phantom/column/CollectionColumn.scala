@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2019 Outworkers Ltd.
+ * Copyright 2013 - 2020 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,30 +23,30 @@ import com.outworkers.phantom.builder.query.prepared.PrepareMark
 import com.outworkers.phantom.connectors.KeySpace
 import shapeless.{::, HNil}
 
-import scala.collection.generic.CanBuildFrom
 import scala.util.Try
+import scala.collection.compat._
 
 abstract class AbstractColColumn[
   Owner <: CassandraTable[Owner, Record],
   Record,
-  M[X] <: TraversableOnce[X],
+  M[X] <: IterableOnce[X],
   RR
 ](table: CassandraTable[Owner, Record])(
-  implicit cbf: CanBuildFrom[Nothing, RR, M[RR]]
+  implicit cbf: Factory[RR, M[RR]]
 ) extends Column[Owner, Record, M[RR]](table) with CollectionValueDefinition[RR] {
 
-  override def apply(r: Row): M[RR] = parse(r).getOrElse(cbf().result())
+  override def apply(r: Row): M[RR] = parse(r).getOrElse(cbf.newBuilder.result())
 }
 
 class CollectionColumn[
   Owner <: CassandraTable[Owner, Record],
   Record,
-  M[X] <: TraversableOnce[X],
+  M[X] <: IterableOnce[X],
   RR
 ](table: CassandraTable[Owner, Record], collection: String)(
   implicit vp: Primitive[RR],
   ev: Primitive[M[RR]],
-  cbf: CanBuildFrom[Nothing, RR, M[RR]]
+  cbf: Factory[RR, M[RR]]
 ) extends AbstractColColumn[Owner, Record, M, RR](table) {
 
   override def asCql(v: M[RR]): String = ev.asCql(v)

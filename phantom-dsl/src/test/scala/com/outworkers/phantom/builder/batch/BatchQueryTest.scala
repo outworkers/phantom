@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2019 Outworkers Ltd.
+ * Copyright 2013 - 2020 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,8 +34,8 @@ class BatchQueryTest extends PhantomSuite {
     val batch = Batch.logged.add(rows.map(r => database.primitivesJoda.store(r)): _*)
 
     val chain = for {
-      ex <- database.primitivesJoda.truncate.future()
-      batchDone <- batch.future()
+      _ <- database.primitivesJoda.truncate.future()
+      _ <- batch.future()
       count <- database.primitivesJoda.select.count.one()
     } yield count
 
@@ -50,8 +50,8 @@ class BatchQueryTest extends PhantomSuite {
     val batch = Batch.logged.add(rows.map(r => database.primitivesJoda.store(r)): _*)
 
     val chain = for {
-      ex <- database.primitivesJoda.truncate.future()
-      batchDone <- batch.consistencyLevel_=(ConsistencyLevel.ONE).future()
+      _ <- database.primitivesJoda.truncate.future()
+      _ <- batch.consistencyLevel_=(ConsistencyLevel.ONE).future()
       count <- database.primitivesJoda.select.count.one()
     } yield count
 
@@ -71,8 +71,8 @@ class BatchQueryTest extends PhantomSuite {
     val batch = Batch.logged.add(statement1).add(statement1.ifNotExists()).add(statement1.ifNotExists())
 
     val chain = for {
-      ex <- database.primitivesJoda.truncate.future()
-      batchDone <- batch.future()
+      _ <- database.primitivesJoda.truncate.future()
+      _ <- batch.future()
       count <- database.primitivesJoda.select.count.one()
     } yield count
 
@@ -92,8 +92,8 @@ class BatchQueryTest extends PhantomSuite {
     val batch = Batch.logged.add(statement1).add(statement1.ifNotExists()).add(statement1.ifNotExists())
 
     val chain = for {
-      ex <- database.primitivesJoda.truncate.future()
-      batchDone <- batch.future()
+      _ <- database.primitivesJoda.truncate.future()
+      _ <- batch.future()
       count <- database.primitivesJoda.select.count.one()
     } yield count
 
@@ -128,9 +128,9 @@ class BatchQueryTest extends PhantomSuite {
     val batch = Batch.logged.add(statement3).add(statement4)
 
     val w = for {
-      s1 <- statement1.future()
-      s3 <- statement2.future()
-      b <- batch.future()
+      _ <- statement1.future()
+      _ <- statement2.future()
+      _ <- batch.future()
       updated <- database.primitivesJoda.select.where(_.pkey eqs row.pkey).one()
       deleted <- database.primitivesJoda.select.where(_.pkey eqs row3.pkey).one()
     } yield (updated, deleted)
@@ -168,9 +168,9 @@ class BatchQueryTest extends PhantomSuite {
     val batch = Batch.logged.add(List(statement3, statement4))
 
     val w = for {
-      s1 <- statement1.future()
-      s3 <- statement2.future()
-      b <- batch.future()
+      _ <- statement1.future()
+      _ <- statement2.future()
+      _ <- batch.future()
       updated <- database.primitivesJoda.select.where(_.pkey eqs row.pkey).one()
       deleted <- database.primitivesJoda.select.where(_.pkey eqs row3.pkey).one()
     } yield (updated, deleted)
@@ -208,9 +208,9 @@ class BatchQueryTest extends PhantomSuite {
     val batch = Batch.logged.add(Some(statement3)).add(Some(statement4))
 
     val w = for {
-      s1 <- statement1.future()
-      s3 <- statement2.future()
-      b <- batch.future()
+      _ <- statement1.future()
+      _ <- statement2.future()
+      _ <- batch.future()
       updated <- database.primitivesJoda.select.where(_.pkey eqs row.pkey).one()
       deleted <- database.primitivesJoda.select.where(_.pkey eqs row3.pkey).one()
     } yield (updated, deleted)
@@ -250,7 +250,7 @@ class BatchQueryTest extends PhantomSuite {
       )
 
     val chain = for {
-      done <- batch.future()
+      _ <- batch.future()
       updated <- database.primitivesJoda.select.where(_.pkey eqs row.pkey).one()
     } yield updated
 
@@ -282,7 +282,7 @@ class BatchQueryTest extends PhantomSuite {
       )
 
     val chain = for {
-      done <- batch.future()
+      _ <- batch.future()
       updated <- database.primitivesJoda.select.where(_.pkey eqs row.pkey).one()
     } yield updated
 

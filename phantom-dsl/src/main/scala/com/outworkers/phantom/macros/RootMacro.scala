@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2019 Outworkers Ltd.
+ * Copyright 2013 - 2020 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,10 @@ import com.outworkers.phantom.keys.SASIIndex
 import com.outworkers.phantom.macros.toolbelt.{HListHelpers, WhiteboxToolbelt}
 import com.outworkers.phantom.{CassandraTable, SelectTable}
 
-import scala.collection.generic.CanBuildFrom
+import scala.collection.compat._
 import scala.collection.immutable.ListMap
 import scala.reflect.macros.whitebox
+import scala.Iterable
 
 @macrocompat.bundle
 trait RootMacro extends HListHelpers with WhiteboxToolbelt {
@@ -116,9 +117,9 @@ trait RootMacro extends HListHelpers with WhiteboxToolbelt {
     def record: Record.Field = left
   }
 
-  implicit class ListMapOps[K, V, M[X] <: Traversable[X]](
+  implicit class ListMapOps[K, V, M[X] <: Iterable[X]](
     val lm: ListMap[K, M[V]]
-  )(implicit cbf: CanBuildFrom[Nothing, V, M[V]]) {
+  )(implicit cbf: Factory[V, M[V]]) {
 
     /**
       * Every entry in this ordered map is a traversable of type [[M]].
@@ -128,7 +129,7 @@ trait RootMacro extends HListHelpers with WhiteboxToolbelt {
       */
     def remove(key: K, elem: V): ListMap[K, M[V]] = {
       lm.get(key) match {
-        case Some(col) => lm + (key -> col.filterNot(elem ==).to[M])
+        case Some(col) => lm + (key -> cbf.fromSpecific(col.filterNot(elem ==)))
         case None => lm
       }
     }
@@ -388,7 +389,7 @@ trait RootMacro extends HListHelpers with WhiteboxToolbelt {
         symbol <- baseClass.typeSignature.members.sorted
         if symbol.typeSignature <:< typeOf[Filter]
       } yield symbol
-    )(collection.breakOut) distinct
+    ).distinct
   }
 
   def filterMembers[T : WeakTypeTag, Filter : TypeTag](

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2019 Outworkers Ltd.
+ * Copyright 2013 - 2020 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,10 @@ import java.time.ZoneOffset
 import com.outworkers.phantom.builder.primitives.Primitive
 import com.outworkers.phantom.jdk8.tables._
 import org.scalacheck.Gen
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatest.{Assertion, FlatSpec, Matchers}
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 
-class IndexedRoundtripTests extends FlatSpec with Matchers with GeneratorDrivenPropertyChecks {
+class IndexedRoundtripTests extends FlatSpec with Matchers with ScalaCheckDrivenPropertyChecks {
 
   private[this] val genLower: Int = -100000
   private[this] val genHigher: Int = -genLower

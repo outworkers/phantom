@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2019 Outworkers Ltd.
+ * Copyright 2013 - 2020 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import com.outworkers.phantom.connectors.SessionAugmenterImplicits
 import org.joda.time.DateTime
 
 import scala.annotation.implicitNotFound
-import scala.collection.generic.CanBuildFrom
+import scala.collection.compat._
 
 case class BatchWithQuery(
   statement: Statement,
@@ -93,11 +93,11 @@ sealed case class BatchQuery[Status <: ConsistencyBound](
     }
   }
 
-  def add[M[X] <: TraversableOnce[X], Y <: Batchable](queries: M[Y])(
-    implicit cbf: CanBuildFrom[Nothing, Batchable, Iterator[Batchable]]
+  def add[M[X] <: IterableOnce[X], Y <: Batchable](queries: M[Y])(
+    implicit cbf: Factory[Batchable, Iterator[Batchable]]
   ): BatchQuery[Status] = {
-    val builder = cbf()
-    queries.foreach(builder +=)
+    val builder = cbf.newBuilder
+    queries.iterator.foreach(builder +=)
     copy(iterator = iterator ++ builder.result())
   }
 

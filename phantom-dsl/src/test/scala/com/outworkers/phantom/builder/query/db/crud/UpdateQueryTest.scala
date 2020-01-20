@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 - 2019 Outworkers Ltd.
+ * Copyright 2013 - 2020 Outworkers Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,9 @@ import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.tables._
 import com.outworkers.util.samplers._
 import org.joda.time.{DateTime, DateTimeZone}
-import org.scalatest.{EitherValues, Inside}
+import org.scalatest.{EitherValues}
 
-class UpdateQueryTest extends PhantomSuite with Inside with EitherValues {
+class UpdateQueryTest extends PhantomSuite with EitherValues {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
