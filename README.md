@@ -31,7 +31,7 @@ be in scope by default, or similarly, in some places new implicits are required 
 Scala 2.13 support
 =================================
 
-As of phantom 2.5.0, Scala 2.13 support is officially available, however all support has been dropped for Scala 2.10. To use
+As of phantom 2.50.0, Scala 2.13 support is officially available, however all support has been dropped for Scala 2.10. To use
 Scala 2.10 with phantom, please use a version of phantom earlier than 2.5.0. No support or ongoing maintenance will be
 offered for 2.10 artifacts, as the codebase has undergone significant change to support newer versions, and the various
 libraries we depend on no longer support this.
