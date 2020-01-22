@@ -62,7 +62,11 @@ class CassandraConnection(
     * made have all the same Cassandra version, otherwise None.
     */
   def cassandraVersionOpt: Option[VersionNumber] = {
-    cassandraVersions.headOption
+    val versions = cassandraVersions
+    if (versions.size == 1)
+      cassandraVersions.headOption
+    else
+      None
   }
 
   /**
