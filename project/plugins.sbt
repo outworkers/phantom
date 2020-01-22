@@ -45,8 +45,9 @@ addSbtPlugin("com.timushev.sbt" % "sbt-updates" % "0.5.0")
 
 addSbtPlugin("com.twitter" % "scrooge-sbt-plugin" % Versions.scrooge)
 
-addSbtPlugin("org.tpolecat" % "tut-plugin" % "0.6.13")
+addSbtPlugin("org.scalameta" % "sbt-mdoc" % "2.1.1" )
+
+addSbtPlugin("com.github.gseitz" % "sbt-release" % "1.0.12")
 
 libraryDependencies += "org.slf4j" % "slf4j-nop" % "1.7.22"
 
-addSbtPlugin("com.github.gseitz" % "sbt-release" % "1.0.12")

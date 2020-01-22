@@ -120,8 +120,6 @@ lazy val Versions = new {
   val monix = "3.1.0-2156c0e"
   val macroCompat = "1.1.1"
   val collectionCompat = "2.1.3"
-
-  val kindProjector = "0.11.0"
   val paradise = "2.1.1"
 
   val scalaMacrosVersion: String => String = {
@@ -227,7 +225,7 @@ Global / pgpPassphrase := {
 }
 
 val releaseSettings = Seq(
-  releaseTutFolder := baseDirectory.value / "docs",
+  //releaseTutFolder := baseDirectory.value / "docs",
   releaseIgnoreUntrackedFiles := true,
   releaseVersionBump := sbtrelease.Version.Bump.Minor,
   releaseTagComment := s"Releasing ${(version in ThisBuild).value} $ciSkipSequence",
@@ -235,7 +233,7 @@ val releaseSettings = Seq(
   releaseProcess := Seq[ReleaseStep](
     checkSnapshotDependencies,
     inquireVersions,
-    releaseStepTask((tut in Tut) in readme),
+    //releaseStepTask((tut in Tut) in readme),
     setReleaseVersion,
     Publishing.commitTutFilesAndVersion,
     releaseStepCommandAndRemaining("+publishSigned"),
@@ -310,8 +308,8 @@ lazy val readme = (project in file("readme"))
   .settings(sharedSettings ++ Publishing.noPublishSettings)
   .settings(
     crossScalaVersions := Seq(Versions.scala211, Versions.scala212),
-    tutSourceDirectory := sourceDirectory.value / "main" / "tut",
-    tutTargetDirectory := baseDirectory.value / "docs",
+    //tutSourceDirectory := sourceDirectory.value / "main" / "tut",
+    //tutTargetDirectory := baseDirectory.value / "docs",
     libraryDependencies ++= Seq(
       Versions.macroCompatVersion(scalaVersion.value),
       "org.scala-lang" % "scala-compiler" % scalaVersion.value,
@@ -327,7 +325,7 @@ lazy val readme = (project in file("readme"))
     //phantomFinagle,
     //phantomStreams,
     //phantomThrift
-  ).enablePlugins(TutPlugin)
+  ).enablePlugins(MdocPlugin)
 
 lazy val phantomDsl = (project in file("phantom-dsl"))
   .settings(sharedSettings: _*)
