@@ -367,7 +367,8 @@ lazy val phantomConnectors = (project in file("phantom-connectors"))
     crossScalaVersions := Versions.scala.all,
     libraryDependencies ++= Seq(
       "com.datastax.cassandra"       %  "cassandra-driver-core"             % Versions.datastax,
-      "com.outworkers"               %% "util-samplers"                      % Versions.util % Test
+      "com.outworkers"               %% "util-samplers"                     % Versions.util % Test,
+      "org.scalamock"                %% "scalamock"                         % Versions.scalamock % Test
     )
   )
 
