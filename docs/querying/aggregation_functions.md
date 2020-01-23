@@ -45,7 +45,7 @@ Let's take a look at how to leverage this functionality using phantom. First, we
 a connector, the schema and record for our table, and a database.
 
 
-```scala
+```tut:silent
 
 import scala.concurrent.Future
 import com.datastax.driver.core.SocketOptions
@@ -153,7 +153,7 @@ such as UUID and timeuuid specific ones, are described further down.
 This operator is user to determine the UTC timestamp of a write, e.g the timestamp at which
 the record was written to Cassandra. More details [here](https://docs.datastax.com/en/cql/3.3/cql/cql_using/useWritetime.html).
 
-```scala
+```tut:silent
 
 import java.util.UUID
 import scala.concurrent.Future
@@ -174,7 +174,7 @@ trait WriteTimeExamples extends db.Connector {
 
 This will only return a value if there is a `ttl` set on the respective column.
 
-```scala
+```tut:silent
 trait TTLExamples extends db.Connector {
 
     def findTTL(record: TimeUUIDRecord): Future[Option[Int]] = {
@@ -198,7 +198,7 @@ It's important to remember this operator is specifically designed to work only w
 and it will return an error if you attempt to use it with anything else.
 
 
-```scala
+```tut:silent
 
 trait DateOfExamples extends db.Connector {
     
@@ -215,7 +215,7 @@ trait DateOfExamples extends db.Connector {
 
 Just like `dateOf`, this operator will only work with `uuid` and `timeuuid` columns.
 
-```scala
+```tut:silent
 
 import java.util.UUID
 import scala.concurrent.Future
@@ -243,7 +243,7 @@ E.g Cassandra will store both an id and timestamp for a record in the same field
 our storage and query models, just by using a `timeuuid` column.
 
 
-```scala
+```tut:silent
 
 import org.joda.time.DateTime
 
@@ -265,7 +265,7 @@ trait TimeUUIDRangeExamples extends db.Connector {
 Phantom offers the `~` operator, which allows queries to retrieve the values of multiple operators
 at the same time, and a `multiAggregate` DB action to provide a cleaner return type.
 
-```scala
+```tut:silent
 trait MultiAggregates extends db.Connector {
 
    def averageAndMax: Future[Option[(Option[Long], Option[Long])]] = {

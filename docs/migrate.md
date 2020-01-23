@@ -136,15 +136,15 @@ To understand more about this, have a look at [execution backends](querying/exec
 As of phantom 2.4.0, phantom is capable of automatically generating a `Row` extractor for the majority of
 use cases using implicit macros, meaning you will never again need to define that part of the boilerplate.
 
-For more details, you can refer to the [how extractors work](basics/tables#extractors) guideline in the documentation.
+For more details, you can refer to the [how extractors work](basics/tables.md#extractors) guideline in the documentation.
 
 #### You can remove manual `store` method definitions
 
 As of phantom 2.5.0, if you have a manually defined method to insert records into your table, this is now no longer necessary.
-For a full set of details on how the `store` method is generated, refer to [the store method](basics/tables#store-methods) docs.
+For a full set of details on how the `store` method is generated, refer to [the store method](basics/tables.md#store-methods) docs.
 This is because phantom successfully auto-generates a basic store method that looks like this below.
 
-```scala
+```tut:silent
 
 import scala.concurrent.duration._
 import scala.concurrent.Future

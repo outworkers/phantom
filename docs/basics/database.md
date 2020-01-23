@@ -24,7 +24,7 @@ However, from an app or service consumer perspective, when pulling in dependenci
 
 That's why phantom comes with very concise levels of segregation between the various consumer levels. When we create a table, we mix in `RootConnector`.
 
-```scala
+```tut:silent
 
 import java.util.UUID
 import org.joda.time.DateTime
@@ -59,7 +59,7 @@ abstract class Recipes extends Table[Recipes, Recipe] {
 ```
 The whole purpose of `RootConnector` is quite simple, it's saying an implementor will basically specify the `session` and `keySpace` of choice. It looks like this, and it's available in phantom by default via the default import, `import com.outworkers.phantom.dsl._`.
 
-```scala
+```tut:silent
 
 import com.datastax.driver.core.Session
 
@@ -73,7 +73,7 @@ trait RootConnector {
 
 Later on when we start creating databases, we pass in a `ContactPoint` or what we call a `connector` in more plain English, which basically fully encapsulates a Cassandra connection with all the possible details and settings required to run an application.
 
-```scala
+```tut:silent
 
 import com.outworkers.phantom.dsl._
 
@@ -107,7 +107,7 @@ And this is why we offer another native construct, namely the `DatabaseProvider`
 
 This is pretty simple in its design, it simply aims to provide a simple way of injecting a reference to a particular `database` inside a consumer. For the sake of argument, let's say we are designing a `UserService` backed by Cassandra and phantom. Here's how it might look like:
 
-```scala
+```tut:silent
 
 import scala.concurrent.Future
 import com.outworkers.phantom.dsl._
@@ -182,7 +182,7 @@ Let's go ahead and create two complete examples. We are going to make some simpl
 
 Let's look at the most basic example of defining a test connector, which will use all default settings plus a call to `noHearbeat` which will disable heartbeats by setting a pooling option to 0 inside the `ClusterBuilder`. We will go through that in more detail in a second, to show how we can specify more complex options using `ContactPoint`.
 
-```scala
+```tut:silent
 
 import com.outworkers.phantom.dsl._
 
@@ -203,7 +203,7 @@ It may feel verbose or slightly too much at first, but the objects wrapping the 
 
 And this is how you would use that provider trait now. We're going to assume ScalaTest is the testing framework in use, but of course that doesn't matter.
 
-```scala
+```tut:silent
 
 import com.outworkers.phantom.dsl._
 
@@ -273,7 +273,7 @@ To override the settings that will be used during schema auto-generation at `Dat
 
 When you later call `database.create` or `database.createAsync` or any other flavour of auto-generation on a `Database`, the `autocreate` overriden below will be respected.
 
-```scala
+```tut:silent
 
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.builder.query.CreateQuery

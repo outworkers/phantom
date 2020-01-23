@@ -33,10 +33,10 @@ If this is your very first time with phantom, a good place to start would be the
         - [Advanced debugging](./basics/debugging.md)
     
 - [Querying with Phantom](./querying)
-    - [Query Options](./querying/options.md)
     - [SELECT queries](./querying/select.md)
+        - [WHERE clause options](./querying/where_clause.md)
         - [Aggregation functions](./querying/aggregation_functions.md)
-        
+    - [Query Options](./querying/options.md)
     - [Using the different kinds of Futures](./querying/execution.md)    
 - [Commercial](./commercial)
     - [Enterprise level support](./commercial/support.md)

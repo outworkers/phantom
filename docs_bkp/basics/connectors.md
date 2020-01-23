@@ -15,7 +15,7 @@ An example of how to build a connection is found below, and uses `ContactPoint.l
 use a connection to `localhost` on port `9042`, the standard CQL port. There's also `ContactPoint.embedded`, which works together with
 the  SBT cassandra plugins we offer, `phantom-sbt` and `phantom-docker`, and will attempt to connect to `localhost:9142`.
 
-```tut:silent
+```scala
 
 import com.datastax.driver.core.SocketOptions
 import com.outworkers.phantom.dsl._
@@ -41,7 +41,7 @@ To take advantage of the native Java Driver options, simply use the `withCluster
 we are going use password protected authentication to Cassandra, using `PlainTextAuthProvider`. Hopefully it is
 easy to see how you would
 
-```tut:silent
+```scala
 
 import com.datastax.driver.core.{PlainTextAuthProvider, SocketOptions}
 import com.outworkers.phantom.dsl._
@@ -89,7 +89,7 @@ The below examples will produce the same output CQL query.
 
 #### Using the ```scala `with` ``` keyword
 
-```tut:silent
+```scala
 
 object KeySpaceQueryWith {
   val query = KeySpace("phantom").ifNotExists()
@@ -101,7 +101,7 @@ object KeySpaceQueryWith {
 
 #### Using the ```scala option ``` keyword
 
-```tut:silent
+```scala
 
 object KeySpaceQueryOption {
   val query = KeySpace("phantom").ifNotExists()
@@ -122,7 +122,7 @@ Using the DSL, you can configure three main things:
 
 More advanced options are also supported, such as `NetworkTopologyStrategy`.
 
-```tut:silent
+```scala
 
 object NetworkTopologyExample {
 

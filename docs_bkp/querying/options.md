@@ -7,7 +7,7 @@ First some basic setup, a database connection and a few tables to create example
 are generic for most Cassandra queries, and they are shared among CRUD queries, but disregarded on queries that don't require
 them, such as `ALTER`.
 
-```tut:silent
+```scala
 
 import com.outworkers.phantom.dsl._
 import com.outworkers.util.samplers._
@@ -60,7 +60,7 @@ Using the convenience `apply` method requires an implicit ProtocolVersion in sco
 depends on the version of the protocol, and it expects a series of tuples of the form `(String, Value)`, where the type of `Value`
 has an implicit `Primitive` already defined, which will be used for serialization.
 
-```tut:silent
+```scala
 
 import java.util.UUID
 import org.joda.time.{ DateTime, DateTimeZone }
@@ -84,7 +84,7 @@ trait PayloadExample extends db.Connector {
 
 And this is how to use a payload inside a query of any kind, using the `withOptions` method.
 
-```tut:silent
+```scala
 
 import scala.concurrent.Future
 import com.outworkers.phantom.dsl._

@@ -308,8 +308,9 @@ lazy val readme = (project in file("readme"))
   .settings(sharedSettings ++ Publishing.noPublishSettings)
   .settings(
     crossScalaVersions := Seq(Versions.scala211, Versions.scala212),
-    //tutSourceDirectory := sourceDirectory.value / "main" / "tut",
-    //tutTargetDirectory := baseDirectory.value / "docs",
+    mdocVariables := Map(
+      "VERSION" -> version.value
+    ),
     libraryDependencies ++= Seq(
       Versions.macroCompatVersion(scalaVersion.value),
       "org.scala-lang" % "scala-compiler" % scalaVersion.value,

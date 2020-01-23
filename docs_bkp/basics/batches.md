@@ -22,7 +22,7 @@ phantom also supports `COUNTER` batch updates and `UNLOGGED` batch updates.
 
 To start, we need an example database connection.
 
-```tut:silent
+```scala
 
 import com.datastax.driver.core.SocketOptions
 import com.outworkers.phantom.connectors._
@@ -45,7 +45,7 @@ object Connector {
 
 Now let's define a few tables to allow us to exemplify batch queries.
 
-```tut:silent
+```scala
 
 import scala.concurrent.Future
 import com.outworkers.phantom.dsl._
@@ -90,7 +90,7 @@ trait TestDbProvider extends DatabaseProvider[TestDatabase] {
 <a id="logged-batch-statements">LOGGED batch statements</a>
 ===========================================================
 
-```tut:silent
+```scala
 
 import java.util.UUID
 import com.outworkers.phantom.dsl._
@@ -109,7 +109,7 @@ trait LoggedQueries extends TestDbProvider {
 <a id="unlogged-batch-statements">UNLOGGED batch statements</a>
 ============================================================
 
-```tut:silent
+```scala
 
 import com.outworkers.phantom.dsl._
 
@@ -128,7 +128,7 @@ trait UnloggedQueries extends TestDbProvider {
 ============================================================
 <a href="#table-of-contents">back to top</a>
 
-```tut:silent
+```scala
 
 import com.outworkers.phantom.dsl._
 
@@ -145,7 +145,7 @@ trait CounterQueries extends TestDbProvider {
 Counter operations also offer a standard overloaded operator syntax, so instead of `increment` and `decrement`
 you can also use `+=` and `-=` to achieve the same thing.
 
-```tut:silent
+```scala
 
 import com.outworkers.phantom.dsl._
 

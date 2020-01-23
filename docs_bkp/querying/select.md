@@ -21,7 +21,7 @@ If we would just use the normal timestamp type, if we were to receive two logs f
 the entries would override each other in Cassandra, because in effect they would have the same partition key
 and the same clustering key, so the whole primary key would be identical.
 
-```tut:silent
+```scala
 
 import com.datastax.driver.core.SocketOptions
 import com.outworkers.phantom.dsl._
@@ -102,7 +102,7 @@ in Scala we cannot have Tuples of more than 21 type parameters. This may be poss
 but for the sake of legacy compatibility and enforcing a more lean query API we advise that you respect this
 limitation.
 
-```tut:silent
+```scala
 
 import java.util.UUID
 import scala.concurrent.Future
@@ -130,7 +130,7 @@ trait SelectExamples extends db.Connector {
 
 #### "IN" operator
 
-```tut:silent
+```scala
 
 import java.util.UUID
 import scala.concurrent.Future
@@ -150,7 +150,7 @@ Due to an interesting behaviour in the Scala compiler, prepared queries that use
 require special binding at compile time, called `ListValue`.
 
 
-```tut:silent
+```scala
 
 import java.util.UUID
 import scala.concurrent.Future

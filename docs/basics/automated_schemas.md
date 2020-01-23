@@ -13,7 +13,7 @@ database layer from the Scala code.
 This is called schema auto-generation, and it's pretty much self explanatory. Phantom will provide you with simple methods
 to allow you to drive the schema from the code. Let's explore this simple schema and the database below.
 
-```scala
+```tut:silent
 
 import scala.concurrent.Future
 import com.outworkers.phantom.dsl._
@@ -50,7 +50,7 @@ class AppDatabase(
 
 The simplest level of auto-generation is at table level. Let's look at how we could create the schema automatically.
 
-```scala
+```tut:silent
 
 object TestConnector {
   val connector = ContactPoint.local
@@ -70,7 +70,7 @@ Secondary indexes are a non scalable flavour of Cassandra indexing that allows u
 
 That aside, it's worth noting phantom is capable of auto-generating your CQL schema and initialising all your indexes automatically, and this functionality is exposed through the exact same `table.create.future()`.
 
-```scala
+```tut:silent
 
 
 import com.outworkers.phantom.dsl._

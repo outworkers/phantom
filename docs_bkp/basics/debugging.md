@@ -132,7 +132,7 @@ Let's assume the following schema DSL. All you have to do is to import the impli
 same file as the table is defined. If you define more than one table per file, you will see information printed
 out for every single tree.
 
-```tut:silent
+```scala
 
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.macros.debug.Options.ShowTrees
@@ -174,7 +174,7 @@ abstract class Recipes extends Table[Recipes, Recipe] {
 The debug output in the console looks like this. It's not easily readable, but it does show store type computed by the macro
 is ```Recipe```
 
-```tut:silent
+```scala
 {
     import shapeless.::
     final class anon$macro$1 extends _root_.com.outworkers.phantom.macros.TableHelper[Recipes, Recipe] {
