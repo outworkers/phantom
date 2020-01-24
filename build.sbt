@@ -225,7 +225,7 @@ Global / pgpPassphrase := {
 }
 
 val releaseSettings = Seq(
-  //releaseTutFolder := baseDirectory.value / "docs",
+  releaseTutFolder := baseDirectory.value / "docs",
   releaseIgnoreUntrackedFiles := true,
   releaseVersionBump := sbtrelease.Version.Bump.Minor,
   releaseTagComment := s"Releasing ${(version in ThisBuild).value} $ciSkipSequence",
