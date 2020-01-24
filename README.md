@@ -18,7 +18,7 @@ Migrating to phantom 2.14.0 and using execution backends.
 Please refer to the new docs on query execution to understand the breaking changes in phantom 2.14.0. They will
 affect all users of phantom, as we further optimise the internals for better performance and to gently prepare 3.0.
 
-Details [here](docs/querying/execution.md). In short, query generation is no longer coupled with query execution within
+Details [here](docs_bkp/querying/execution.md). In short, query generation is no longer coupled with query execution within
 the framework. That means phantom can natively support different kind of concurrency frameworks in parallel, using
 different sub-modules. That includes Monix, Twitter Util, Scala Futures, and a few others, some of which only available
 via phantom-pro.
@@ -43,7 +43,7 @@ The new series of phantom introduces several key backwards incompatible changes 
 This was done to obtain massive performance boosts and to thoroughly improve user experience with
 phantom.
 
-Read the [MIGRATION GUIDE](docs/migrate.md) for more information on how to upgrade.
+Read the [MIGRATION GUIDE](docs_bkp/migrate.md) for more information on how to upgrade.
 
 
 Available modules
@@ -95,7 +95,7 @@ We publish phantom in 2 formats, stable releases and bleeding edge.
 
 ### How phantom compares
 
-To compare phantom to similar tools in the Scala/Cassandra category, you can read more [here](docs/comparison.md).
+To compare phantom to similar tools in the Scala/Cassandra category, you can read more [here](docs_bkp/comparison.md).
 
 ### Latest versions
 
@@ -115,8 +115,8 @@ highlighting all the possible features in phantom and how to use them.
 
 This is a list of resources to help you learn phantom and Cassandra:
 
-- [ ] [Quickstart](docs/quickstart.md)
-- [ ] [Official documentation](docs/README.md)
+- [ ] [Quickstart](docs_bkp/quickstart.md)
+- [ ] [Official documentation](docs_bkp/README.md)
 - [ ] [Datastax Introduction to Cassandra](http://www.datastax.com/documentation/getting_started/doc/getting_started/gettingStartedIntro_r.html).
 - [ ] [The official Scala API docs for phantom](http://phantom-docs.s3-website-eu-west-1.amazonaws.com/)
 - [ ] [The main Wiki](https://github.com/outworkers/phantom/tree/develop/docs)

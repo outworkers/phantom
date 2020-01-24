@@ -36,7 +36,7 @@ The average of a `Float` column will come back as `scala.Float` and so on.
 | `count(colName)`   | COUNT                | `Option[scala.Long]`  |
 
 To take advantage of these operators, simply use the default import, combined with the `function` argument
-and the `aggregate` function. A few examples are found in [SelectFunctionsTesting.scala](/phantom-dsl/src/test/scala/com/outworkers/phantom/builder/query/db/specialized/SelectFunctionsTesting.scala#L99).
+and the `aggregate` function. A few examples are found in [SelectFunctionsTesting.scala](/com/outworkers/phantom/builder/query/db/specialized/SelectFunctionsTesting.scala#L99).
 
 
 #### How to use aggregation functions

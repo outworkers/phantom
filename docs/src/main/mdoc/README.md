@@ -17,28 +17,26 @@ Documentation
 
 If this is your very first time with phantom, a good place to start would be the [quickstart guide](./quickstart.md)
 
-- [Basics](./basics/)
-    - [Migrating from older versions](./roadmap.md)
+- [Basics](./basics)
+    - [Migrating from older versions](roadmap.md)
     - [Comparing phantom with other drivers](./comparison.md)
-    - [Connecting to Cassandra](./basics/connectors.md)
-    - [Understanding the Database construct](./basics/database.md)
+    - [Connecting to Cassandra](basics/connectors.md)
+    - [Understanding the Database construct](basics/database.md)
     
-    - *Defining Cassandra tables * 
+    - * Defining Cassandra tables * 
         - [Schema DSL](./basics/tables.md)
             - [Indexes](./basics/indexes)
-                - [SASI Indexes](./basics/indexes/sasi.md)
-        - [Primitive datatypes](./basics/primitives.md)
-        - [Json columns](./basics/json_columns.md)
-        - [Using Batches in Cassandra](./basics/batches.md)
-        - [Advanced debugging](./basics/debugging.md)
+                - [SASI Indexes](basics/indexes/sasi.md)
+        - [Primitive datatypes](basics/primitives.md)
+        - [Json columns](basics/json_columns.md)
+        - [Using Batches in Cassandra](basics/batches.md)
+        - [Advanced debugging](basics/debugging.md)
     
 - [Querying with Phantom](./querying)
-    - [Query Options](./querying/options.md)
-    - [INSERT queries](./querying/insert.md)
     - [SELECT queries](./querying/select.md)
         - [WHERE clause options](./querying/where_clause.md)
         - [Aggregation functions](./querying/aggregation_functions.md)
-        
+    - [Query Options](./querying/options.md)
     - [Using the different kinds of Futures](./querying/execution.md)    
 - [Commercial](./commercial)
     - [Enterprise level support](./commercial/support.md)

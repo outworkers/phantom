@@ -233,7 +233,7 @@ Phantom also natively supports some `java.time.*` JDK8 specific primitives as na
 `OffsetDateTime` and `ZonedDateTime` are natively supported via the `phantom-jdk8` module, and all you have to do is `import com.outworkers.phantom.jdk8._`. This module is only compatible with Java 8 and requires an extra dependency as a result!
 
 ```scala
-val phantomVersion = ".."
+val phantomVersion = "src/main"
 
 libraryDependencies ++= Seq(
   "com.outworkers" %% "phantom-jdk8" % phantomVersion
