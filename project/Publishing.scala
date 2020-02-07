@@ -74,7 +74,7 @@ object Publishing {
 
     val newState = if (status.nonEmpty) {
       val (state, msg) = settings.runTask(releaseCommitMessage, st)
-      val x = vcs(state).commit(msg, sign, false)
+      val x = vcs(state).commit(msg, sign, signOff = false)
 
       state
     } else {

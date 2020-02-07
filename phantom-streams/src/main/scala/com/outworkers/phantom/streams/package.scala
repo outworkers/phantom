@@ -45,7 +45,7 @@ import scala.concurrent.duration.FiniteDuration
  * }}}
  *
  * @see [[http://www.reactive-streams.org/]]
- * @see [[https://github.com/websudos/phantom]]
+ * @see [[https://github.com/outworkers/phantom]]
  */
 package object streams {
 
