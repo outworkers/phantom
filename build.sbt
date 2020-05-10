@@ -99,7 +99,7 @@ lazy val scoverageSettings = {
     ScoverageKeys.coverageExcludedPackages := "<empty>;com.outworkers.phantom.example.basics.thrift;",
     ScoverageKeys.coverageExcludedFiles := "<empty>;",
     ScoverageKeys.coverageMinimum := 80,
-    ScoverageKeys.coverageFailOnMinimum := true,
+    ScoverageKeys.coverageFailOnMinimum := false,
     ScoverageKeys.coverageHighlighting := true
   )
 }
