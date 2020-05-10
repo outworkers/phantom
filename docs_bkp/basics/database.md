@@ -18,7 +18,7 @@ Being the final level of segregation between the database layer of your applicat
 At the very bottom level, phantom queries require several implicits in scope to execute:
 Fhich Cassandra cluster to target.
 - The `implicit keySpace: KeySpace`, describing which keyspace to target. It's just a `String`, but it's more strongly typed as we don't want `implicit` strings in our code, ever.
-- The `implicit ex: ExecutionContextExecutor`, which is a Java compatible flavour of `scala.concurrent.ExecutionContext` and basically allows users to supply any context of their choosing for executing database queries.
+- The `implicit ex: ExecutionContext`, which is a Java compatible flavour of `scala.concurrent.ExecutionContext` and basically allows users to supply any context of their choosing for executing database queries.
 
 However, from an app or service consumer perspective, when pulling in dependencies or calling a database service, as a developer I do not want to be concerned with providing a `session` or a `keySpace`. Under some circumstances I may want to provide a custom `ExecutionContext` but that's a different story.
 

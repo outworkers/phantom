@@ -21,7 +21,7 @@ import com.outworkers.phantom.builder.query.SetPart
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.execution._
 
-import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
 trait QueryNotExecuted {
   def qb: CQLQuery
@@ -48,7 +48,7 @@ class UpdateIncompleteQueryOps[
     */
   def succeedAnyway()(
     implicit session: Session,
-    ctx: ExecutionContextExecutor
+    ctx: ExecutionContext
   ): F[Either[QueryNotExecuted, ResultSet]] = {
     if (setPart.nonEmpty) {
       fMonad.map(pf.adapter.fromGuava(query))(Right.apply)

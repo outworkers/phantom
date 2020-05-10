@@ -19,10 +19,10 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 import com.datastax.driver.core.{Session, Statement}
 import com.google.common.util.concurrent.{FutureCallback, Futures, ListenableFuture}
-import com.outworkers.phantom.{Manager, ResultSet}
 import com.outworkers.phantom.connectors.SessionAugmenterImplicits
+import com.outworkers.phantom.{Manager, ResultSet}
 
-import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
 trait PromiseInterface[P[_], F[_]] {
 
@@ -39,7 +39,7 @@ trait PromiseInterface[P[_], F[_]] {
   def adapter(implicit monad: FutureMonad[F]): GuavaAdapter[F] = new GuavaAdapter[F] with SessionAugmenterImplicits {
 
     override def fromGuava[T](source: ListenableFuture[T])(
-      implicit executor: ExecutionContextExecutor
+      implicit executor: ExecutionContext
     ): F[T] = {
       val promise = empty[T]
 
@@ -53,13 +53,13 @@ trait PromiseInterface[P[_], F[_]] {
         }
       }
 
-      Futures.addCallback(source, callback, executor)
+      Futures.addCallback(source, callback, executor.asInstanceOf[ExecutionContextExecutor])
       future(promise)
     }
 
     override def fromGuava(in: Statement)(
       implicit session: Session,
-      ctx: ExecutionContextExecutor
+      ctx: ExecutionContext
     ): F[ResultSet] = {
       Manager.logger.info("Executing query: {}", in)
       fromGuava(session.executeAsync(in)).map(res => ResultSet(res, session.protocolVersion))

@@ -18,7 +18,8 @@ package com.outworkers.phantom.builder.query.execution
 import com.datastax.driver.core.{PagingState, Session, Statement}
 import com.outworkers.phantom.builder.{LimitBound, Unlimited}
 import com.outworkers.phantom.{CassandraTable, ResultSet, Row}
-import scala.concurrent.ExecutionContextExecutor
+
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 import scala.collection.compat._
 
 abstract class ResultQueryInterface[
@@ -40,19 +41,19 @@ abstract class ResultQueryInterface[
 
   protected[this] def greedyEval(
     f: F[ResultSet]
-  )(implicit ctx: ExecutionContextExecutor): F[ListResult[R]] = {
+  )(implicit ctx: ExecutionContext): F[ListResult[R]] = {
     f map { r => ListResult(directMapper(r.iterate()), r) }
   }
 
   protected[this] def lazyEval(
     f: F[ResultSet]
-  )(implicit ctx: ExecutionContextExecutor): F[IteratorResult[R]] = {
+  )(implicit ctx: ExecutionContext): F[IteratorResult[R]] = {
     f map { r => IteratorResult(r.iterate().map(fromRow), r) }
   }
 
   private[phantom] def singleFetch(source: F[ResultSet])(
     implicit session: Session,
-    ec: ExecutionContextExecutor
+    ec: ExecutionContext
   ): F[Option[R]] = {
     source map { res => singleResult(res.value()) }
   }
@@ -99,7 +100,7 @@ abstract class ResultQueryInterface[
   def one()(
     implicit session: Session,
     ev: Limit =:= Unlimited,
-    ec: ExecutionContextExecutor
+    ec: ExecutionContext
   ): F[Option[R]]
 
   /**
@@ -112,7 +113,7 @@ abstract class ResultQueryInterface[
     */
   def fetch()(
     implicit session: Session,
-    ec: ExecutionContextExecutor
+    ec: ExecutionContext
   ): F[List[R]] = {
     future() map (_.allRows().map(fromRow))
   }
@@ -127,7 +128,7 @@ abstract class ResultQueryInterface[
     */
   def fetch(modifyStatement: Statement => Statement)(
     implicit session: Session,
-    ec: ExecutionContextExecutor
+    ec: ExecutionContext
   ): F[List[R]] = {
     future(modifyStatement) map (_.allRows().map(fromRow))
   }
@@ -145,7 +146,7 @@ abstract class ResultQueryInterface[
     */
   def fetchRecord()(
     implicit session: Session,
-    ec: ExecutionContextExecutor
+    ec: ExecutionContext
   ): F[ListResult[R]] = {
     future() map (r => ListResult(r.allRows().map(fromRow), r))
   }
@@ -160,7 +161,7 @@ abstract class ResultQueryInterface[
     */
   def fetchRecord(modifyStatement: Statement => Statement)(
     implicit session: Session,
-    ec: ExecutionContextExecutor
+    ec: ExecutionContext
   ): F[ListResult[R]] = {
     future(modifyStatement) map {
       set => ListResult(set.allRows().map(fromRow), set)
@@ -178,7 +179,7 @@ abstract class ResultQueryInterface[
     */
   def paginateRecord()(
     implicit session: Session,
-    ec: ExecutionContextExecutor,
+    ec: ExecutionContext,
     cbf: Factory[R, List[R]]
   ): F[ListResult[R]] = future() map paginate
 
@@ -196,7 +197,7 @@ abstract class ResultQueryInterface[
     */
   def paginateRecord(state: PagingState)(
     implicit session: Session,
-    ec: ExecutionContextExecutor,
+    ec: ExecutionContext,
     cbf: Factory[R, Iterator[R]]
   ): F[ListResult[R]] = future(_.setPagingState(state)) map paginate
 
@@ -210,7 +211,7 @@ abstract class ResultQueryInterface[
     */
   def paginateRecord(state: Option[PagingState])(
     implicit session: Session,
-    ec: ExecutionContextExecutor,
+    ec: ExecutionContext,
     cbf: Factory[R, List[R]]
   ): F[ListResult[R]] = state match {
     case None => paginateRecord()
@@ -231,7 +232,7 @@ abstract class ResultQueryInterface[
     */
   def paginateRecord(modifier: Statement => Statement)(
     implicit session: Session,
-    ec: ExecutionContextExecutor,
+    ec: ExecutionContext,
     cbf: Factory[R, List[R]]
   ): F[ListResult[R]] = future(modifier) map paginate
 
@@ -246,7 +247,7 @@ abstract class ResultQueryInterface[
     */
   def iterator()(
     implicit session: Session,
-    ec: ExecutionContextExecutor
+    ec: ExecutionContext
   ): F[IteratorResult[R]] = {
     future() map { res => IteratorResult(res.iterate().map(fromRow), res) }
   }
@@ -262,7 +263,7 @@ abstract class ResultQueryInterface[
     */
   def iterator(modifier: Statement => Statement)(
     implicit session: Session,
-    ec: ExecutionContextExecutor
+    ec: ExecutionContext
   ): F[IteratorResult[R]] = {
     future(modifier) map (r => IteratorResult(r.iterate().map(fromRow), r))
   }
@@ -281,7 +282,7 @@ abstract class ResultQueryInterface[
     */
   def iterator(state: PagingState)(
     implicit session: Session,
-    ec: ExecutionContextExecutor
+    ec: ExecutionContext
   ): F[IteratorResult[R]] = {
     lazyEval(future(_.setPagingState(state)))
   }
@@ -296,7 +297,7 @@ abstract class ResultQueryInterface[
     */
   def iterator(state: Option[PagingState])(
     implicit session: Session,
-    ec: ExecutionContextExecutor
+    ec: ExecutionContext
   ): F[IteratorResult[R]] = {
     state match {
       case None => lazyEval(future())

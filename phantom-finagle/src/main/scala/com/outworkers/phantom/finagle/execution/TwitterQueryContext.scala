@@ -20,17 +20,17 @@ import com.outworkers.phantom.ops.QueryContext
 import com.twitter.conversions.DurationOps._
 import com.twitter.util.{Await, Duration, Future, Promise}
 
-import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
 object TwitterFutureImplicits {
 
   val monadInstance: FutureMonad[Future] = new FutureMonad[Future] {
     override def flatMap[A, B](fa: Future[A])(f: A => Future[B])(
-      implicit ctx: ExecutionContextExecutor
+      implicit ctx: ExecutionContext
     ): Future[B] = fa flatMap f
 
     override def map[A, B](source: Future[A])(f: A => B)(
-      implicit ctx: ExecutionContextExecutor
+      implicit ctx: ExecutionContext
     ): Future[B] = source map f
 
     override def pure[A](source: A): Future[A] = Future.value(source)

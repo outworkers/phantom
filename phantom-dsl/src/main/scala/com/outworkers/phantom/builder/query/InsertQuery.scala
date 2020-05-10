@@ -29,7 +29,7 @@ import org.joda.time.DateTime
 import shapeless.ops.hlist.Reverse
 import shapeless.{::, =:!=, HList, HNil}
 
-import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 import scala.concurrent.duration.Duration
 
 case class InsertQuery[
@@ -134,7 +134,7 @@ case class InsertQuery[
 
   def prepareAsync[P[_], F[_], Rev <: HList]()(
     implicit session: Session,
-    executor: ExecutionContextExecutor,
+    executor: ExecutionContext,
     keySpace: KeySpace,
     ev: PS =:!= HNil,
     rev: Reverse.Aux[PS, Rev],
@@ -282,7 +282,7 @@ class InsertJsonQuery[
 
   def prepareAsync[P[_], F[_], Rev <: HList]()(
     implicit session: Session,
-    executor: ExecutionContextExecutor,
+    executor: ExecutionContext,
     keySpace: KeySpace,
     ev: PS =:!= HNil,
     rev: Reverse.Aux[PS, Rev],

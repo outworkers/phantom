@@ -15,16 +15,16 @@
  */
 package com.outworkers.phantom.builder.query.execution
 
-import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.ExecutionContext
 
 /**
   * A special mini monad implementation that allows us not to have to rely on Cats being
   * part of our dependencies as it's really heavy to use for this simple reason.
-  * Cats also requires binding a future monad for Scala futures against a known [[ExecutionContextExecutor]],
+  * Cats also requires binding a future monad for Scala futures against a known [[ExecutionContext]],
   * which unfortunately interferes with one of the core features in phantom, giving users the ability
   * to supply their own execution context whenever they want.
   *
-  * In our implementation, we go against the grain and include the implicit [[ExecutionContextExecutor]] as part
+  * In our implementation, we go against the grain and include the implicit [[ExecutionContext]] as part
   * of the standard method signature for map and flatMap, and this is only because we want to keep enabling users
   * to supply their own context. Certain implementations of Futures will downright ignore this implicit parameter,
   * but it's there for the implementations of Future and Promise that need it, specifically Scala Standard Lib
@@ -40,11 +40,11 @@ trait FutureMonad[F[_]] {
   def pure[A](source: A): F[A]
 
   def map[A, B](source: F[A])(f: A => B)(
-    implicit ctx: ExecutionContextExecutor
+    implicit ctx: ExecutionContext
   ): F[B]
 
   def flatMap[A, B](source: F[A])(fn: A => F[B])(
-    implicit ctx: ExecutionContextExecutor
+    implicit ctx: ExecutionContext
   ): F[B]
 }
 
@@ -52,11 +52,11 @@ trait FutureMonad[F[_]] {
 object FutureMonadOps {
   implicit class Ops[F[_], A](val source: F[A])(implicit monad: FutureMonad[F]) {
     def map[B](f: A => B)(
-      implicit ctx: ExecutionContextExecutor
+      implicit ctx: ExecutionContext
     ): F[B] = monad.map(source)(f)
 
     def flatMap[B](fn: A => F[B])(
-      implicit ctx: ExecutionContextExecutor
+      implicit ctx: ExecutionContext
     ): F[B]= monad.flatMap(source)(fn)
   }
 }

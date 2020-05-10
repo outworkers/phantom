@@ -28,8 +28,9 @@ import com.outworkers.phantom.connectors.KeySpace
 import org.joda.time.DateTime
 import shapeless.ops.hlist.{Prepend, Reverse}
 import shapeless.{=:!=, HList, HNil}
+
 import scala.concurrent.duration._
-import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
 case class DeleteQuery[
   Table <: CassandraTable[Table, _],
@@ -60,7 +61,7 @@ case class DeleteQuery[
 
   def prepareAsync[P[_], F[_], Rev <: HList]()(
     implicit session: Session,
-    executor: ExecutionContextExecutor,
+    executor: ExecutionContext,
     keySpace: KeySpace,
     ev: PS =:!= HNil,
     rev: Reverse.Aux[PS, Rev],

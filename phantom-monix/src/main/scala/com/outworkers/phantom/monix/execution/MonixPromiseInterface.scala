@@ -23,7 +23,7 @@ import com.outworkers.phantom.connectors.SessionAugmenterImplicits
 import monix.eval.Task
 import monix.execution.Cancelable
 
-import scala.concurrent.{ExecutionContextExecutor, Promise}
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Promise}
 
 class MonixPromiseInterface extends PromiseInterface[Task, Task]{
   override def empty[T]: Task[T] = Task.fromFuture(Promise.apply[T].future)
@@ -38,9 +38,9 @@ class MonixPromiseInterface extends PromiseInterface[Task, Task]{
     implicit monad: FutureMonad[Task]
   ): GuavaAdapter[Task] = new GuavaAdapter[Task] with SessionAugmenterImplicits {
     override def fromGuava[T](source: ListenableFuture[T])(
-      implicit executor: ExecutionContextExecutor
+      implicit executor: ExecutionContext
     ): Task[T] = {
-      Task.create[T] { (s, cb) =>
+      Task.create[T] { (_, cb) =>
         val callback = new FutureCallback[T] {
           def onSuccess(result: T): Unit = {
             cb.onSuccess(result)
@@ -51,14 +51,14 @@ class MonixPromiseInterface extends PromiseInterface[Task, Task]{
           }
         }
 
-        Futures.addCallback(source, callback, executor)
+        Futures.addCallback(source, callback, executor.asInstanceOf[ExecutionContextExecutor])
         Cancelable.empty
       }
     }
 
     override def fromGuava(in: Statement)(
       implicit session: Session,
-      ctx: ExecutionContextExecutor
+      ctx: ExecutionContext
     ): Task[ResultSet] = {
       fromGuava(session.executeAsync(in)).map(res => ResultSet(res, session.protocolVersion))
     }

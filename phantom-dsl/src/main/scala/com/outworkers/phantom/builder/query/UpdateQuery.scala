@@ -28,7 +28,7 @@ import org.joda.time.DateTime
 import shapeless.ops.hlist.{Prepend, Reverse}
 import shapeless.{::, =:!=, HList, HNil}
 
-import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 import scala.concurrent.duration.{FiniteDuration => ScalaDuration}
 import scala.concurrent.duration._
 
@@ -255,7 +255,7 @@ sealed case class AssignmentsQuery[
     TTLAdded <: HList
   ]()(
     implicit session: Session,
-    executor: ExecutionContextExecutor,
+    executor: ExecutionContext,
     keySpace: KeySpace,
     ev: PS =:!= HNil,
     rev: Reverse.Aux[PS, RevWhere],
@@ -391,7 +391,7 @@ sealed case class ConditionalQuery[
     QueryHL <: HList
   ]()(
     implicit session: Session,
-    executor: ExecutionContextExecutor,
+    executor: ExecutionContext,
     keySpace: KeySpace,
     ev: PS =:!= HNil,
     revWhere: Reverse.Aux[PS, RevWhere],
