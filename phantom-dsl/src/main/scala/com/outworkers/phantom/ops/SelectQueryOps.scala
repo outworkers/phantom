@@ -25,7 +25,7 @@ import shapeless.ops.hlist.Reverse
 import shapeless.{=:!=, HList, HNil}
 
 import scala.annotation.implicitNotFound
-import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
 class SelectQueryOps[
   P[_],
@@ -56,7 +56,7 @@ class SelectQueryOps[
   def one()(
     implicit session: Session,
     ev: Limit =:= Unlimited,
-    ec: ExecutionContextExecutor
+    ec: ExecutionContext
   ): F[Option[Record]] = {
     val enforceLimit = if (query.count) LimitedPart.empty else query.limitedPart append QueryBuilder.limit(1.toString)
     singleFetch(adapter.fromGuava(query.copy(limitedPart = enforceLimit).executableQuery.statement()))
@@ -75,7 +75,7 @@ class SelectQueryOps[
   def aggregate[T]()(
     implicit session: Session,
     ev: Limit =:= Unlimited,
-    ec: ExecutionContextExecutor,
+    ec: ExecutionContext,
     unwrap: Record <:< Tuple1[T]
   ): F[Option[T]] = {
     singleFetch(adapter.fromGuava(query.executableQuery.statement())).map(_.map { case Tuple1(vd: T) => vd })
@@ -92,7 +92,7 @@ class SelectQueryOps[
   def multiAggregate()(
     implicit session: Session,
     ev: Limit =:= Unlimited,
-    ec: ExecutionContextExecutor
+    ec: ExecutionContext
   ): F[Option[Record]] = {
     singleFetch(adapter.fromGuava(query.executableQuery.statement()))
   }
@@ -101,7 +101,7 @@ class SelectQueryOps[
 
   def prepareAsync[Rev <: HList]()(
     implicit session: Session,
-    executor: ExecutionContextExecutor,
+    executor: ExecutionContext,
     keySpace: KeySpace,
     ev: PS =:!= HNil,
     rev: Reverse.Aux[PS, Rev],

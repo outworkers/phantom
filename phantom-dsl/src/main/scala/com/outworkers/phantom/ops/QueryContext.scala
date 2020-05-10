@@ -28,7 +28,7 @@ import com.outworkers.phantom.macros.{==:==, SingleGeneric, TableHelper}
 import com.outworkers.phantom.{CassandraTable, ResultSet, Row}
 import shapeless.{Generic, HList}
 
-import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 import scala.collection.compat._
 import scala.collection.Seq
 
@@ -68,7 +68,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
   def blockAwait[T](f: F[T], timeout: Timeout): T
 
   implicit class BatchOps[Status <: ConsistencyBound](val query: BatchQuery[Status]) {
-    def future()(implicit session: Session, ctx: ExecutionContextExecutor): F[ResultSet] = {
+    def future()(implicit session: Session, ctx: ExecutionContext): F[ResultSet] = {
       promiseInterface.adapter.executeBatch(query.makeBatch())
     }
   }
@@ -80,7 +80,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
   ](val query: RootQuery[Table, Record, Status]) {
     def future()(
       implicit session: Session,
-      ctx: ExecutionContextExecutor
+      ctx: ExecutionContext
     ): F[ResultSet] = promiseInterface.adapter.fromGuava(query.executableQuery)
   }
 
@@ -103,7 +103,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
     override def one()(
       implicit session: Session,
       ev: =:=[Unlimited, Unlimited],
-      ec: ExecutionContextExecutor
+      ec: ExecutionContext
     ): F[Option[Record]] = block.all().one()
 
     override def executableQuery: ExecutableCqlQuery = block.all().executableQuery
@@ -195,7 +195,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
       */
     override def future()(
       implicit session: Session,
-      ec: ExecutionContextExecutor
+      ec: ExecutionContext
     ): F[ResultSet] = {
       promiseInterface.adapter.fromGuava(query.options(query.st))
     }
@@ -215,7 +215,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
       */
     override def future(modifyStatement: Statement => Statement)(
       implicit session: Session,
-      executor: ExecutionContextExecutor
+      executor: ExecutionContext
     ): F[ResultSet] = promiseInterface.adapter.fromGuava(modifyStatement(query.options(query.st)))
   }
 
@@ -241,7 +241,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
       */
     override def future()(
       implicit session: Session,
-      ec: ExecutionContextExecutor
+      ec: ExecutionContext
     ): F[ResultSet] = {
       promiseInterface.adapter.fromGuava(query.options(query.st))
     }
@@ -257,7 +257,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
     override def one()(
       implicit session: Session,
       ev: Limit =:= Unlimited,
-      ec: ExecutionContextExecutor
+      ec: ExecutionContext
     ): F[Option[R]] = future() map (_.value().map(query.fn))
 
     override def executableQuery: ExecutableCqlQuery = query.executableQuery
@@ -286,12 +286,12 @@ abstract class QueryContext[P[_], F[_], Timeout](
       */
     override def future(modifier: Statement => Statement)(
       implicit session: Session,
-      executor: ExecutionContextExecutor
+      executor: ExecutionContext
     ): F[Seq[ResultSet]] = QueryContext.create(query.delegate, Some(modifier))
 
     override def future()(
       implicit session: Session,
-      ctx: ExecutionContextExecutor
+      ctx: ExecutionContext
     ): F[Seq[ResultSet]] = QueryContext.create(query.delegate)
   }
 
@@ -300,7 +300,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
     def createSchema(timeout: Timeout = defaultTimeout)(
       implicit session: Session,
       keySpace: KeySpace,
-      ctx: ExecutionContextExecutor
+      ctx: ExecutionContext
     ): Seq[ResultSet] = {
       blockAwait(table.autocreate(keySpace).future(), timeout)
     }
@@ -311,7 +311,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
       thl: TableHelper.Aux[T, R, Repr],
       gen: Generic.Aux[V1, HL],
       sg: SingleGeneric.Aux[V1, Repr, HL, Out],
-      ctx: ExecutionContextExecutor,
+      ctx: ExecutionContext,
       ev: Out ==:== Repr
     ): F[ResultSet] = promiseInterface.adapter.fromGuava(table.store(input).executableQuery)
 
@@ -328,7 +328,7 @@ abstract class QueryContext[P[_], F[_], Timeout](
       gen: Generic.Aux[V1, HL],
       sg: SingleGeneric.Aux[V1, Repr, HL, Out],
       ev: Out ==:== Repr,
-      ctx: ExecutionContextExecutor,
+      ctx: ExecutionContext,
       cbfEntry: Factory[ExecutableCqlQuery, M[ExecutableCqlQuery]],
       cbfB: BuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]],
       fbf: Factory[F[ResultSet], M[F[ResultSet]]],
@@ -344,14 +344,14 @@ abstract class QueryContext[P[_], F[_], Timeout](
 
     def future()(
       implicit session: Session,
-      ec: ExecutionContextExecutor,
+      ec: ExecutionContext,
       fbf: Factory[F[ResultSet], M[F[ResultSet]]],
       ebf: Factory[ResultSet, M[ResultSet]]
     ): F[M[ResultSet]] = executeStatements(col).future()
 
     def sequence()(
       implicit session: Session,
-      ec: ExecutionContextExecutor,
+      ec: ExecutionContext,
       cbf: Factory[ResultSet, M[ResultSet]]
     ): F[M[ResultSet]] = executeStatements(col).sequence()
   }
@@ -411,7 +411,7 @@ object QueryContext {
     implicit interface: PromiseInterface[P, F],
     futureMonad: FutureMonad[F],
     session: Session,
-    ctx: ExecutionContextExecutor
+    ctx: ExecutionContext
   ): F[Seq[ResultSet]] = {
 
     implicit val adapter: GuavaAdapter[F] = interface.adapter

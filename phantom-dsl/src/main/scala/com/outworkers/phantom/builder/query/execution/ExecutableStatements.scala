@@ -21,36 +21,36 @@ import com.outworkers.phantom.{Manager, ResultSet}
 import com.outworkers.phantom.builder.batch.BatchWithQuery
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 
-import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 import scala.collection.compat._
 
 trait GuavaAdapter[F[_]] {
 
   def executeBatch(batch: BatchWithQuery)(
     implicit session: Session,
-    ctx: ExecutionContextExecutor
+    ctx: ExecutionContext
   ): F[ResultSet] = {
     Manager.logger.info(s"Executing BATCH query ${batch.debugString}")
     fromGuava(batch.statement)
   }
 
   def fromGuava[T](source: ListenableFuture[T])(
-    implicit executor: ExecutionContextExecutor
+    implicit executor: ExecutionContext
   ): F[T]
 
   def fromGuava(in: ExecutableCqlQuery, modifier: Option[Statement => Statement] = None)(
     implicit session: Session,
-    ctx: ExecutionContextExecutor
+    ctx: ExecutionContext
   ): F[ResultSet] = fromGuava(modifier.getOrElse(identity[Statement] _).apply(in.statement()))
 
   def fromGuava(in: Statement)(
     implicit session: Session,
-    ctx: ExecutionContextExecutor
+    ctx: ExecutionContext
   ): F[ResultSet]
 
   def fromGuava(qb: CQLQuery)(
     implicit session: Session,
-    ctx: ExecutionContextExecutor
+    ctx: ExecutionContext
   ): F[ResultSet] = {
     fromGuava(new SimpleStatement(qb.terminate.queryString))
   }
@@ -64,7 +64,7 @@ object ExecutionHelper {
     B
   ](in: M[A])(fn: A => F[B])(
     implicit cbf: Factory[B, M[B]],
-    ctx: ExecutionContextExecutor,
+    ctx: ExecutionContext,
     fMonad: FutureMonad[F]
   ): F[M[B]] = {
     in.iterator.foldLeft(fMonad.pure(cbf.newBuilder)) { (fr, a) =>
@@ -86,7 +86,7 @@ object ExecutionHelper {
     A](in: M[F[A]])(
     implicit cbf: Factory[A, M[A]],
     fMonad: FutureMonad[F],
-    ctx: ExecutionContextExecutor
+    ctx: ExecutionContext
   ): F[M[A]] = {
     in.iterator.foldLeft(fMonad.pure(cbf.newBuilder)) {
       (fr, fa) => fr.zipWith(fa)(_ += _)
@@ -115,7 +115,7 @@ class ExecutableStatements[
     */
   def future()(
     implicit session: Session,
-    ec: ExecutionContextExecutor,
+    ec: ExecutionContext,
     fbf: Factory[F[ResultSet], M[F[ResultSet]]],
     ebf: Factory[ResultSet, M[ResultSet]]
   ): F[M[ResultSet]] = {
@@ -132,7 +132,7 @@ class ExecutableStatements[
 
   def sequence()(
     implicit session: Session,
-    ec: ExecutionContextExecutor,
+    ec: ExecutionContext,
     cbf: Factory[ResultSet, M[ResultSet]]
   ): F[M[ResultSet]] = {
     ExecutionHelper.sequencedTraverse(queryCol.queries) { query =>

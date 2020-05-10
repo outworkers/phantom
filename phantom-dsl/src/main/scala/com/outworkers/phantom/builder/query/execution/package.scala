@@ -15,23 +15,23 @@
  */
 package com.outworkers.phantom.builder.query
 
-import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.ExecutionContext
 
 package object execution {
 
   implicit class FunctorOps[F[_], T](val in: F[T])(implicit fMonad: FutureMonad[F]) {
     def zipWith[O, R](other: F[O])(fn: (T, O) => R)(
-      implicit ctx: ExecutionContextExecutor
+      implicit ctx: ExecutionContext
     ): F[R] = {
       for (r1 <- in; r2 <- other) yield fn(r1, r2)
     }
 
     def map[A](fn: T => A)(
-      implicit ctx: ExecutionContextExecutor
+      implicit ctx: ExecutionContext
     ): F[A] = fMonad.map(in)(fn)
 
     def flatMap[A](fn: T => F[A])(
-      implicit ctx: ExecutionContextExecutor
+      implicit ctx: ExecutionContext
     ): F[A] = fMonad.flatMap(in)(fn)
   }
 }

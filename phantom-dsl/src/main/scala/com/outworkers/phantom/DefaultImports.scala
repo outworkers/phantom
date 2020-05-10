@@ -34,9 +34,9 @@ import com.outworkers.phantom.column._
 import com.outworkers.phantom.connectors.DefaultVersions
 import com.outworkers.phantom.keys.Indexed
 import org.joda.time.DateTimeZone
-import shapeless.{ HNil, :: }
+import shapeless.{::, HNil}
 
-import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 import scala.Iterable
 
 trait DefaultImports extends ImplicitMechanism
@@ -557,5 +557,5 @@ trait DefaultImports extends ImplicitMechanism
     }
   }
 
-  implicit val context: ExecutionContextExecutor = Manager.scalaExecutor
+  implicit val context: ExecutionContext = Manager.scalaExecutor
 }

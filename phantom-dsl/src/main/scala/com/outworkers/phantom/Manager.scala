@@ -23,7 +23,7 @@ object Manager {
 
   private[this] lazy val taskExecutor = Executors.newCachedThreadPool()
 
-  implicit lazy val scalaExecutor: ExecutionContextExecutor = ExecutionContext.fromExecutor(taskExecutor)
+  implicit lazy val scalaExecutor: ExecutionContext = ExecutionContext.fromExecutor(taskExecutor)
 
   val logger: Logger = LoggerFactory.getLogger("com.outworkers.phantom")
 

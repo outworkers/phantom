@@ -491,7 +491,7 @@ object Primitive {
           throw new InvalidTypeException(
             "Invalid boolean value, expecting 1 byte but got " + bytes.remaining
           )
-        case _ => bytes.get(bytes.position) != 0
+        case _ => bytes.get(bytes.position()) != 0
       }
     }
   }

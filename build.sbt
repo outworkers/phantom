@@ -92,6 +92,18 @@ val scalacOptionsFn: String => Seq[String] = { s =>
   }
 }
 
+lazy val scoverageSettings = {
+  import scoverage.ScoverageKeys
+  Seq(
+    // Semicolon-separated list of regexs matching classes to exclude
+    ScoverageKeys.coverageExcludedPackages := "<empty>;com.outworkers.phantom.example.basics.thrift;",
+    ScoverageKeys.coverageExcludedFiles := "<empty>;",
+    ScoverageKeys.coverageMinimum := 80,
+    ScoverageKeys.coverageFailOnMinimum := false,
+    ScoverageKeys.coverageHighlighting := true
+  )
+}
+
 scalacOptions in ThisBuild ++= scalacOptionsFn(scalaVersion.value)
 
 lazy val Versions = new {
@@ -243,7 +255,7 @@ val releaseSettings = Seq(
     commitNextVersion,
     pushChanges
   )
-)
+) ++ scoverageSettings
 
 Global / scalaVersion := Versions.scala213
 

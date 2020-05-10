@@ -19,7 +19,7 @@ import com.outworkers.phantom.ResultSet
 import com.outworkers.phantom.builder.query.execution._
 import com.outworkers.phantom.database.Database
 
-import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 import scala.collection.compat._
 import scala.collection.Seq
 
@@ -48,7 +48,7 @@ abstract class DbOps[
     *                Defaults to [[com.outworkers.phantom.database.Database#defaultTimeout]]
     * @return A sequence of result sets, where every result is the result of a single create operation.
     */
-  def create(timeout: Timeout = defaultTimeout)(implicit ex: ExecutionContextExecutor): Seq[Seq[ResultSet]] = {
+  def create(timeout: Timeout = defaultTimeout)(implicit ex: ExecutionContext): Seq[Seq[ResultSet]] = {
     await(createAsync(), timeout)
   }
 
@@ -59,7 +59,7 @@ abstract class DbOps[
     * @return A sequence of result sets, where every result is the result of a single create operation.
     */
   def createAsync()(
-    implicit ex: ExecutionContextExecutor
+    implicit ex: ExecutionContext
   ): F[Seq[Seq[ResultSet]]] = {
     ExecutionHelper.sequencedTraverse(tables.map(_.autocreate(db.space).delegate)) { query =>
       QueryContext.create(query)
@@ -72,7 +72,7 @@ abstract class DbOps[
     *
     * @return A sequence of result sets, where every result is the result of a single drop operation.
     */
-  def dropAsync()(implicit ex: ExecutionContextExecutor): F[Seq[ResultSet]] = {
+  def dropAsync()(implicit ex: ExecutionContext): F[Seq[ResultSet]] = {
     execute(db.autodrop()).future()
   }
 
@@ -84,7 +84,7 @@ abstract class DbOps[
     *                Defaults to [[com.outworkers.phantom.database.Database#defaultTimeout]]
     * @return A sequence of result sets, where every result is the result of a single drop operation.
     */
-  def drop(timeout: Timeout = defaultTimeout)(implicit ex: ExecutionContextExecutor): Seq[ResultSet] = {
+  def drop(timeout: Timeout = defaultTimeout)(implicit ex: ExecutionContext): Seq[ResultSet] = {
     await(dropAsync(), timeout)
   }
 
@@ -96,7 +96,7 @@ abstract class DbOps[
     *                Defaults to [[com.outworkers.phantom.database.Database#defaultTimeout]]
     * @return A sequence of result sets, where every result is the result of a single truncate operation.
     */
-  def truncate(timeout: Timeout = defaultTimeout)(implicit ex: ExecutionContextExecutor): Seq[ResultSet] = {
+  def truncate(timeout: Timeout = defaultTimeout)(implicit ex: ExecutionContext): Seq[ResultSet] = {
     await(truncateAsync(), timeout)
   }
 
@@ -106,7 +106,7 @@ abstract class DbOps[
     *
     * @return A sequence of result sets, where every result is the result of a single truncate operation.
     */
-  def truncateAsync()(implicit ex: ExecutionContextExecutor): F[Seq[ResultSet]] = {
+  def truncateAsync()(implicit ex: ExecutionContext): F[Seq[ResultSet]] = {
     execute(db.autotruncate()).future()
   }
 }

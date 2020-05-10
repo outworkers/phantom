@@ -31,7 +31,7 @@ import shapeless.ops.hlist.{Prepend, Reverse, Tupler}
 import shapeless.{::, =:!=, HList, HNil}
 
 import scala.annotation.implicitNotFound
-import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
 case class SelectQuery[
   Table <: CassandraTable[Table, _],
@@ -77,7 +77,7 @@ case class SelectQuery[
 
   def prepareAsync[P[_], F[_], Rev <: HList]()(
     implicit session: Session,
-    executor: ExecutionContextExecutor,
+    executor: ExecutionContext,
     keySpace: KeySpace,
     ev: PS =:!= HNil,
     rev: Reverse.Aux[PS, Rev],
@@ -223,7 +223,7 @@ private[phantom] class RootSelectBlock[
     implicit keySpace: KeySpace,
     ev: Primitive[String]
   ): SelectQuery.Default[T, String] = {
-    val jsonParser: (Row) => String = row => {
+    val jsonParser: Row => String = row => {
       ev.deserialize(
         row.getBytesUnsafe(CQLSyntax.JSON_EXTRACTOR),
         row.version

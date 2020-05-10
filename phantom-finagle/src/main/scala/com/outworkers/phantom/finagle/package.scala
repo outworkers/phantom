@@ -28,7 +28,7 @@ import com.twitter.util.{Duration => TwitterDuration, _}
 import org.joda.time.Seconds
 import shapeless.HList
 
-import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 import scala.collection.compat._
 
 package object finagle extends TwitterQueryContext with DefaultImports {
@@ -217,13 +217,13 @@ package object finagle extends TwitterQueryContext with DefaultImports {
     CS <: CompressionStrategy[CS]
   ](val strategy: CompressionStrategy[CS]) extends AnyVal {
     def chunk_length_kb(unit: StorageUnit): CompressionStrategy[CS] = {
-      strategy.option(CQLSyntax.CompressionOptions.chunk_length_kb, unit.inKilobytes + "KB")
+      strategy.option(CQLSyntax.CompressionOptions.chunk_length_kb, s"${unit.inKilobytes}KB")
     }
   }
 
   implicit class ExecuteQueries[M[X] <: IterableOnce[X]](val qc: QueryCollection[M]) extends AnyVal {
     def executable()(
-      implicit ctx: ExecutionContextExecutor
+      implicit ctx: ExecutionContext
     ): ExecutableStatements[Future, M] = new ExecutableStatements[Future, M](qc)
 
     def future()(

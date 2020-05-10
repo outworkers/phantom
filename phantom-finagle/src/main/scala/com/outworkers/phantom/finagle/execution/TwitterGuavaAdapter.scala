@@ -23,27 +23,27 @@ import com.outworkers.phantom.connectors.SessionAugmenterImplicits
 import com.outworkers.phantom.{Manager, ResultSet}
 import com.twitter.util.{Future, Promise}
 
-import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
 object TwitterGuavaAdapter extends GuavaAdapter[Future] with SessionAugmenterImplicits {
 
   protected[this] def statementToFuture(st: Statement)(
     implicit session: Session,
-    executor: ExecutionContextExecutor
+    executor: ExecutionContext
   ): Future[ResultSet] = {
     statementToPromise(st)
   }
 
   protected[this] def batchToPromise(batch: BatchWithQuery)(
     implicit session: Session,
-    executor: ExecutionContextExecutor
+    executor: ExecutionContext
   ): Promise[ResultSet] = {
     Manager.logger.debug(s"Executing query {}", batch.debugString)
     statementToPromise(batch.statement)
   }
 
   def guavaToScala[T](source: ListenableFuture[T])(
-    implicit executor: ExecutionContextExecutor
+    implicit executor: ExecutionContext
   ): Promise[T] = {
     val promise = Promise[T]()
 
@@ -57,13 +57,13 @@ object TwitterGuavaAdapter extends GuavaAdapter[Future] with SessionAugmenterImp
       }
     }
 
-    Futures.addCallback(source, callback, executor)
+    Futures.addCallback(source, callback, executor.asInstanceOf[ExecutionContextExecutor])
     promise
   }
 
   protected[this] def statementToPromise(st: Statement)(
     implicit session: Session,
-    executor: ExecutionContextExecutor
+    executor: ExecutionContext
   ): Promise[ResultSet] = {
     Manager.logger.debug(s"Executing query {}", st)
 
@@ -82,17 +82,17 @@ object TwitterGuavaAdapter extends GuavaAdapter[Future] with SessionAugmenterImp
       }
     }
 
-    Futures.addCallback(future, callback, executor)
+    Futures.addCallback(future, callback, executor.asInstanceOf[ExecutionContextExecutor])
     promise
   }
 
   override def fromGuava(in: Statement)(
     implicit session: Session,
-    ctx: ExecutionContextExecutor
+    ctx: ExecutionContext
   ): Future[ResultSet] = statementToFuture(in)
 
   override def fromGuava[T](source: ListenableFuture[T])(
-    implicit executor: ExecutionContextExecutor
+    implicit executor: ExecutionContext
   ): Future[T] = {
 
     val promise = Promise[T]()
@@ -107,7 +107,7 @@ object TwitterGuavaAdapter extends GuavaAdapter[Future] with SessionAugmenterImp
       }
     }
 
-    Futures.addCallback(source, callback, executor)
+    Futures.addCallback(source, callback, executor.asInstanceOf[ExecutionContextExecutor])
     promise
   }
 }

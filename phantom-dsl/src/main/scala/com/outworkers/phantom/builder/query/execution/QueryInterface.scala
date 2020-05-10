@@ -18,14 +18,14 @@ package com.outworkers.phantom.builder.query.execution
 import com.datastax.driver.core.{Session, Statement}
 import com.outworkers.phantom.ResultSet
 
-import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 import scala.collection.compat._
 
 trait MultiQueryInterface[M[X] <: IterableOnce[X], F[_]] {
 
   def future()(
     implicit session: Session,
-    ctx: ExecutionContextExecutor
+    ctx: ExecutionContext
   ): F[M[ResultSet]]
 
   /**
@@ -43,7 +43,7 @@ trait MultiQueryInterface[M[X] <: IterableOnce[X], F[_]] {
     */
   def future(modifyStatement: Statement => Statement)(
     implicit session: Session,
-    executor: ExecutionContextExecutor
+    executor: ExecutionContext
   ): F[M[ResultSet]]
 }
 
@@ -67,7 +67,7 @@ abstract class QueryInterface[F[_]]()(implicit adapter: GuavaAdapter[F]) {
     */
   def future()(
     implicit session: Session,
-    ec: ExecutionContextExecutor
+    ec: ExecutionContext
   ): F[ResultSet] = {
     adapter.fromGuava(executableQuery)
   }
@@ -87,7 +87,7 @@ abstract class QueryInterface[F[_]]()(implicit adapter: GuavaAdapter[F]) {
     */
   def future(modifyStatement: Statement => Statement)(
     implicit session: Session,
-    executor: ExecutionContextExecutor
+    executor: ExecutionContext
   ): F[ResultSet] = adapter.fromGuava(modifyStatement(executableQuery.statement()))
 }
 

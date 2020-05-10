@@ -142,7 +142,7 @@ package object streams {
     def publisher()(
       implicit session: Session,
       keySpace: KeySpace,
-      ctx: ExecutionContextExecutor
+      ctx: ExecutionContext
     ): Publisher[T] = {
       enumeratorToPublisher(ct.select.all().fetchEnumerator())
     }
@@ -200,7 +200,7 @@ package object streams {
       */
     def fetchEnumerator()(
       implicit session: Session,
-      ctx: ExecutionContextExecutor
+      ctx: ExecutionContext
     ): PlayEnumerator[R] = {
       PlayEnumerator.flatten {
         query.future() map { res =>
@@ -219,7 +219,7 @@ package object streams {
       */
     def fetchEnumerator(mod: Statement => Statement)(
       implicit session: Session,
-      ctx: ExecutionContextExecutor
+      ctx: ExecutionContext
     ): PlayEnumerator[R] = {
       PlayEnumerator.flatten {
         query.future(mod) map { res =>
@@ -237,7 +237,7 @@ package object streams {
       */
     def publisher()(
       implicit session: Session,
-      ctx: ExecutionContextExecutor
+      ctx: ExecutionContext
     ): Publisher[R] = enumeratorToPublisher(query.fetchEnumerator())
 
     /**
@@ -250,7 +250,7 @@ package object streams {
       */
     def publisher(modifier: Statement => Statement)(
       implicit session: Session,
-      ctx: ExecutionContextExecutor
+      ctx: ExecutionContext
     ): Publisher[R] = {
       enumeratorToPublisher(query.fetchEnumerator(modifier))
     }
@@ -272,7 +272,7 @@ package object streams {
     def fetchEnumerator()(
       implicit session: Session,
       keySpace: KeySpace,
-      ctx: ExecutionContextExecutor
+      ctx: ExecutionContext
     ): PlayEnumerator[R] = {
       PlayEnumerator.flatten {
         block.all().future() map { res =>
@@ -292,7 +292,7 @@ package object streams {
     def fetchEnumerator(modifier: Statement => Statement)(
       implicit session: Session,
       keySpace: KeySpace,
-      ctx: ExecutionContextExecutor
+      ctx: ExecutionContext
     ): PlayEnumerator[R] = {
       PlayEnumerator.flatten {
         block.all().future(modifier) map { res =>
@@ -313,7 +313,7 @@ package object streams {
     def publisher()(
       implicit session: Session,
       keySpace: KeySpace,
-      ctx: ExecutionContextExecutor
+      ctx: ExecutionContext
     ): Publisher[R] = enumeratorToPublisher(block.fetchEnumerator())
 
     /**
@@ -329,7 +329,7 @@ package object streams {
     def publisher(modifier: Statement => Statement)(
       implicit session: Session,
       keySpace: KeySpace,
-      ctx: ExecutionContextExecutor
+      ctx: ExecutionContext
     ): Publisher[R] = {
       enumeratorToPublisher(block.fetchEnumerator(modifier))
     }
@@ -352,7 +352,7 @@ package object streams {
     def fetchEnumerator()(
       implicit session: Session,
       keySpace: KeySpace,
-      ctx: ExecutionContextExecutor
+      ctx: ExecutionContext
     ): PlayEnumerator[R] = {
       PlayEnumerator.flatten {
         block.future() map { res =>
@@ -372,7 +372,7 @@ package object streams {
     def fetchEnumerator(modifier: Statement => Statement)(
       implicit session: Session,
       keySpace: KeySpace,
-      ctx: ExecutionContextExecutor
+      ctx: ExecutionContext
     ): PlayEnumerator[R] = {
       PlayEnumerator.flatten {
         block.future(modifier) map { res =>
@@ -393,7 +393,7 @@ package object streams {
     def publisher()(
       implicit session: Session,
       keySpace: KeySpace,
-      ctx: ExecutionContextExecutor
+      ctx: ExecutionContext
     ): Publisher[R] = enumeratorToPublisher(block.fetchEnumerator())
 
     /**
@@ -409,7 +409,7 @@ package object streams {
     def publisher(modifier: Statement => Statement)(
       implicit session: Session,
       keySpace: KeySpace,
-      ctx: ExecutionContextExecutor
+      ctx: ExecutionContext
     ): Publisher[R] = {
       enumeratorToPublisher(block.fetchEnumerator(modifier))
     }

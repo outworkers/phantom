@@ -27,7 +27,7 @@ import com.outworkers.phantom.{CassandraTable, Row}
 import shapeless.ops.hlist.Tupler
 import shapeless.{::, Generic, HList, HNil}
 
-import scala.concurrent.{ExecutionContextExecutor, blocking}
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, blocking}
 
 private[phantom] trait PrepareMark {
 
@@ -67,7 +67,7 @@ class PreparedFlattener(qb: CQLQuery)(
   }
 
   def async[P[_], F[_]]()(
-    implicit executor: ExecutionContextExecutor,
+    implicit executor: ExecutionContext,
     monad: FutureMonad[F],
     interface: PromiseInterface[P, F]
   ): F[PreparedStatement] = {
