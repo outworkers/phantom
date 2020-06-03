@@ -65,7 +65,7 @@ It is built on top of the Datastax Java driver, and uses all the default connect
 - A type safe Schema DSL that means you never have to deal with raw CQL again.
 - A very advanced compile time mechanism that offers a fully type safe variant of CQL.
 - A tool that prevents you from doing any "bad" things by enforcing Cassandra rules at compile time.
-- A natural DSL that doesn't require any new terminology and aims to introduce a minimal learning curve. Phantom is not a leaking abstraction and it is exclusively built to target Cassnadra integration, therefore it has support for all the latest features of CQL and doesn't require constantly mapping terminology. Unlike LINQ style DSLs for instance, the naming will largely have 100% correspondence to CQL terminology you are already used to.
+- A natural DSL that doesn't require any new terminology and aims to introduce a minimal learning curve. Phantom is not a leaking abstraction and it is exclusively built to target Cassandra integration, therefore it has support for all the latest features of CQL and doesn't require constantly mapping terminology. Unlike LINQ style DSLs for instance, the naming will largely have 100% correspondence to CQL terminology you are already used to.
 - Automated schema generation, automated table migrations, automated database generation and more, meaning you will never ever have to manually initialise CQL tables from scripts ever again.
 - Native support of Scala concurrency primitives, from `scala.concurrent.Future` to more advanced access patterns such as reactive streams or even iteratees, available via separate dependencies.
 - Native support for `play-streams`, `reactive-streams` and `com.twitter.util.Future`, available via dedicated modules.
