@@ -163,14 +163,14 @@ object Primitives {
     }
   }
 
-  def list[T]()(implicit ev: Primitive[T]): Primitive[List[T]] = {
+  def list[T](implicit ev: Primitive[T]): Primitive[List[T]] = {
     collectionPrimitive[List, T](
       QueryBuilder.Collections.listType(ev.cassandraType).queryString,
       value => QueryBuilder.Collections.serialize(value.map(ev.asCql)).queryString
     )
   }
 
-  def set[T]()(implicit ev: Primitive[T]): Primitive[Set[T]] = {
+  def set[T](implicit ev: Primitive[T]): Primitive[Set[T]] = {
     collectionPrimitive[Set, T](
       QueryBuilder.Collections.setType(ev.cassandraType).queryString,
       value => QueryBuilder.Collections.serialize(value.map(ev.asCql)).queryString
