@@ -66,7 +66,7 @@ class PrimitiveMacro(override val c: blackbox.Context) extends BlackboxToolbelt 
     val innerTpe = tpe.typeArgs.headOption
 
     innerTpe match {
-      case Some(inner) => q"""$prefix.Primitives.list[$inner]"""
+      case Some(inner) => q"""$prefix.Primitives.list[$inner]()"""
       case None => c.abort(c.enclosingPosition, "Expected inner type to be defined")
     }
   }
@@ -206,7 +206,7 @@ class PrimitiveMacro(override val c: blackbox.Context) extends BlackboxToolbelt 
 
   def setPrimitive(tpe: Type): Tree = {
     tpe.typeArgs.headOption match {
-      case Some(inner) => q"$prefix.Primitives.set[$inner]"
+      case Some(inner) => q"$prefix.Primitives.set[$inner]()"
       case None => c.abort(c.enclosingPosition, "Expected inner type to be defined")
     }
   }
