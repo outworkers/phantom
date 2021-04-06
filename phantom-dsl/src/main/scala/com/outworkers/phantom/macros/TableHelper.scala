@@ -62,7 +62,6 @@ object TableHelper {
   type Aux[T <: CassandraTable[T, R], R, Repr0] = TableHelper[T, R] { type Repr = Repr0 }
 }
 
-@macrocompat.bundle
 class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbelt with RootMacro {
   import c.universe._
 

@@ -36,7 +36,6 @@ object DatabaseHelper {
   ]: DatabaseHelper[T] = macro DatabaseHelperMacro.materialize[T]
 }
 
-@macrocompat.bundle
 class DatabaseHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbelt with RootMacro {
   import c.universe._
 

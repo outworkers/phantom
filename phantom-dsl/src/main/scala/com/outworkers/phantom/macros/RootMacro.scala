@@ -27,7 +27,6 @@ import scala.collection.immutable.ListMap
 import scala.reflect.macros.whitebox
 import scala.Iterable
 
-@macrocompat.bundle
 trait RootMacro extends HListHelpers with WhiteboxToolbelt {
   val c: whitebox.Context
   import c.universe._

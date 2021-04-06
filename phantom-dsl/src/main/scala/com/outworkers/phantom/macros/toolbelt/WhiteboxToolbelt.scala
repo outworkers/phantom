@@ -34,7 +34,6 @@ private[phantom] object WhiteboxToolbelt {
   final val specialEqsCache: Cache = new Cache()
 }
 
-@macrocompat.bundle
 private[phantom] trait WhiteboxToolbelt {
 
   val c: whitebox.Context

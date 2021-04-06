@@ -38,7 +38,6 @@ object ThriftHelper {
   ]: ThriftHelper[T, Serializer] = macro ThriftHelperMacro.materialize[T, Serializer]
 }
 
-@macrocompat.bundle
 class ThriftHelperMacro(val c: blackbox.Context) {
 
   import c.universe._
