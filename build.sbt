@@ -123,14 +123,12 @@ lazy val Versions = new {
   val joda = "2.10.1"
   val jodaConvert = "2.1.2"
   val scalamock = "4.4.0"
-  val macrocompat = "1.1.1"
   val macroParadise = "2.1.1"
   val circe = "0.12.3"
   val scala211 = "2.11.12"
   val scala212 = "2.12.10"
   val scala213 = "2.13.1"
   val monix = "3.1.0-2156c0e"
-  val macroCompat = "1.1.1"
   val collectionCompat = "2.1.3"
   val paradise = "2.1.1"
 
@@ -153,14 +151,6 @@ lazy val Versions = new {
     "1.3.3"
   } else {
     "1.2.0"
-  }
-
-
-  val macroCompatVersion: String => ModuleID = {
-    s => CrossVersion.partialVersion(s) match {
-      case Some((_, minor)) if minor >= 13 => "org.typelevel" % "macro-compat_2.13.0-RC2" % "1.1.1"
-      case Some((_, minor)) if minor < 13 => "org.typelevel" %% "macro-compat" % macroCompat
-    }
   }
 
   val paradiseVersion: String => Seq[ModuleID] = {
@@ -324,7 +314,6 @@ lazy val readme = (project in file("readme"))
       "VERSION" -> version.value
     ),
     libraryDependencies ++= Seq(
-      Versions.macroCompatVersion(scalaVersion.value),
       "org.scala-lang" % "scala-compiler" % scalaVersion.value,
       "com.outworkers" %% "util-samplers" % Versions.util,
       "io.circe" %% "circe-parser" % Versions.circeVersion(scalaVersion.value),
@@ -350,7 +339,6 @@ lazy val phantomDsl = (project in file("phantom-dsl"))
       Tags.limit(Tags.ForkedTestGroup, defaultConcurrency)
     ),
     libraryDependencies ++= Seq(
-      Versions.macroCompatVersion(scalaVersion.value),
       "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
       "com.chuusai"                  %% "shapeless"                         % Versions.shapeless,
       "joda-time"                    %  "joda-time"                         % Versions.joda,
@@ -405,7 +393,6 @@ lazy val phantomThrift = (project in file("phantom-thrift"))
     name := "phantom-thrift",
     moduleName := "phantom-thrift",
     libraryDependencies ++= Seq(
-      Versions.macroCompatVersion(scalaVersion.value),
       "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
       "org.apache.thrift"            % "libthrift"                          % Versions.thrift,
       "com.twitter"                  %% "scrooge-core"                      % Versions.scrooge(scalaVersion.value),

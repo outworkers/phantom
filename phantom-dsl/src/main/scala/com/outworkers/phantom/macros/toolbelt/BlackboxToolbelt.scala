@@ -33,7 +33,6 @@ private[phantom] object BlackboxToolbelt {
   final val specialEqsCache: Cache = new Cache()
 }
 
-@macrocompat.bundle
 private[phantom] trait BlackboxToolbelt {
 
   val c: blackbox.Context

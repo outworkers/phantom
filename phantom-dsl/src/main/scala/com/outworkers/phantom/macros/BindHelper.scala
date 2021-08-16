@@ -42,7 +42,6 @@ object BindHelper {
   implicit def materialize[TP]: BindHelper[TP] = macro BindMacros.materialize[TP]
 }
 
-@macrocompat.bundle
 class BindMacros(override val c: whitebox.Context) extends WhiteboxToolbelt with RootMacro {
 
   import c.universe._

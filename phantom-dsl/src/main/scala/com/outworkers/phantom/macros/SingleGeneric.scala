@@ -72,7 +72,6 @@ object SingleGeneric {
 }
 
 
-@macrocompat.bundle
 class SingleGenericMacro(val c: whitebox.Context) extends HListHelpers with WhiteboxToolbelt {
   import c.universe._
 

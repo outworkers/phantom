@@ -44,7 +44,6 @@ object ==:== {
 }
 
 
-@macrocompat.bundle
 class EqsMacro(val c: whitebox.Context) extends WhiteboxToolbelt with HListHelpers {
 
   import c.universe._

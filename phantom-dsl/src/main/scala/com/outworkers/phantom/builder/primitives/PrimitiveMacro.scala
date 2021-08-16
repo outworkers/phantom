@@ -21,7 +21,6 @@ import com.datastax.driver.core.exceptions.InvalidTypeException
 import com.outworkers.phantom.macros.toolbelt.BlackboxToolbelt
 import scala.reflect.macros.blackbox
 
-@macrocompat.bundle
 class PrimitiveMacro(override val c: blackbox.Context) extends BlackboxToolbelt {
   import c.universe._
 

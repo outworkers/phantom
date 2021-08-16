@@ -22,7 +22,6 @@ import scala.reflect.macros.whitebox
 import scala.util.control.NonFatal
 import scala.collection.compat._
 
-@macrocompat.bundle
 trait HListHelpers {
   val c: whitebox.Context
 
