@@ -52,7 +52,9 @@ class MonixPromiseInterface extends PromiseInterface[Task, Task]{
         }
 
         Futures.addCallback(source, callback, executor.asInstanceOf[ExecutionContextExecutor])
-        Cancelable.empty
+        Cancelable { () =>
+          source.cancel(true)
+        }
       }
     }
 
