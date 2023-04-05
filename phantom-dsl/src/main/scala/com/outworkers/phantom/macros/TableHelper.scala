@@ -54,8 +54,9 @@ trait TableHelper[T <: CassandraTable[T, R], R] extends Serializable {
 object TableHelper {
   implicit def fieldsMacro[
     T <: CassandraTable[T, R],
-    R
-  ]: TableHelper[T, R] = macro TableHelperMacro.materialize[T, R]
+    R,
+    Repr <: HList
+  ]: Aux[T, R, Repr] = macro TableHelperMacro.materialize[T, R]
 
   def apply[T <: CassandraTable[T, R], R](implicit ev: TableHelper[T, R]): TableHelper[T, R] = ev
 
@@ -315,7 +316,7 @@ class TableHelperMacro(override val c: whitebox.Context) extends WhiteboxToolbel
     *         Alternatively, this will return an unimplemented ??? method, provided a correct
     *         definition could not be inferred.
     */
-  def extractor[T](tableTpe: Type, recordTpe: Type, columns: List[Symbol]): TableDescriptor = {
+  def extractor(tableTpe: Type, recordTpe: Type, columns: List[Symbol]): TableDescriptor = {
     val recordMembers = extractRecordMembers(recordTpe)
     val colFields = extractColumnMembers(tableTpe, columns)
 

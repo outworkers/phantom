@@ -29,8 +29,6 @@ private[phantom] object BlackboxToolbelt {
 
   final val primitiveCache: Cache = new Cache()
   final val tableHelperCache: Cache = new Cache()
-  final val singeGenericCache: Cache = new Cache()
-  final val specialEqsCache: Cache = new Cache()
 }
 
 private[phantom] trait BlackboxToolbelt {

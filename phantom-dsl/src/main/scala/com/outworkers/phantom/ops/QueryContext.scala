@@ -24,7 +24,7 @@ import com.outworkers.phantom.builder.query.prepared.{ExecutablePreparedQuery, E
 import com.outworkers.phantom.builder.query._
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.database.Database
-import com.outworkers.phantom.macros.{==:==, SingleGeneric, TableHelper}
+import com.outworkers.phantom.macros.{SingleGeneric, TableHelper}
 import com.outworkers.phantom.{CassandraTable, ResultSet, Row}
 import shapeless.{Generic, HList}
 
@@ -305,29 +305,26 @@ abstract class QueryContext[P[_], F[_], Timeout](
       blockAwait(table.autocreate(keySpace).future(), timeout)
     }
 
-    def storeRecord[V1, Repr <: HList, HL <: HList, Out <: HList](input: V1)(
+    def storeRecord[V1, Repr <: HList, HL <: HList](input: V1)(
       implicit keySpace: KeySpace,
       session: Session,
       thl: TableHelper.Aux[T, R, Repr],
       gen: Generic.Aux[V1, HL],
-      sg: SingleGeneric.Aux[V1, Repr, HL, Out],
-      ctx: ExecutionContext,
-      ev: Out ==:== Repr
+      sg: SingleGeneric[V1, Repr, HL],
+      ctx: ExecutionContext
     ): F[ResultSet] = promiseInterface.adapter.fromGuava(table.store(input).executableQuery)
 
     def storeRecords[
       M[X] <: IterableOnce[X],
       V1,
       Repr <: HList,
-      HL <: HList,
-      Out <: HList
+      HL <: HList
     ](inputs: M[V1])(
       implicit keySpace: KeySpace,
       session: Session,
       thl: TableHelper.Aux[T, R, Repr],
       gen: Generic.Aux[V1, HL],
-      sg: SingleGeneric.Aux[V1, Repr, HL, Out],
-      ev: Out ==:== Repr,
+      sg: SingleGeneric[V1, Repr, HL],
       ctx: ExecutionContext,
       cbfEntry: Factory[ExecutableCqlQuery, M[ExecutableCqlQuery]],
       cbfB: BuildFrom[M[ExecutableCqlQuery], ExecutableCqlQuery, M[ExecutableCqlQuery]],

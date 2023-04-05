@@ -15,11 +15,9 @@
  */
 package com.outworkers.phantom.macros
 
-import com.outworkers.phantom.macros.toolbelt.{HListHelpers, WhiteboxToolbelt}
-import shapeless.Generic
+import shapeless.{::, Generic, HNil}
 
 import scala.annotation.implicitNotFound
-import scala.reflect.macros.whitebox
 
 /**
   * A very dirty typeclass used to duct type single argument calls to the store varargs autotupled method.
@@ -49,83 +47,32 @@ import scala.reflect.macros.whitebox
 @implicitNotFound(msg = "The type you're trying to store ${T} should match either ${Store} or ${GenR}")
 trait SingleGeneric[T, Store, GenR] extends Serializable {
   /** The generic representation type for {T}, which will be composed of {Coproduct} and {HList} types  */
-  type Repr
+  type Repr = Store
 
   /** Convert an instance of the concrete type to the generic value representation */
-  def to(t: T)(implicit gen: Generic[T]) : Repr
+  def to(t: T) : Repr
 
   /** Convert an instance of the generic representation to an instance of the concrete type */
-  def from(r: Repr)(implicit gen: Generic[T]) : T
+  def from(r: Repr) : T
 }
 
-object SingleGeneric {
+trait LowPrioritySingleGeneric {
+  implicit def single[T, HL](implicit gen: Generic.Aux[T, HL]): SingleGeneric[T, T :: HNil, HL] =
+    new SingleGeneric[T, T :: HNil, HL] {
+      def to(source: T): T :: HNil = source :: HNil
+
+      def from(hl: T :: HNil): T = hl.head
+    }
+}
+
+object SingleGeneric extends LowPrioritySingleGeneric {
 
   def apply[T, Store, HL](implicit ev: SingleGeneric[T, Store, HL]): SingleGeneric[T, Store, HL] = ev
 
-  implicit def materialize[
-    T,
-    Store,
-    HL
-  ]: SingleGeneric[T, Store, HL] = macro SingleGenericMacro.materialize[T, Store, HL]
+  implicit def generic[T, HL](implicit gen: Generic.Aux[T, HL]): SingleGeneric[T, HL, HL] =
+    new SingleGeneric[T, HL, HL] {
+      def to(source: T): HL = gen to source
 
-  type Aux[T, Store, HL, Repr0] = SingleGeneric[T, Store, HL] { type Repr = Repr0 }
-}
-
-
-class SingleGenericMacro(val c: whitebox.Context) extends HListHelpers with WhiteboxToolbelt {
-  import c.universe._
-
-  protected[this] val macroPkg = q"_root_.com.outworkers.phantom.macros"
-  private[this] def genericTpe(tpe: Type): Tree = tq"_root_.shapeless.Generic[$tpe]"
-
-  def mkGeneric(tpe: Type, store: Type, generic: Type): Tree = {
-    val res = mkHListType(tpe :: Nil)
-    val genTpe = genericTpe(tpe)
-
-    val tree = if (store =:= generic) {
-      info(s"Generic implementation using Shapeless for ${printType(tpe)}")
-      q"""
-          new $macroPkg.SingleGeneric[$tpe, $store, $generic] {
-            type Repr = $generic
-
-            def to(source: $tpe)(implicit gen: ${genericTpe(tpe)}): $generic = {
-              (gen to source).asInstanceOf[$generic]
-            }
-
-            def from(hl: $generic)(implicit gen: $genTpe): $tpe = (gen from hl.asInstanceOf[gen.Repr])
-          }
-      """
-    } else if (store =:= res) {
-      info(s"Single generic implementation using coalesced HLists for ${printType(tpe)}")
-
-      q"""
-          new $macroPkg.SingleGeneric[$tpe, $store, $generic] {
-            type Repr = $res
-
-            def to(source: $tpe)(implicit gen: $genTpe): $res = source :: _root_.shapeless.HNil
-
-            def from(hl: $res)(implicit gen: $genTpe): $tpe = hl.apply(_root_.shapeless.Nat._0)
-          }
-      """
-    } else {
-      val debugString = s"Unable to derive store type for ${printType(tpe)}, expected ${showHList(generic)} or ${showHList(store)}"
-      error(debugString)
-      abort(debugString)
+      def from(hl: HL): T = gen from hl
     }
-
-    evalTree(tree)
-  }
-
-  def materialize[T : c.WeakTypeTag, Store : c.WeakTypeTag, HL : c.WeakTypeTag]: Tree = {
-    val tableType = weakTypeOf[T]
-    val store = weakTypeOf[Store]
-    val generic = weakTypeOf[HL]
-
-
-    memoize[(Type, Type, Type), Tree](
-      WhiteboxToolbelt.singeGenericCache
-    )(Tuple3(tableType, store, generic), { case (t, s, g) =>
-      mkGeneric(t, s, g)
-    })
-  }
 }
