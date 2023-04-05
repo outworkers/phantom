@@ -31,7 +31,6 @@ private[phantom] object WhiteboxToolbelt {
   final val bindHelperCache: Cache = new Cache()
   final val tableHelperCache: Cache = new Cache()
   final val singeGenericCache: Cache = new Cache()
-  final val specialEqsCache: Cache = new Cache()
 }
 
 private[phantom] trait WhiteboxToolbelt {

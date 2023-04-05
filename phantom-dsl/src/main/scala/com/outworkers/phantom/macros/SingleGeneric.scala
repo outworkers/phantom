@@ -49,13 +49,13 @@ import scala.reflect.macros.whitebox
 @implicitNotFound(msg = "The type you're trying to store ${T} should match either ${Store} or ${GenR}")
 trait SingleGeneric[T, Store, GenR] extends Serializable {
   /** The generic representation type for {T}, which will be composed of {Coproduct} and {HList} types  */
-  type Repr
+  type Repr = Store
 
   /** Convert an instance of the concrete type to the generic value representation */
-  def to(t: T)(implicit gen: Generic[T]) : Repr
+  def to(t: T) : Repr
 
   /** Convert an instance of the generic representation to an instance of the concrete type */
-  def from(r: Repr)(implicit gen: Generic[T]) : T
+  def from(r: Repr) : T
 }
 
 object SingleGeneric {
@@ -66,9 +66,7 @@ object SingleGeneric {
     T,
     Store,
     HL
-  ]: SingleGeneric[T, Store, HL] = macro SingleGenericMacro.materialize[T, Store, HL]
-
-  type Aux[T, Store, HL, Repr0] = SingleGeneric[T, Store, HL] { type Repr = Repr0 }
+  ](implicit gen: Generic[T]): SingleGeneric[T, Store, HL] = macro SingleGenericMacro.materialize[T, Store, HL]
 }
 
 
@@ -76,23 +74,17 @@ class SingleGenericMacro(val c: whitebox.Context) extends HListHelpers with Whit
   import c.universe._
 
   protected[this] val macroPkg = q"_root_.com.outworkers.phantom.macros"
-  private[this] def genericTpe(tpe: Type): Tree = tq"_root_.shapeless.Generic[$tpe]"
 
-  def mkGeneric(tpe: Type, store: Type, generic: Type): Tree = {
+  def mkGeneric(tpe: Type, store: Type, generic: Type, gen: Tree): Tree = {
     val res = mkHListType(tpe :: Nil)
-    val genTpe = genericTpe(tpe)
 
     val tree = if (store =:= generic) {
       info(s"Generic implementation using Shapeless for ${printType(tpe)}")
       q"""
           new $macroPkg.SingleGeneric[$tpe, $store, $generic] {
-            type Repr = $generic
+            def to(source: $tpe): $generic = $gen to source
 
-            def to(source: $tpe)(implicit gen: ${genericTpe(tpe)}): $generic = {
-              (gen to source).asInstanceOf[$generic]
-            }
-
-            def from(hl: $generic)(implicit gen: $genTpe): $tpe = (gen from hl.asInstanceOf[gen.Repr])
+            def from(hl: $generic): $tpe = $gen from hl
           }
       """
     } else if (store =:= res) {
@@ -100,11 +92,9 @@ class SingleGenericMacro(val c: whitebox.Context) extends HListHelpers with Whit
 
       q"""
           new $macroPkg.SingleGeneric[$tpe, $store, $generic] {
-            type Repr = $res
+            def to(source: $tpe): $res = source :: _root_.shapeless.HNil
 
-            def to(source: $tpe)(implicit gen: $genTpe): $res = source :: _root_.shapeless.HNil
-
-            def from(hl: $res)(implicit gen: $genTpe): $tpe = hl.apply(_root_.shapeless.Nat._0)
+            def from(hl: $res): $tpe = hl.apply(_root_.shapeless.Nat._0)
           }
       """
     } else {
@@ -116,16 +106,16 @@ class SingleGenericMacro(val c: whitebox.Context) extends HListHelpers with Whit
     evalTree(tree)
   }
 
-  def materialize[T : c.WeakTypeTag, Store : c.WeakTypeTag, HL : c.WeakTypeTag]: Tree = {
+  def materialize[T : c.WeakTypeTag, Store : c.WeakTypeTag, HL : c.WeakTypeTag](gen: Tree): Tree = {
     val tableType = weakTypeOf[T]
     val store = weakTypeOf[Store]
     val generic = weakTypeOf[HL]
 
 
-    memoize[(Type, Type, Type), Tree](
+    memoize[(Type, Type, Type, Tree), Tree](
       WhiteboxToolbelt.singeGenericCache
-    )(Tuple3(tableType, store, generic), { case (t, s, g) =>
-      mkGeneric(t, s, g)
+    )(Tuple4(tableType, store, generic, gen), { case (t, s, g, gInst) =>
+      mkGeneric(t, s, g, gInst)
     })
   }
 }

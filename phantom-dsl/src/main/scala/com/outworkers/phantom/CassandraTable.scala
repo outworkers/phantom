@@ -25,7 +25,7 @@ import com.outworkers.phantom.builder.query.{RootCreateQuery, _}
 import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.{KeySpace, RootConnector}
 import com.outworkers.phantom.keys.SASIIndex
-import com.outworkers.phantom.macros.{==:==, SingleGeneric, TableHelper}
+import com.outworkers.phantom.macros.{SingleGeneric, TableHelper}
 import org.slf4j.{Logger, LoggerFactory}
 import shapeless.{Generic, HList, HNil}
 
@@ -117,13 +117,12 @@ abstract class CassandraTable[T <: CassandraTable[T, R], R](
     * @tparam V1 The type of the input.
     * @return A default input query.
     */
-  def store[V1, Repr <: HList, HL, Out <: HList](input: V1)(
+  def store[V1, Repr <: HList, HL](input: V1)(
     implicit keySpace: KeySpace,
     thl: TableHelper.Aux[T, R, Repr],
     gen: Generic.Aux[V1, HL],
-    sg: SingleGeneric.Aux[V1, Repr, HL, Out],
-    ev: Out ==:== Repr
-  ): InsertQuery.Default[T, R] = thl.store(instance, (sg to input).asInstanceOf[Repr])
+    sg: SingleGeneric[V1, Repr, HL]
+  ): InsertQuery.Default[T, R] = thl.store(instance, sg to input)
 
   final def delete()(implicit keySpace: KeySpace): DeleteQuery.Default[T, R] = DeleteQuery[T, R](instance)
 
